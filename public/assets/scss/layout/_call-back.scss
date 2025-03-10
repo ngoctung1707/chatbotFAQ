@@ -1,0 +1,95 @@
+@use '../utils' as *;
+
+/*=============================
+    18. Call-back
+===============================*/
+.call-back {
+    &-area {
+        background: var(--tg-heading-color);
+        padding: 100px 0 85px;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        &-two {
+            background: transparent;
+            padding: 0;
+            z-index: 2;
+        }
+    }
+    &-wrap {
+        background: var(--tg-heading-color);
+        padding: 90px 80px 75px;
+        @include border-radius(15px);
+        @media #{$lg} {
+            padding: 50px 25px 50px;
+        }
+    }
+    &-content {
+        @media #{$md} {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        & .shape {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            z-index: -1;
+            @media #{$md} {
+                display: none;
+            }
+        }
+        & p {
+            margin-bottom: 0;
+            color: #D0D0DD;
+            font-weight: 500;
+            width: 90%;
+            @media #{$lg} {
+                width: 100%;
+            }
+        }
+    }
+    &-form {
+        & form {
+            & .row {
+            --bs-gutter-x: 15px;
+            }
+            & .form-grp {
+                margin-bottom: 15px;
+                & input {
+                    width: 100%;
+                    border: none;
+                    @include border-radius(4px);
+                    color: var(--tg-heading-color);
+                    background: var(--tg-color-white-default);
+                    font-size: 15px;
+                    font-weight: 500;
+                    padding: 15px 18px;
+                    height: 50px;
+                    &::placeholder {
+                        font-size: 15px;
+                        font-weight: 500;
+                        color: #9597C8;
+                    }
+                }
+            }
+            & .btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 16px;
+                font-weight: 800;
+                text-transform: uppercase;
+                padding: 17px 24px;
+                @include border-radius(4px);
+                &::before {
+                    background: var(--tg-color-gray-3);
+                }
+                &::after {
+                    display: none;
+                }
+                &:hover {
+                    color: var(--tg-heading-color);
+                }
+            }
+        }
+    }
+}

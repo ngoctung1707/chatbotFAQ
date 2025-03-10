@@ -1,0 +1,43 @@
+@use '../utils' as *;
+
+.banner-two-col {
+    background-color: var(--tg-color-gray-3);
+    .banner-col-1 {
+        padding: 40px 0;
+    }
+    .banner-col-2 {
+        width: 40%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        .box-button-slider-bottom {
+            bottom: 90px;
+            left: auto;
+            padding-bottom: 0px;
+            right: 80px;
+        }
+    }
+}
+.services__item-five .icon {
+    transition-duration: 0.3s;
+}
+.services__item-five:hover .icon {
+    transform: rotateY(180deg);
+    transition-duration: 0.3s;
+}
+
+.card-step .card-icon svg {
+    transition-duration: 0.3s;
+}
+.card-step:hover .card-icon svg {
+    transform: rotateY(180deg);
+    transition-duration: 0.3s;
+}
+
+@media only screen and (max-width: 920px) {
+    .banner-two-col {
+        .banner-col-2 {
+            display: none;
+        }
+    }
+}

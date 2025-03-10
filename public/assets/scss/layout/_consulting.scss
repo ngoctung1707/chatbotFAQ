@@ -1,0 +1,87 @@
+@use '../utils' as *;
+
+/*=============================
+    12. Consulting
+===============================*/
+.consulting {
+    &-area {
+        position: relative;
+        z-index: 2;
+    }
+    &-inner-wrap {
+        background: var(--tg-theme-secondary);
+        @include border-radius(15px);
+        @include flexbox();
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+    &-content {
+        padding: 70px 65px;
+        @include flexbox();
+        align-items: center;
+        gap: 24px;
+        @media #{$lg} {
+            padding: 50px 30px;
+            gap: 20px;
+        }
+        @media #{$xs} {
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        & .content-left {
+            background: var(--tg-theme-primary);
+            text-align: center;
+            padding: 20px 23px;
+            @media #{$xs} {
+                margin: 0 auto;
+            }
+            & .title {
+                font-size: 40px;
+                margin-bottom: 5px;
+                color: var(--tg-color-white-default);
+                line-height: 1;
+            }
+            & span {
+                font-size: 15px;
+                font-weight: 500;
+                display: block;
+                line-height: 1.2;
+                color: var(--tg-color-white-default);
+                font-family: var(--tg-heading-font-family);
+            }
+        }
+        & .content-right {
+            & .title {
+                margin-bottom: 15px;
+                font-size: 30px;
+                color: var(--tg-color-white-default);
+            }
+            & p {
+                margin-bottom: 0;
+                color: var(--tg-color-white-default);
+            }
+        }
+    }
+    &-img {
+        width: 392px;
+        flex: 0 0 auto;
+        @media #{$md} {
+            display: none;
+        }
+        & img {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+            @include border-radius(0 15px 15px 0);
+        }
+    }
+    &-shape {
+        & img {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            z-index: -1;
+        }
+    }
+}

@@ -1,0 +1,51 @@
+.forgot__area-one {
+    padding: 120px 0px 250px 0px;
+    background-image: url(/img/forgot/bg-forgot.png);
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+}
+
+.text-16-semibold {
+    font-size: 16px;
+    line-height: 28px;
+    font-weight: 600;
+}
+
+.form-forgot {
+    .text-infos {
+        padding: 0px 0px 0px 29px;
+        background-image: url(/img/forgot/info.svg);
+        background-repeat: no-repeat;
+        background-position: left center;
+        color: var(--tg-body-color);
+        margin-bottom: 0px;
+    }
+
+    .alert-warning {
+        background-color: var(--tg-color-yellow-light-3);
+        padding: 15px 24px;
+        margin-bottom: 24px;
+        border: 0px;
+    }
+}
+
+.border-btn.btn-login {
+    padding: 19px 26px;
+
+    svg {
+        fill: var(--tg-body-color);
+        width: 16px;
+        margin-right: 8px;
+    }
+
+    &:hover {
+        svg {
+            fill: var(--tg-color-white-default);
+        }
+    }
+
+    &::after {
+        display: none;
+    }
+}

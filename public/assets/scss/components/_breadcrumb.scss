@@ -1,0 +1,94 @@
+@use '../utils' as *;
+
+/*=========================
+04. Breadcrumb
+===========================*/
+.breadcrumb {
+    &__bg {
+        background-size: cover;
+        background-position: center;
+        padding: 105px 0 110px;
+        position: relative;
+        z-index: 1;
+        @media #{$md} {
+            padding: 85px 0 90px;
+        }
+    }
+    &__content {
+        & .title {
+            margin-bottom: 10px;
+            font-size: 48px;
+            @media #{$md} {
+                font-size: 42px;
+            }
+            @media #{$xs} {
+                font-size: 40px;
+            }
+        }
+        & .breadcrumb {
+            margin-bottom: 0;
+            &-item {
+                font-size: 16px;
+                color: var(--tg-theme-primary);
+                & a {
+                    color: var(--tg-body-color);
+                    &:hover {
+                        color: var(--tg-theme-primary);
+                    }
+                }
+            }
+        }
+    }
+    &__shape {
+        & img {
+            position: absolute;
+            z-index: -1;
+            &:nth-child(1) {
+                left: 2%;
+                top: 14%;
+                @media #{$xs} {
+                    left: 10%;
+                }
+            }
+            &:nth-child(2) {
+                left: 8%;
+                bottom: 20%;
+                animation: rightToLeft 4s infinite linear;
+                @media #{$xs} {
+                    left: 40%;
+                }
+            }
+            &:nth-child(3) {
+                left: 23%;
+                bottom: 0;
+            }
+            &:nth-child(4) {
+                right: 42%;
+                top: 0;
+                @media #{$xs} {
+                    display: none;
+                }
+            }
+            &:nth-child(5) {
+                right: 25%;
+                top: 15%;
+                @media #{$xs} {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+.breadcrumb-item+.breadcrumb-item {
+    padding-left: 10px;
+    &::before {
+        padding-right: 10px;
+        color: var(--tg-body-color);
+        content: "\f054";
+        font-family: var(--tg-icon-font-family);
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1;
+        margin-top: 6px;
+    }
+}

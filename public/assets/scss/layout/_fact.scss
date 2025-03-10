@@ -1,0 +1,102 @@
+@use '../utils' as *;
+
+/*=============================
+    16. Fact
+===============================*/
+.counter {
+    &-area {
+        background: #FFFBF3;
+        padding: 110px 0 80px;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        @media #{$xs} {
+            padding: 100px 0 70px;
+        }
+        &-two {
+            padding: 140px 0 110px;
+            position: relative;
+            overflow: hidden;
+            @media #{$xs} {
+                padding: 100px 0 70px;
+            }
+        }
+        &-three {
+            background: #F5FAFC;
+            padding: 0 0 90px;
+        }
+    }
+    &-item {
+        @include flexbox();
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        @media #{$xs} {
+            gap: 12px;
+        }
+        & .icon {
+            font-size: 72px;
+            line-height: 0;
+            color: var(--tg-theme-primary);
+            @include transition(.3s);
+            @media #{$sm} {
+                font-size: 60px;
+            }
+        }
+        & .content {
+            & .count {
+                line-height: .8;
+                margin-bottom: 5px;
+                font-size: 40px;
+                @include flexbox();
+                align-items: center;
+                font-weight: 800;
+                @media #{$lg} {
+                    font-size: 36px;
+                }
+                @media #{$sm} {
+                    font-size: 34px;
+                }
+            }
+            & p {
+                margin-bottom: 0;
+                font-size: 18px;
+                font-weight: 500;
+                @media #{$sm} {
+                    font-size: 16px;
+                }
+            }
+        }
+        &:hover {
+            & .icon {
+                @include transform(rotateY(180deg));
+            }
+        }
+    }
+    &-shape-wrap {
+        & img {
+            position: absolute;
+            z-index: -1;
+            &:nth-child(1) {
+                left: 0;
+                top: 0;
+            }
+            &:nth-child(2) {
+                right: 8%;
+                top: 30%;
+            }
+            &:nth-child(3) {
+                right: 0;
+                bottom: 0;
+                z-index: -2;
+            }
+        }
+    }
+    &-shape-two {
+        & img {
+            position: absolute;
+            right: 8%;
+            bottom: -20px;
+        }
+    }
+}

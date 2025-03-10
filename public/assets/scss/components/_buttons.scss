@@ -1,0 +1,116 @@
+@use '../utils' as *;
+
+/*=============================
+	1. Button style
+===============================*/
+.tg-button-wrap {
+    @include flexbox();
+}
+.btn {
+    user-select: none;
+    -moz-user-select: none;
+    background: var(--tg-theme-primary) none repeat scroll 0 0;
+    border: medium none;
+    @include border-radius(10px);
+    color: var(--tg-color-white-default);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+    margin-bottom: 0;
+    padding: 18px 24px;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    @include transition(.3s);
+    vertical-align: middle;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    &::before {
+        content: "";
+        position: absolute;
+        -webkit-transition-duration: 800ms;
+        transition-duration: 800ms;
+        width: 200%;
+        height: 200%;
+        top: 110%;
+        left: 50%;
+        background: var(--tg-theme-secondary);
+        @include transform(translateX(-50%));
+        @include border-radius(50%);
+        z-index: -1;
+    }
+    &::after {
+        content: "\f10a";
+        font-family: flaticon;
+        font-weight: var(--tg-fw-bold);
+        margin-left: 8px;
+        font-size: 20px;
+        line-height: 0;
+        @include transition(.3s);
+    }
+    &:hover,
+    &:focus-visible {
+        color: var(--tg-color-white-default);
+        background: var(--tg-theme-primary);
+        &:before {
+            top: -40%;
+        }
+    }
+    &-two {
+        background: var(--tg-theme-secondary);
+        &:hover {
+                background: var(--tg-theme-secondary);
+            }
+        &::before {
+            background: var(--tg-theme-primary);
+        }
+    }
+    &.btn-login-social {
+        background-color: var(--tg-color-white-default);
+        width: 100%;
+        color: var(--tg-color-body-color);
+        justify-content: center;
+        font-size: 16px;
+        line-height: 28px;
+        text-transform: capitalize;
+        img {
+            margin-right: 15px;
+        }
+        &:after {
+            display: none;
+        }
+        &:hover {
+            color: var(--tg-color-white-default);
+        }
+    }
+    &.btn-login {
+        width: 100%;
+        border-radius: 11px;
+        padding: 20px 26px;
+        justify-content: center;
+        font-size: 18px;
+        line-height: 28px;
+        &:hover {
+            background-color: var(--tg-theme-secondary);
+        }
+    }
+}
+
+.border-btn {
+    border: 1px solid var(--tg-theme-secondary);
+    background: transparent;
+    color: var(--tg-theme-secondary);
+    padding: 17px 24px;
+    &::before {
+        display: none;
+    }
+    &:hover {
+        background: var(--tg-theme-secondary);
+    }
+}

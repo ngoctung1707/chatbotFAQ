@@ -1,0 +1,76 @@
+@use '../utils' as *;
+
+/*=============================
+	15. Marquee
+===============================*/
+.marquee {
+    &__area {
+        background: var(--tg-color-yellow-light-2);
+        overflow: hidden;
+        padding: 0 0 120px;
+        @media #{$xs} {
+            padding: 0 0 100px;
+        }
+        &-two {
+            padding: 0 0 120px;
+            overflow: hidden;
+            @media #{$xs} {
+                padding: 0 0 100px;
+            }
+        }
+    }
+    &__wrap {
+        @include flexbox();
+        align-items: center;
+        &:hover {
+            & .marquee__box {
+                animation-play-state: paused;
+            }
+        }
+    }
+    &__box {
+        @include flexbox();
+        align-items: center;
+        flex-wrap: nowrap;
+        width: fit-content;
+        animation: marquee 50s linear infinite;
+        & a {
+            font-weight: 700;
+            font-size: 60px;
+            white-space: nowrap;
+            line-height: 1;
+            position: relative;
+            margin-right: 20px;
+            text-transform: uppercase;
+            font-family: var(--tg-heading-font-family);
+            @include flexbox();
+            align-items: center;
+            color: var(--tg-theme-primary);
+            letter-spacing: 1px;
+            @media #{$lg} {
+                font-size: 55px;
+            }
+            @media #{$md} {
+                font-size: 50px;
+            }
+            @media #{$xs} {
+                font-size: 40px;
+            }
+            &::after {
+                content: "\f621";
+                font-size: 45px;
+                font-weight: 700;
+                line-height: 1;
+                margin-left: 20px;
+                font-family: var(--tg-icon-font-family);
+                color: var(--tg-theme-primary);
+                @media #{$lg} {
+                    font-size: 40px;
+                }
+                @media #{$xs} {
+                    font-size: 30px;
+                }
+            }
+        }
+    }
+}

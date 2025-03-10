@@ -1,0 +1,202 @@
+@use '../utils' as *;
+
+/*=============================
+	10. Pricing
+===============================*/
+.pricing {
+    &__bg {
+        padding: 120px 0 90px;
+        position: relative;
+        z-index: 1;
+        background-size: cover;
+        background-position: center;
+        @media #{$xs} {
+            padding: 100px 0 70px;
+        }
+        &-two {
+            padding: 255px 0 90px;
+            margin-top: -135px;
+            @media #{$xs} {
+                padding: 235px 0 70px;
+            }
+        }
+    }
+    &__tab {
+        @include flexbox();
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 40px;
+        &-btn {
+            cursor: pointer;
+            color: var(--tg-border-5);
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+            font-family: var(--tg-heading-font-family);
+            @include transition(.3s);
+            &.monthly_tab_title {
+                color: var(--tg-heading-color);
+                &.active {
+                    color: var(--tg-border-5);
+                }
+            }
+            &.annual_tab_title {
+                &.active {
+                    color: var(--tg-heading-color);
+                }
+            }
+        }
+        &-switcher {
+            height: 30px;
+            width: 60px;
+            display: inline-block;
+            @include border-radius(30px);
+            position: relative;
+            margin: 0 15px;
+            -webkit-transform: translateY(0px);
+            -ms-transform: translateY(0px);
+            transform: translateY(0px);
+            cursor: pointer;
+            background: var(--tg-theme-primary);
+            &::before {
+                content: "";
+                position: absolute;
+                left: 2px;
+                top: 2px;
+                bottom: 2px;
+                width: 26px;
+                @include border-radius(50%);
+                background: var(--tg-color-white-default);
+                @include transition(.3s);
+            }
+            &.active {
+                &:before {
+                    left: calc(100% - 28px);
+                }
+            }
+        }
+    }
+    &__box {
+        background: var(--tg-color-white-default);
+        border: 1px solid #CFDDE2;
+        @include border-radius(15px);
+        padding: 50px 65px;
+        margin-bottom: 30px;
+        @media #{$lg} {
+            padding: 40px 25px;
+        }
+        @media #{$md} {
+            padding: 40px 30px;
+        }
+        &-two {
+            text-align: center;
+            & .pricing__price {
+                margin-bottom: 20px;
+                & .price {
+                    justify-content: center;
+                }
+            }
+            & .pricing__list {
+                & .list-wrap {
+                    & li {
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+    }
+    &__head {
+        margin-bottom: 20px;
+        & .title {
+            margin-bottom: 0;
+            font-size: 16px;
+            font-weight: 500;
+            text-transform: uppercase;
+            display: inline-block;
+            background: var(--tg-color-gray-3);
+            @include border-radius(30px);
+            padding: 12px 22px;
+        }
+    }
+    &__price {
+        margin-bottom: 40px;
+        & .price {
+            @include flexbox();
+            margin-bottom: 0;
+            font-size: 48px;
+            align-items: flex-end;
+            line-height: 1;
+            & strong {
+                font-weight: 400;
+                font-size: 18px;
+                margin: 4px 3px auto 0;
+                color: var(--tg-border-5);
+            }
+            & span {
+                color: var(--tg-border-5);
+                text-transform: lowercase;
+                font-weight: 400;
+                font-size: 18px;
+                margin-left: 5px;
+                margin-bottom: 7px;
+                text-transform: capitalize;
+            }
+            &.annual_price {
+                display: none;
+            }
+        }
+        &.change-subs-duration {
+            & .monthly_price {
+                display: none;
+            }
+            & .annual_price {
+                display: flex;
+            }
+        }
+    }
+    &__content {
+        & p {
+            margin-bottom: 30px;
+        }
+    }
+    &__list {
+        margin-bottom: 30px;
+        & .list-wrap {
+            & li {
+                @include flexbox();
+                align-items: center;
+                font-size: 16px;
+                font-weight: 500;
+                text-transform: capitalize;
+                gap: 10px;
+                margin-bottom: 15px;
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+    &__shape {
+        &-wrap {
+            & img {
+                position: absolute;
+                z-index: -1;
+                &:nth-child(1) {
+                    left: 0;
+                    top: 0;
+                    @media #{$xs} {
+                        width: 200px;
+                    }
+                }
+                &:nth-child(2) {
+                    right: 0;
+                    bottom: 0;
+                    @media #{$xs} {
+                        width: 200px;
+                    }
+                }
+            }
+        }
+    }
+}

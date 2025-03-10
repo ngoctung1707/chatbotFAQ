@@ -1,0 +1,140 @@
+@use '../utils' as *;
+
+/*=============================
+	14. Features
+===============================*/
+.features {
+    &__area {
+        &-two {
+            padding: 120px 0 90px;
+            @media #{$xs} {
+                padding: 100px 0 70px;
+            }
+        }
+    }
+    &__item {
+        @include flexbox();
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 80px 50px;
+        border: 1px solid var(--tg-border-2);
+        @media #{$xxl} {
+            padding: 80px 30px;
+        }
+        @media #{$xl} {
+            padding: 60px 20px;
+        }
+        @media #{$lg} {
+            display: block;
+        }
+        @media #{$md} {
+            padding: 40px 30px;
+        }
+        @media #{$xs} {
+            padding: 40px 25px;
+        }
+        &:hover {
+            & .features__icon {
+                & i {
+                    @include transform(rotateY(180deg));
+                }
+            }
+        }
+        &-wrap {
+            border-bottom: 1px solid var(--tg-border-2);
+            & .row {
+                --bs-gutter-x: 0px;
+            }
+        }
+        &-two {
+            @include border-radius(10px);
+            border: 1px solid #E4ECEF;
+            background: var(--tg-color-white-default);
+            @include box-shadow(0px 7px 15px 0px rgba(0, 0, 0, 0.05));
+            padding: 30px 30px;
+            margin-bottom: 30px;
+            @include flexbox();
+            align-items: flex-start;
+            gap: 20px;
+            @media #{$lg} {
+                flex-wrap: wrap;
+            }
+            @media #{$sm} {
+                flex-wrap: nowrap;
+            }
+            &:hover {
+                & .features__icon-two {
+                    & i {
+                        @include transform(rotateY(180deg));
+                    }
+                }
+            }
+        }
+    }
+    &__icon {
+        width: 80px;
+        height: 80px;
+        @include flexbox();
+        align-items: center;
+        justify-content: center;
+        background: var(--tg-color-gray-3);
+        @include border-radius(10px);
+        flex: 0 0 auto;
+        font-size: 50px;
+        line-height: 0;
+        color: var(--tg-theme-secondary);
+        @media #{$lg} {
+            margin-bottom: 20px;
+        }
+        & i {
+            @include transition(.4s);
+            @include transform(rotateY(0));
+        }
+        &-two {
+            width: 70px;
+            height: 70px;
+            @include flexbox();
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            @include border-radius(8px);
+            background: var(--tg-color-yellow-light);
+            line-height: 0;
+            color: var(--tg-theme-primary);
+            font-size: 50px;
+            & i {
+                @include transition(.4s);
+                @include transform(rotateY(0));
+            }
+        }
+    }
+    &__content {
+        & .title {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-weight: 600;
+            @media #{$xl} {
+                font-size: 22px;
+            }
+        }
+        & p {
+            margin-bottom: 0;
+            & br {
+                @media #{$xl} {
+                    display: none;
+                }
+            }
+        }
+        &-two {
+            & .title {
+                margin-bottom: 10px;
+                font-size: 20px;
+                text-transform: capitalize;
+            }
+            & p {
+                margin-bottom: 0;
+            }
+        }
+    }
+}

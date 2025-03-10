@@ -1,0 +1,47 @@
+@use '../utils' as *;
+
+/*=============================
+    22. 404 Error
+===============================*/
+.error {
+    &-area {
+        padding: 120px 0;
+        @media #{$xs} {
+            padding: 100px 0;
+        }
+    }
+    &-content {
+        text-align: center;
+        & svg {
+            width: 648px;
+            color: var(--tg-theme-primary);
+            margin-bottom: 45px;
+            @media #{$lg} {
+                width: 600px;
+            }
+            @media #{$md} {
+                width: 500px;
+            }
+            @media #{$xs} {
+                width: 100%;
+                margin-bottom: 30px;
+            }
+        }
+        & .title {
+            margin-bottom: 10px;
+            font-size: 48px;
+            @media #{$lg} {
+                font-size: 42px;
+            }
+            @media #{$md} {
+                font-size: 40px;
+            }
+            @media #{$xs} {
+                font-size: 36px;
+            }
+            & p {
+                margin-bottom: 35px;
+            }
+        }
+    }
+}

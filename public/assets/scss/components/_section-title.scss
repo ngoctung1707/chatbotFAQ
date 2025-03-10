@@ -1,0 +1,48 @@
+@use '../utils' as *;
+
+/*=============================
+	00. Section Title
+===============================*/
+.section-title {
+    & .sub-title {
+        display: block;
+        text-transform: uppercase;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: normal;
+        color: var(--tg-theme-primary);
+        margin-bottom: 12px;
+    }
+    & .title {
+        margin-bottom: 0;
+        font-size: 40px;
+        @media #{$lg} {
+            font-size: 36px;
+        }
+        @media #{$xs} {
+            font-size: 32px;
+        }
+        @media #{$sm} {
+            font-size: 34px;
+        }
+        & br {
+            @media #{$md} {
+                display: none;
+            }
+        }
+    }
+    & p {
+        margin-bottom: 0;
+        margin-top: 20px;
+        & br {
+            @media #{$xs} {
+                display: none;
+            }
+        }
+    }
+    &.white-title {
+        & .title {
+            color: var(--tg-color-white-default);
+        }
+    }
+}
