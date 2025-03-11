@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import data from "../../../util/blog.json";
+import data from "@/util/blog.json";
 import BlogCard1 from "./BlogCard1";
 import Pagination from "./Pagination";
 

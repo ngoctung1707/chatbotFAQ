@@ -3,6 +3,7 @@
   "version": "3.1.0",
   "private": true,
   "author": "alithemes",
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
