@@ -11,13 +11,20 @@
     "sass": "sass --watch public/assets/scss/main.scss:public/assets/css/main.css"
   },
   "dependencies": {
+    "@payloadcms/db-mongodb": "^3.27.0",
+    "@payloadcms/next": "^3.27.0",
+    "@payloadcms/payload-cloud": "^3.27.0",
+    "@payloadcms/richtext-lexical": "^3.27.0",
     "aos": "^2.3.4",
+    "graphql": "^16.8.1",
     "next": "15.2.1",
+    "payload": "^3.27.0",
     "react": "19.0.0",
     "react-curved-text": "^3.0.0",
     "react-dom": "19.0.0",
     "react-modal-video": "^2.0.1",
     "sass": "^1.69.5",
+    "sharp": "^0.33.5",
     "swiper": "^11.0.3",
     "wowjs": "^1.1.3"
   },
@@ -25,6 +32,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/react-modal-video": "^1.2.3",
     "typescript": "^5.8.2"
   }
 }
