@@ -1,16 +1,19 @@
-"use client";
-import { useState } from "react";
-import ModalVideo from "react-modal-video";
-import "../../../node_modules/react-modal-video/css/modal-video.css";
+'use client'
+import { useState } from 'react'
+import ModalVideo from 'react-modal-video'
+import '../../../node_modules/react-modal-video/css/modal-video.css'
 
-export default function VideoPopup({ style }: { style: number }) {
-  const [isOpen, setOpen] = useState(false);
+export default function VideoPopup({ style }: { style?: number }) {
+  const [isOpen, setOpen] = useState(false)
   return (
     <>
       {!style && (
-        <a onClick={() => setOpen(true)} className="play-btn popup-video">
-          <i className="fas fa-play" />
-        </a>
+        // <a onClick={() => setOpen(true)} className="play-btn popup-video">
+        //   <i className="fas fa-play" />
+        // </a>
+        <div onClick={() => setOpen(true)} className="btn" data-aos="fade-up" data-aos-delay={600}>
+          WATCH VIDEO
+        </div>
       )}
       {style === 1 && (
         <a onClick={() => setOpen(true)} className="popup-youtube bnt-play">
@@ -24,12 +27,11 @@ export default function VideoPopup({ style }: { style: number }) {
       )}
       <ModalVideo
         channel="youtube"
-        //@ts-ignore
-        autoplay
+        // autoplay
         isOpen={isOpen}
-        videoId="SZEflIVnhH8"
+        videoId="b9klykMefBQ"
         onClose={() => setOpen(false)}
       />
     </>
-  );
+  )
 }
