@@ -1,0 +1,173 @@
+[
+  {
+    "title": "An Improved Sea Lion Optimization for Workload Elasticity Prediction with Neural Networks",
+    "link": "https://doi.org/10.1007/s44196-022-00156-8",
+    "year": 2022,
+    "authors": "Binh Minh Nguyen, Trung Tran, Thieu Nguyen & Giang Nguyen ",
+    "abstract": "The work in this paper presents a study into nature-inspired optimization applied to workload elasticity prediction using neural networks. Currently, the trend is for proactive decision support in increasing or decreasing the available resource in cloud computing. The aim is to avoid overprovision leading to resource waste and to avoid resource under-provisioning. The combination of optimization and neural networks has potential for the performance, accuracy, and stability of the prediction solution. In this context, we initially proposed an improved variant of sea lion optimization (ISLO) to boost the efficiency of the original in solving optimization problems. The designed optimization results are validated against eight well-known metaheuristic algorithms on 20 benchmark functions of CEC’2014 and CEC’2015. After that, improved sea lion optimization (ISLO) is used to train a hybrid neural network. Finally, the trained neural model is used for resource auto-scaling based on workload prediction with 4 real and public datasets. The experiments show that our neural network model provides improved results in comparison with other models, especially in comparison with neural networks trained using the original sea lion optimization. The proposed ISLO proved efficiency and improvement in solving problems ranging from global optimization with swarm intelligence to the prediction of workload elasticity."
+  },
+  {
+    "title": "Value-based reinforcement learning approaches for task offloading in Delay Constrained Vehicular Edge Computing",
+    "link": "https://doi.org/10.1016/j.engappai.2022.104898",
+    "year": 2022,
+    "authors": "Do BaoSon, Ta HuuBinh, Hiep KhacVoc, Binh MinhNguyen, Huynh Thi ThanhBinh, ShuiYuc",
+    "abstract": "The work in this paper presents a study into nature-inspired optimization applied to workload elasticity prediction using neural networks. Currently, the trend is for proactive decision support in increasing or decreasing the available resource in cloud computing. The aim is to avoid overprovision leading to resource waste and to avoid resource under-provisioning. The combination of optimization and neural networks has potential for the performance, accuracy, and stability of the prediction solution. In this context, we initially proposed an improved variant of sea lion optimization (ISLO) to boost the efficiency of the original in solving optimization problems. The designed optimization results are validated against eight well-known metaheuristic algorithms on 20 benchmark functions of CEC’2014 and CEC’2015. After that, improved sea lion optimization (ISLO) is used to train a hybrid neural network. Finally, the trained neural model is used for resource auto-scaling based on workload prediction with 4 real and public datasets. The experiments show that our neural network model provides improved results in comparison with other models, especially in comparison with neural networks trained using the original sea lion optimization. The proposed ISLO proved efficiency and improvement in solving problems ranging from global optimization with swarm intelligence to the prediction of workload elasticity."
+  },
+  {
+    "title": "Blockchain for Education: Verification and Management of Lifelong Learning Data",
+    "link": "https://doi.org/10.32604/csse.2022.023508",
+    "year": 2022,
+    "img": "b4e.png",
+    "authors": "Ba-Lam Do, Van-Thanh Nguyen, Hoang-Nam Dinh, Thanh-Chung Dao and Binh-Minh Nguyen",
+    "abstract": "In recent years, blockchain technology has been applied in the educational domain because of its salient advantages, i.e., transparency, decentralization, and immutability. Available systems typically use public blockchain networks such as Ethereum and Bitcoin to store learning results. However, the cost of writing data on these networks is significant, making educational institutions limit data sent to the target network, typically containing only hash codes of the issued certificates. In this paper, we present a system based on a private blockchain network for lifelong learning data authentication and management named B4E (Blockchain For Education)."
+  },
+  {
+    "title": "GasSaver: A Tool for Solidity Smart Contract Optimization",
+    "link": "https://doi.org/10.1145/3494106.3528683",
+    "year": 2022,
+    "authors": "Quang-Thang Nguyen, Bao Son Do, Thi Tam Nguyen, Ba-Lam Do",
+    "abstract": "Currently, the number of smart contracts using Solidity language in Ethereum increases at a breakneck speed. In this context, optimizing gas fees in smart contracts becomes necessary to save costs for both developers and users who interact directly with these contracts. To optimize gas, developers typically need to have deep knowledge of blockchain and programming languages, making it a significant challenge for new programmers."
+  },
+  {
+    "title": "A Novel Approach for Developing Decentralized Storage and Sharing Systems",
+    "link": "https://doi.org/10.1145/3457337.3457845",
+    "year": 2021,
+    "authors": "Canh-Tuan Tran, Van-Duy Pham, Thang Nguyen, Huu-Hai-Quan Dinh, Minh-Tri Hoang, Thanh-Chung Dao, BinhMinh Nguyen, Ba-Lam Do",
+    "abstract": "In recent years, the proliferation of blockchain technology has opened many research directions. In this context, the combination of blockchain-based techniques and traditional methods to improve existing systems has received significant interest from researchers. In this paper, we present a decentralized storage and sharing system based on a combination of IPFS (Inter-Planetary File System), encryption technologies (including Advanced Encryption Standard (AES), Elliptic Curve Cryptosystem (ECC), ABE (Attribute-based Encryption), Multi-Authority ABE (MA-ABE)), and multichain."
+  },
+  {
+    "title": "MPoC - AMetaheuristic Proof of Criteria Consensus Protocol for Blockchain Network",
+    "link": "https://doi.org/10.1109/ICBC51069.2021.9461113",
+    "year": 2021,
+    "authors": "Binh Minh Nguyen, Thang Nguyen, Thieu Nguyen, Ba-Lam Do",
+    "abstract": "Over the last years, many blockchain platforms opt for Delegated Proof-of-Stake (DPoS) consensus protocol for their network deployment. However, using the DPoS, nodes on the network tend to vote for the nodes that are more likely to become block producers after several voting rounds. Hence, with DPoS, the number of block producers is quite small compared to the total number of nodes in the blockchain network. Besides, with DPoS consensus, the distribution of block producers often centralizes into several individual nodes. This paper proposes a novel consensus protocol called Meta-heuristic Proof of Criteria (MPoC) to overcome the disadvantages."
+  },
+  {
+    "title": "Towards a blockchain-based certificate authentication system in Vietnam",
+    "link": "https://doi.org/10.7717/peerj-cs.266",
+    "year": 2020,
+    "authors": "Binh Minh Nguyen, Thanh-Chung Dao, Ba-Lam Do",
+    "abstract": "Anti-forgery information, transaction verification, and smart contract are functionalities of blockchain technology that can change the traditional business processes of IT applications. These functionalities increase the data transparency, and trust of users in the new application models, thus resolving many different social problems today. In this work, we take all the advantages of this technology to build a blockchain-based authentication system (called the Vietnamese Educational Certification blockchain, which stands for VECefblock) to deal with the delimitation of fake certificate issues in Vietnam. In this direction, firstly, we categorize and analyze blockchain research and application trends to make out our contributions in this domain. Our motivating factor is to curb fake certificates in Vietnam by applying the suitability of blockchain technology to the problem domain. This study proposed some blockchain-based application development principles in order to build a step by step VECefblock with the following procedures: designing overall architecture along with business processes, data mapping structure and implementing the decentralized application that can meet the specific Vietnamese requirements. To test system functionalities, we used Hyperledger Fabric as a blockchain platform that is deployed on the Amazon EC2 cloud. Through performance evaluations, we proved the operability of VECefblock in the practical deployment environment. This experiment also shows the feasibility of our proposal, thus promoting the application of blockchain technology to deal with social problems in general as well as certificate management in Vietnam."
+  },
+  {
+    "title": "A Novel Model Using CDN, P2P, and IPFS for Content Delivery",
+    "link": "https://doi.org/10.1007/978-981-33-4370-2_4",
+    "year": 2020,
+    "authors": "Tien-Thao Nguyen, Ba-Lam Do",
+    "abstract": "The use of multimedia data is increasingly popular due to their outstanding advantages compared to traditional textual data. The demand for live streaming and the proliferation of new standards such as Full High Definition (FHD) and Ultra High Definition(UHD) makes it increasingly difficult to satisfy users. To overcome this challenge, content providers can utilize a hybrid architecture relying on a Content Delivery Network (CDN) and Peer-to-Peer communications. Many efforts have been conducted in order to evaluate and improve the performance of this architecture. However, research on applying blockchain-related technologies to the problem of content delivery is still scarce. In this context, our paper aims to investigate the ability of applying InterPlanetary File system (IPFS) - one of the salient technologies related to blockchain to the traditional hybrid architecture. We conduct different experiments to provide preliminary evaluations of the performance of the proposed system. Experimental results show that the proposed architecture is promising and effective in providing content delivery service."
+  },
+  {
+    "title": "Towards Blockchainizing Land Valuation Certificate Management Procedures in Vietnam",
+    "link": "https://doi.org/10.1109/RIVF48685.2020.9140766",
+    "year": 2020,
+    "authors": "Ngoc-Hoa Nguyen, Binh Minh Nguyen, Thanh-Chung Dao, Ba-Lam Do",
+    "abstract": "In this paper, we concentrate on the process of managing the land valuation certificate using blockchain in Vietnam. To approach this problem, we base on the e-government application framework published by the Ministry of Information and Communication and Ministry of Natural Resources and Environment to develop a blockchain-based component which will be linked to the framework. Our component has three layers corresponding to three main layers of the architecture. After that, we develop a decentralized application serving the procedures of land valuation certificate management. With our application, certificates are stored and can be traced from the blockchain network. Our component hence helps create the transparency of management processes. We also carry out preliminary experiments using the proposed system to prove its feasibility during test operation processes. Our research also paves the way for applying blockchain technology to the state management field in general."
+  },
+  {
+    "title": "B-Box - A Decentralized Storage System Using IPFS, Attributed-based Encryption, and Blockchain",
+    "link": "https://doi.org/10.1109/RIVF48685.2020.9140747",
+    "year": 2020,
+    "authors": "Van-Duy Pham, Canh-Tuan Tran, Thang Nguyen, Tien-Thao Nguyen, Ba-Lam Do, Thanh-Chung Dao, Binh Minh Nguyen",
+    "abstract": "In recent years, centralized storage systems have been extensively adopted by many companies, organizations, and individuals for storing and sharing data. These systems, however, make concerns for users of a single point of failure and the involvement of a centralized entity or third party. Therefore, there is a need for developing decentralized storage systems to overcome the drawbacks of traditional approach. In order to enhance secure and transparent characteristics of decentralized storage systems, in this paper, we present a combination of IPFS (InterPlanetary File System), ABE (Attribute-based Encryption), Multi-Authority ABE (MA-ABE), and Ethereum blockchain. In particular, we facilitate the advantages of IPFS network to store user's data in a distributed manner. Furthermore, we make the use of MA-ABE to encrypt a document, which an user needs to share it among multiple organizations. The hash returned by the IPFS network will be stored in the Ethereum blockchain network to provide trustworthy for all users participating in our system. To the best of our knowledge, it is the first storage system using IPFS, ABE, MA-ABE, and blockchain technologies together to ensure decentralized, secure, and transparent characteristics for storing and sharing data."
+  },
+  {
+    "title": "BML: A Data Mapping Language for Blockchain Platforms",
+    "link": "https://doi.org/10.1109/TrustCom50675.2020.00174",
+    "year": 2020,
+    "authors": "Ba-Lam Do, Quang-Thang Nguyen, Thang Nguyen, Tien-Thao Nguyen, Thanh-Chung Dao, BinhMinh Nguyen",
+    "abstract": "Currently, all blockchain-based applications conduct two primary operations, i.e., writing data on blockchain networks and reading these data from the networks. These tasks require users to have considerable knowledge in blockchain technology, and they become even more challenging if users want to utilize different blockchain platforms to write and read data. So far, we have not had a uniform mechanism to perform write and read operations on various blockchain platforms. In addition, writing a huge amount of data on blockchain networks is a time-consuming task and requires considerable transaction fees. To address these issues, we present in the paper a data mapping language named BML. BML allows developers to uniformly define mappings for data transformation from traditional data storage mechanisms into blockchain networks. Conversely, this language also assists users in reading transformed data. Currently, BML accepts five input data sources, including XML, JSON, XLSX, SQL (relational database), NoSQL, and supports two output platforms, including Hyperledger Sawtooth and Ethereum."
+  },
+  {
+    "title": "Challenges and Strategies for Developing Decentralized Applications Based on Blockchain Technology",
+    "link": "https://doi.org/10.1007/978-3-030-15032-7_80",
+    "year": 2019,
+    "authors": "Thanh Chung Dao, Binh Minh Nguyen, Ba Lam Do",
+    "abstract": "This paper reveals challenges and strategies of data models, deployment scenarios, business processes, and consensus models when enterprises or individuals want to apply blockchain to their information system in order to leverage advantages of the technology. A blockchain is a digital ledger, which is encrypted and stored on multiple computers in a public or private network and the data stored therein cannot be altered or deleted by a single individual. The changes for existing applications using blockchain bring difficulties for both managers and developers. The decentralized manner is different from centralized ones in aspects of how to store data in blocks, who has reading and writing permission, and how to validate transactions among many parties. We illustrate our proposal by developing an example blockchain application that enables to authenticate Vietnamese certificates at schools and universities."
+  },
+  {
+    "title": "Optimization of municipal solid waste transportation by integrating GIS analysis, equation-based, and agent-based model",
+    "link": "https://doi.org/10.1016/j.wasman.2016.10.048",
+    "year": 2017,
+    "authors": "Khanh Nguyen-Trong, Anh Nguyen-Thi-Ngoc, Doanh Nguyen-Ngoc, Van Dinh-Thi-Hai",
+    "abstract": "The amount of municipal solid waste (MSW) has been increasing steadily over the last decade by reason of population rising and waste generation rate. In most of the urban areas, disposal sites are usually located outside of the urban areas due to the scarcity of land. There is no fixed route map for transportation. The current waste collection and transportation are already overloaded arising from the lack of facilities and insufficient resources. In this paper, a model for optimizing municipal solid waste collection will be proposed. Firstly, the optimized plan is developed in a static context, and then it is integrated into a dynamic context using multi-agent based modelling and simulation. A case study related to Hagiang City, Vietnam, is presented to show the efficiency of the proposed model. From the optimized results, it has been found that the cost of the MSW collection is reduced by 11.3%."
+  },
+  {
+    "title": "A monotonic optimization approach for solving strictly quasiconvex multiobjective programming problems",
+    "link": "https://doi.org/10.3233/JIFS-179690",
+    "year": 2020,
+    "authors": "Tran Ngoc Thang, Vijender Kumar Solanki, Tuan Anh Dao, Nguyen Thi Ngoc Anh, Hai V. Pham",
+    "abstract": "In this article, we use the monotonic optimization approach to propose an outcome-space outer approximation by copolyblocks for solving strictly quasiconvex multiobjective programming problems and especially in the case that the objective functions are nonlinear fractional. After the algorithm is terminated, with any given tolerance, we obtain an approximation of the weakly efficient solution set, that contains the whole weakly efficient solution set of the problem. The algorithm is proved to be convergent and it is suitable to be implemented in parallel using standard convex programming tools. Some computational experiments are reported to show the accuracy and efficiency of the proposed algorithm."
+  },
+  {
+    "title": "Prediction of Water Level Using Time Series, Wavelet and Neural Network Approaches",
+    "link": "https://doi.org/10.4018/IJIRR.2020070101",
+    "year": 2020,
+    "authors": "Nguyen Quang Dat, Ngoc Anh Nguyen Thi, Vijender Kumar Solanki, Ngo Le An",
+    "abstract": "To control water resources in many domains such as agriculture, flood forecasting, and hydro-electrical dams, forecasting water level needs to predict. In this article, a new computational approach using a data driven model and time series is proposed to calculate the forecast water level in short time. Concretely, wavelet-artificial neural network (WAANN) and time series (TS) are combined together called WAANN-TS that encourages the advantage of each model. For this real time project work, Yen Bai station, Northwest Vietnam was chosen as an experimental case study to apply the proposed model. Input variables into the Wavelet-ANN structure is water level data. Time series and ANN models are built, and their performances are compared. The results indicate the greater accuracy of the proposed models at Hanoi station. The final proposal WAANN−TS for water level forecasting shows good performance with root mean square error (RMSE) from 10-10 to 10-11."
+  },
+  {
+    "title": "Integrating Employee Value Model with Churn Prediction",
+    "link": "https://doi.org/10.2174/2210327910666200213123728",
+    "year": 2020,
+    "authors": "Nguyen Thi Ngoc Anh, Nguyen Danh Tu, Vijender Kumar Solanki, Nguyen Linh Giang, Vu Hoai Thu, Luong Ngoc Son, Nguyen Duc Loc, Vu Thanh Nam",
+    "abstract": "In recent years, human resource management is a crucial role in every companies or organization's operation. Loyalty employee or Churn employee influence the operation of the organization. The impact of Churn employees is difference because of their role in organization. Objective Thus, we define two Employee Value Models (EVMs) of organizations or companies based on employee features that are popular of almost companies. Methods Meanwhile, with the development of Artificial intelligent, machine learning is possible to give predict data-based models having high accuracy.Thus, integrating Churn prediction, EVM and machine learning such as support vector machine, logistic regression, random forest is proposed in this paper. The strong points of each model are used and weak points are reduced to help the companies or organizations avoid high value employee leaving in the future. The process of prediction integrating Churn, value of employee and machine learning are described detail in 6 steps. The pros of integrating model gives the more necessary results for company than Churn prediction model but the cons is complexity of model and algorithms and speed of computing. Results A case study of an organization with 1470 employee positions is carried out to demonstrate the whole integrating churn predict, EVM and machine learning process. The accuracy of the integrating model is high from 82% to 85%. Moreover, the some results of Churn and value employee are analyzed. Conclusion This paper is proposing upgrade models for predicting an employee who may leave an organization and integration of two models including employee value model and Churn prediction is feasible.",
+    "img": "ngocanh-2.png"
+  },
+  {
+    "title": "Hybrid online model based multi seasonal decompose for short-term electricity load forecasting using ARIMA and online RNN",
+    "link": "https://doi.org/10.3233/JIFS-189884",
+    "year": 2021,
+    "authors": "Nguyen Quang Dat, Nguyen Thi Ngoc Anh, Nguyen Nhat Anh, Vijender Kumar Solanki",
+    "abstract": "Short-term electricity load forecasting (STLF) plays a key role in operating the power system of a nation. A challenging problem in STLF is to deal with real-time data. This paper aims to address the problem using a hybrid online model. Online learning methods are becoming essential in STLF because load data often show complex seasonality (daily, weekly, annual) and changing patterns. Online models such as Online AutoRegressive Integrated Moving Average (Online ARIMA) and Online Recurrent neural network (Online RNN) can modify their parameters on the fly to adapt to the changes of real-time data. However, Online RNN alone cannot handle seasonality directly and ARIMA can only handle a single seasonal pattern (Seasonal ARIMA). In this study, we propose a hybrid online model that combines Online ARIMA, Online RNN, and Multi-seasonal decomposition to forecast real-time time series with multiple seasonal patterns. First, we decompose the original time series into three components: trend, seasonality, and residual. The seasonal patterns are modeled using Fourier series. This approach is flexible, allowing us to incorporate multiple periods. For trend and residual components, we employ Online ARIMA and Online RNN respectively to obtain the predictions. We use hourly load data of Vietnam and daily load data of Australia as case studies to verify our proposed model. The experimental results show that our model has better performance than single online models. The proposed model is robust and can be applied in many other fields with real-time time series."
+  },
+  {
+    "title": "A novel approach for anomaly detection in automatic meter intelligence system using machine learning and pattern recognition",
+    "link": "https://doi.org/10.3233/JIFS-219285",
+    "year": 2022,
+    "authors": "Nguyen Thi Ngoc Anh, Pham Ngoc Quang Anh, Vu Hoai Thu, Doan Van Thai, Vijender Kumar Solanki, Dang Minh Tuan",
+    "abstract": "Anomaly detection for sensor systems is one of the most researched topics for the Internet of Thing systems. Researchers have been attracted to machine learning classification problems that are considered the most effective techniques. The novel model is proposed by combining anomaly pattern Symbolic Aggregate Approximation (SAX), processing imbalance data and machine learning techniques for sensor anomaly detection. The advantage of anomaly patterns and machine learning leads to the the proposed model to have better performance. The proposed model consists of three phases: finding anomaly pattern features, processing imbalanced data, exploring data by machine learning model. In this paper, the main contributions with respect to previous works can be listed as follows: (i) Successful modeling the new method of SAX for time series data for finding complex and dynamic anomaly patterns. (ii) Archiving applied anomaly pattern feature into machine learning model Random Forest and hyperparameters optimisation of these model. (iii) Fitfully proposed a model combining SAX, imbalance technique, and random forest to anomaly detection. (iv) Achieving applied proposal model in automatic meter intelligence system in Vietnam. The experiential results of the proposed model have described the robustness and better performance for detecting anomalies of power meter sensors."
+  },
+  {
+    "title": "Novel Noise Filter Techniques and Dynamic Ensemble Selection for Classification",
+    "link": "https://doi.org/10.2174/2666255813999201102093315",
+    "year": 2022,
+    "authors": "Thi Ngoc A. Nguyen, Quynh P. Nhu, Vijender K. Solanki",
+    "abstract": "Background Ensemble selection is one of the most researched topics for ensemble learning. Researchers have been attracted to selecting a subset of base classifiers that may perform more helpful than the whole ensemble system classifiers. Dynamic Ensemble Selection (DES) is one of the most effective techniques in classification problems. DES systems obtain to select the most appropriate classifiers from the candidate classifier pool. Ensemble models that balance diversity and accuracy in the training process improve performance than the whole classifiers. Objective In this paper, the novel techniques are proposed by combining Noise Filter (NF) and Dynamic Ensemble System (DES) to have better predictive accuracy. In other words, a noise filter and DES make the data cleaner and DES improve the performance of classification. Methods The proposed NF-DES model had been demonstrated on twelve datasets, especially has three credit scoring datasets and a performance measure accuracy. Results The results show that our proposed model has better than other models. Conclusion The novel noise filer and dynamic ensemble learning with aim to improve the classification ability are presented. To improve performance of classification, noise filter with dynamic ensemble learning makes the noise data toward the correct class. Then, novel dynamic ensemble learning choose the appropriate subset classifiers in the pool of base classifiers."
+  },
+  {
+    "title": "Effects of female directors on gender diversity at lower organization levels and CSR performance: Evidence in Japan",
+    "link": "https://doi.org/10.1016/j.gfj.2022.100749",
+    "year": 2022,
+    "img": "minhhanh.png",
+    "authors": "Thanh Thi Phuong Nguyen, Hanh Minh Thai",
+    "abstract": "This paper examines the effects of board gender diversity on female representation at lower organization levels and corporate social responsibility (CSR) performance. Using a panel data set of more than 1000 Japanese listed firms from 2005 to 2014, we focus on firms that introduced female directors to their male-dominant boards for the first time and find that the first-introduced female directors are positively associated with a greater number of female officers and managers. The introduction of the first female director is also associated with better CSR performance. Our results are statistically significant and suggest that board gender diversity has an effect on promoting gender diversity at lower levels and CSR performance in listed firms."
+  },
+  {
+    "title": "Key factors determining corporate social responsibility practices of Vietnamese firms and the joint effects of foreign ownership",
+    "link": "https://doi.org/10.1016/j.mulfin.2020.100676",
+    "year": 2021,
+    "authors": "Rezaul Kabir, Hanh Minh Thai",
+    "abstract": "Corporate social responsibility is growing steadfast in emerging countries. Studies analyzing the factors that typically determine CSR practices of firms have often led to conflicting results. In this study, we examine corporate governance determinants that are specifically relevant to CSR in emerging countries. Analyzing a large sample of Vietnamese listed firms, we find that foreign ownership, international orientation, gender diversity, and CEO education positively influence CSR. Furthermore, we find significant joint effects of foreign ownership with international orientation, gender diversity and CEO education. The study highlights the key drivers of CSR practices of firms in emerging countries."
+  },
+  {
+    "title": "Corporate social responsibility and tax avoidance: Comparison between listed construction firms and real estate firms in Vietnam",
+    "link": "http://repository.vnu.edu.vn/handle/VNU_123/133472",
+    "year": 2020,
+    "authors": "Thái Minh Hạnh, Đào Thanh Bình, Nguyễn Thúc Hương Giang",
+    "abstract": "The relationship between CSR and tax avoidance has been examined and has conflicting results. Vietnam economy has been developed at high growth rate for the recent 10 years. As an emerging country, construction and real estate industries are the industries which have impressive growth rate. Therefore, it is interesting to investigate this relationship in Vietnamese listed firms in these two industries in Vietnam for the period of 2014 - 2017. For construction firms, we found that environmental CSR firms have less tendency to tax avoidance. Foreign ownership weakens the impact of CSR on tax avoidance while the moderating role of state ownership has insignificant result. For real estate firms, there is no impact of CSR on tax avoidanc. However, with moderating effect of ownership, foreign ownership helps to increase impact of CSR on reducing tax avoidance and state ownership decrease impact of CSR on reducing tax avoidance. The results of the study help us understand the relationship between CSR and tax avoidance in construction and real estate industries in an emerging country, which brings implications for firms and policy makers."
+  },
+  {
+    "title": "Corporate social responsibility and tax avoidance in Vietnamese listed construction firms",
+    "link": "https://repository.vnu.edu.vn/bitstream/VNU_123/133472/1/KY_20211017235017.pdf",
+    "year": 2018,
+    "authors": "Thái Minh Hạnh, Đào Thanh Bình, Nguyễn Thúc Hương Giang",
+    "abstract": "The relationship between CSR and tax avoidance has been examined and has conflicting results. Vietnam economy has been developed at high growth rate for the recent 10 years. As an emerging country, construction and real estate industries are the industries which have impressive growth rate. Therefore, it is interesting to investigate this relationship in Vietnamese listed firms in these two industries in Vietnam for the period of 2014 - 2017. For construction firms, we found that environmental CSR firms have less tendency to tax avoidance. Foreign ownership weakens the impact of CSR on tax avoidance while the moderating role of state ownership has insignificant result. For real estate firms, there is no impact of CSR on tax avoidanc. However, with moderating effect of ownership, foreign ownership helps to increase impact of CSR on reducing tax avoidance and state ownership decrease impact of CSR on reducing tax avoidance. The results of the study help us understand the relationship between CSR and tax avoidance in construction and real estate industries in an emerging country, which brings implications for firms and policy makers."
+  },
+  {
+    "title": "Does corporate governance shape the relationship between corporate social responsibility and financial performance?",
+    "link": "https://doi.org/10.1108/PAR-10-2016-0091",
+    "year": 2017,
+    "authors": "Kabir, R., Hanh M. T.",
+    "abstract": "The theoretical and empirical relationships between corporate social responsibility (CSR) and corporate financial performance are not without controversy. Yet, CSR activities are increasingly undertaken by a large number of firms, not only in developed countries but also in emerging countries. This paper aims to investigate the moderating effect of different aspects of corporate governance, which are foreign and state ownership, board size and board independence, on the relationship between CSR and financial performance."
+  }
+]

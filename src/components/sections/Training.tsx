@@ -12,7 +12,7 @@ export default function Training() {
           <div className="row justify-content-center">
             <div className="col-lg-6">
               <div className="section-title white-title text-center mb-50 tg-heading-subheading animation-style3">
-                <h2 className="title tg-element-title">Short-term training program</h2>
+                <h2 className="title tg-element-title">Short-term courses</h2>
               </div>
             </div>
           </div>

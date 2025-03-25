@@ -22,6 +22,7 @@ import Header4 from './header/Header4'
 import Header5 from './header/Header5'
 import Header6 from './header/Header6'
 import type { WOW } from 'wowjs'
+import Footer from '@/components/layout/footer/Footer'
 
 export const metadata = {
   title: 'BK Fintech',
@@ -55,10 +56,10 @@ const Layout = ({
   const [isOffcanvus, setOffcanvus] = useState(false)
 
   const headers = [Header, Header1, Header2, Header3, Header4, Header5, Header6]
-  const footers = [Footer1, Footer2, Footer3, Footer4, Footer5, Footer6, Footer7]
+  const footers = [Footer, Footer1, Footer2, Footer3, Footer4, Footer5, Footer6, Footer7]
 
-  const SelectedHeader = headers[headerStyle] || Header1
-  const SelectedFooter = footers[footerStyle - 1] || Footer1
+  const SelectedHeader = headers[headerStyle] || Header
+  const SelectedFooter = footers[footerStyle] || Footer
 
   const router = useRouter()
 

@@ -4,8 +4,8 @@ export default function News() {
   return (
     <>
       <section
-        className="blog-post-area blog-post-bg"
-        data-background="/assets/img/bg/blog_post_bg.jpg"
+        className="services__area-four services__bg-four"
+        data-background="/assets/img/bg/inner_services_bg.jpg"
         id="news"
       >
         <div className="container">
@@ -23,9 +23,6 @@ export default function News() {
                   <Link href="/blog-details" className="shine-animate">
                     <img src="/assets/img/blog/blog_post01.jpg" alt="" />
                   </Link>
-                  {/* <Link href="/blog" className="post-tag">
-                    Business
-                  </Link> */}
                 </div>
                 <div className="blog-post-content">
                   <h2 className="title">
@@ -33,16 +30,6 @@ export default function News() {
                       Marketing your are business downturn now a days
                     </Link>
                   </h2>
-                  {/* <div className="blog-avatar">
-                    <div className="avatar-thumb">
-                      <img src="/assets/img/blog/blog_avatar01.png" alt="" />
-                    </div>
-                    <div className="avatar-content">
-                      <p>
-                        By <Link href="/blog-details">Doman Smith</Link>
-                      </p>
-                    </div>
-                  </div> */}
                   <div className="blog-post-meta">
                     <ul className="list-wrap">
                       <li>
@@ -147,7 +134,7 @@ export default function News() {
           <div className="row justify-content-center">
             <div className="col-xl-6">
               <div className="section-title text-center mb-40 tg-heading-subheading animation-style3">
-                <Link href="/blog-details" className="btn">
+                <Link href="/news" className="btn">
                   See all news
                 </Link>
               </div>

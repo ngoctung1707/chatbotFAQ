@@ -7,7 +7,7 @@ export default function Banner() {
       <section
         className="banner-area banner-bg"
         id="banner"
-        data-background="/assets/img/banner/banner_bg.jpg"
+        data-background="/assets/img/banner/banner.gif"
       >
         <div className="container">
           <div className="row">
@@ -31,38 +31,9 @@ export default function Banner() {
               </div>
             </div>
           </div>
-          <div className="banner-social">
-            <h5 className="title">Follow us</h5>
-            <ul className="list-wrap">
-              <li>
-                <Link href="#">
-                  <i className="fab fa-facebook-f" />
-                </Link>
-              </li>
-              <li>
-                <Link href="#">
-                  <i className="fab fa-twitter" />
-                </Link>
-              </li>
-              <li>
-                <Link href="#">
-                  <i className="fab fa-instagram" />
-                </Link>
-              </li>
-              <li>
-                <Link href="#">
-                  <i className="fab fa-pinterest-p" />
-                </Link>
-              </li>
-              <li>
-                <Link href="#">
-                  <i className="fab fa-linkedin-in" />
-                </Link>
-              </li>
-            </ul>
-          </div>
+
           <div className="banner-scroll">
-            <Link href="#about">
+            <Link href="#news">
               Scroll Down{' '}
               <span>
                 <i className="fas fa-arrow-right" />

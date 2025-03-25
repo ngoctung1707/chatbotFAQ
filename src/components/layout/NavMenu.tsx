@@ -1,41 +1,27 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+
 export default function NavMenu() {
-  const pathname = usePathname()
-  const isActive = (path: string) => path === pathname
   return (
     <>
       <ul className="navigation">
         <li>
-          <Link href="/" className={isActive('/') ? 'active' : ''}>
-            Home
-          </Link>
+          <Link href="/">Home</Link>
         </li>
         <li>
-          <Link href="/contact" className={isActive('/contact') ? 'active' : ''}>
-            News
-          </Link>
+          <Link href="/publications">Research</Link>
         </li>
         <li>
-          <Link href="/contact" className={isActive('/contact') ? 'active' : ''}>
-            Solutions
-          </Link>
+          <Link href="/#solutions">Application</Link>
         </li>
         <li>
-          <Link href="/contact" className={isActive('/contact') ? 'active' : ''}>
-            Education
-          </Link>
+          <Link href="/academic">Education & Training</Link>
         </li>
         <li>
-          <Link href="/contact" className={isActive('/contact') ? 'active' : ''}>
-            Research
-          </Link>
+          <Link href="/news">News</Link>
         </li>
         <li>
-          <Link href="/contact" className={isActive('/contact') ? 'active' : ''}>
-            Members
-          </Link>
+          <Link href="/members">About</Link>
         </li>
       </ul>
     </>
