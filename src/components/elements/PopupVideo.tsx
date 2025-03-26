@@ -17,12 +17,12 @@ export default function VideoPopup({ style }: { style?: number }) {
       )}
       {style === 1 && (
         <a onClick={() => setOpen(true)} className="popup-youtube bnt-play">
-          <img src="/assets/img/home6/play.svg" />
+          <img src="/assets/img/home6/play.svg" alt="" />
         </a>
       )}
       {style === 2 && (
         <a onClick={() => setOpen(true)} className="btn-play">
-          <img src="/assets/img/home8/play.svg" />
+          <img src="/assets/img/home8/play.svg" alt="" />
         </a>
       )}
       <ModalVideo

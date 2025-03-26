@@ -160,7 +160,7 @@ export default function Publication() {
             <div className="row justify-content-center">
               <div className="col-12">
                 <div className="project-content-bottom">
-                  <Link href="/project-details" className="btn">
+                  <Link href="/publications" className="btn">
                     See All Publications
                   </Link>
                 </div>

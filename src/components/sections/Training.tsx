@@ -34,8 +34,8 @@ export default function Training() {
                   <div className="blog-avatar">
                     <div className="avatar-content">
                       <p>
-                        The course is designed to help students master data analysis using today's
-                        most popular tools such as SQL, Power BI, Python and AI.
+                        The course is designed to help students master data analysis using
+                        today&apos;s most popular tools such as SQL, Power BI, Python and AI.
                         <br />
                         <br />
                       </p>

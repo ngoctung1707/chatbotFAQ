@@ -21,7 +21,7 @@ export default function PublicationList({ style, showItem, showPagination }: New
 
   useEffect(() => {
     cratePagination()
-  }, [limit, pages, data.length])
+  }, [limit, pages])
 
   const cratePagination = () => {
     // set pagination

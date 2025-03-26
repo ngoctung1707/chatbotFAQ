@@ -6,4 +6,15 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
   allConfig: js.configs.all,
 })
-export default [...compat.extends('eslint:recommended', 'next', 'next/typescript', 'prettier')]
+
+const eslintConfig = [
+  ...compat.config({
+    extends: ['eslint:recommended', 'next', 'next/typescript', 'prettier'],
+    ignorePatterns: ['*.js'],
+    rules: {
+      '@next/next/no-img-element': 'off',
+    },
+  }),
+]
+
+export default eslintConfig

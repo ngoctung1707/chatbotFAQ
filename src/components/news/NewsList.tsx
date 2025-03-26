@@ -21,7 +21,7 @@ export default function NewsList({ style, showItem, showPagination }: NewsPostPr
 
   useEffect(() => {
     cratePagination()
-  }, [limit, pages, data.length])
+  }, [limit, pages])
 
   const cratePagination = () => {
     // set pagination
