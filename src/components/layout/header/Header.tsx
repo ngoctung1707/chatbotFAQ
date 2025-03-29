@@ -1,30 +1,14 @@
 import Link from 'next/link'
 import Menu from '../NavMenu'
-import OffcanvusMenu from '../OffcanvusMenu'
-import SearchPopup from '../SearchPopup'
 import { MouseEventHandler } from 'react'
 
 interface HeaderProps {
   scroll?: boolean
-  isMobileMenu?: boolean
   handleMobileMenu?: MouseEventHandler<HTMLDivElement>
   transparent?: boolean
-  isSearch?: boolean
-  isOffcanvus?: boolean
-  handleOffcanvus?: MouseEventHandler<HTMLLIElement>
-  handleSearch?: MouseEventHandler<HTMLLIElement>
 }
 
-export default function Header({
-  scroll,
-  // isMobileMenu,
-  handleMobileMenu,
-  transparent,
-  isSearch,
-  isOffcanvus,
-  handleOffcanvus,
-  handleSearch,
-}: HeaderProps) {
+export default function Header({ scroll, handleMobileMenu, transparent }: HeaderProps) {
   return (
     <>
       <header className={`${transparent ? 'transparent-header' : ''}`}>
@@ -95,7 +79,7 @@ export default function Header({
                         <img src="/assets/img/logo/logo.png" alt="Logo" />
                       </Link>
                     </div>
-                    
+
                     <div className="tgmobile__menu-outer">
                       <Menu />
                     </div>
@@ -107,13 +91,6 @@ export default function Header({
             </div>
           </div>
         </div>
-        {/* header-search */}
-        <SearchPopup isSearch={isSearch} handleSearch={handleSearch} />
-        {/* header-search-end */}
-        {/* offCanvas-menu */}
-        <OffcanvusMenu isOffcanvus={isOffcanvus} handleOffcanvus={handleOffcanvus} />
-
-        {/* offCanvas-menu-end */}
       </header>
     </>
   )

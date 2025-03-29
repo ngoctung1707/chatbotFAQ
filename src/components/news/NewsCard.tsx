@@ -22,11 +22,6 @@ export default function NewsCard({ item }: NewsCardProps) {
             <div className="blog-post-meta">
               <ul className="list-wrap">
                 <li>
-                  <Link href="/blog" className="blog__post-tag-two">
-                    Business
-                  </Link>
-                </li>
-                <li>
                   <i className="fas fa-calendar-alt" />
                   Oct 21, 2024
                 </li>
@@ -35,16 +30,6 @@ export default function NewsCard({ item }: NewsCardProps) {
             <h2 className="title">
               <Link href={`/blog/${item.id}`}>{item.title}</Link>
             </h2>
-            <div className="blog-avatar">
-              <div className="avatar-thumb">
-                <img src="/assets/img/blog/blog_avatar01.png" alt="" />
-              </div>
-              <div className="avatar-content">
-                <p>
-                  By <Link href={`/blog/${item.id}`}>Doman Smith</Link>
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

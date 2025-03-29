@@ -9,7 +9,7 @@ import Training from '@/components/sections/Training'
 export default function Home() {
   return (
     <>
-      <Layout headerStyle={0} footerStyle={0} transparent>
+      <Layout transparent>
         <Banner />
         <News />
         <Solutions />

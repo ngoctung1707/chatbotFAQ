@@ -4,7 +4,7 @@ import NewsList from '@/components/news/NewsList'
 export default function News() {
   return (
     <>
-      <Layout headerStyle={0} footerStyle={0} transparent>
+      <Layout transparent>
         <div>
           <section
             className="services__area-four services__bg-four"

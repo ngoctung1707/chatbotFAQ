@@ -7,7 +7,7 @@ import Certification from '@/components/academic/Certification'
 export default function Home() {
   return (
     <>
-      <Layout headerStyle={0} footerStyle={0} transparent={false}>
+      <Layout transparent={false}>
         <Banner />
         <Outstanding />
         <Training />

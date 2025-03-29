@@ -86,7 +86,7 @@ export default function Member() {
   ]
   return (
     <>
-      <Layout headerStyle={0} footerStyle={0}>
+      <Layout>
         <div>
           <section className="team__area-three">
             <div className="container">
