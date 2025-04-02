@@ -7,6 +7,6 @@ services:
     command:
       - --storageEngine=wiredTiger
     volumes:
-      - "/home/ducnm/code/bkft/db:/data/db"
+      - "/home/hust/bkfintech/db:/data/db"
     logging:
       driver: none
