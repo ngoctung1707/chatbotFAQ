@@ -1,16 +1,20 @@
 import type { CollectionConfig } from 'payload'
+import { anyone } from '@/access/anyone'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
-    read: () => true,
+    read: anyone,
   },
   fields: [
     {
-      name: 'alt',
+      name: 'caption',
       type: 'text',
       required: true,
     },
   ],
-  upload: true,
+  upload: {
+    staticDir: process.env.MEDIA_DIR,
+    // imageSizes: [{ name: 'table', width: 1024, height: undefined, position: 'center' }],
+  },
 }

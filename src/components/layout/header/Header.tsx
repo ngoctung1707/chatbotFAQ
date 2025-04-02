@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import Menu from '../NavMenu'
-import { MouseEventHandler } from 'react'
+import { MouseEventHandler, useTransition } from 'react'
+import { useLocale } from 'next-intl'
+import { setUserLocale } from '@/i18n/localeService'
 
 interface HeaderProps {
   scroll?: boolean
@@ -9,6 +11,20 @@ interface HeaderProps {
 }
 
 export default function Header({ scroll, handleMobileMenu, transparent }: HeaderProps) {
+  const locale = useLocale()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, startTransition] = useTransition()
+
+  function switchLang() {
+    startTransition(() => {
+      if (locale === 'en') {
+        setUserLocale('vi')
+      } else {
+        setUserLocale('en')
+      }
+    })
+  }
+
   return (
     <>
       <header className={`${transparent ? 'transparent-header' : ''}`}>
@@ -25,6 +41,18 @@ export default function Header({ scroll, handleMobileMenu, transparent }: Header
                     </div>
                     <div className="tgmenu__navbar-wrap tgmenu__main-menu d-none d-lg-flex">
                       <Menu />
+                    </div>
+                    <div className="tgmenu__action d-none d-md-block">
+                      <ul className="list-wrap">
+                        <li className="offCanvas-menu" onClick={switchLang}>
+                          <a className="menu-tigger">{locale}</a>
+                        </li>
+                        {/*<li className="header-btn">*/}
+                        {/*  <Link href="/contact" className="btn">*/}
+                        {/*    let’s Talk*/}
+                        {/*  </Link>*/}
+                        {/*</li>*/}
+                      </ul>
                     </div>
                     <div className="mobile-nav-toggler" onClick={handleMobileMenu}>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">

@@ -57,7 +57,7 @@ export default function NotFound() {
                     Oops! it could be you or us, there is no page here. It might have <br /> been
                     moved or deleted.Back To Home
                   </p>
-                  <Link href="/" className="btn btn-two">
+                  <Link href="/public" className="btn btn-two">
                     Go Back To Home Page
                   </Link>
                 </div>

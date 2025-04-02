@@ -1,89 +1,15 @@
 import Layout from '@/components/layout/Layout'
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { Media } from '@/payload-types'
 
-export default function Member() {
-  const members = [
-    {
-      name: 'PGS. TS. Nguyễn Bình Minh',
-      avatar: 'minhnb',
-      role: 'Viện trưởng',
-    },
-    {
-      name: 'PGS. TS. Nguyễn Thị Xuân Hòa',
-      avatar: 'hoantx',
-      role: 'Phó Viện trưởng',
-    },
-    {
-      name: 'PGS. TS. Trần Anh Đức',
-      avatar: 'ducta',
-      school: 'University of Massachusetts Boston',
-    },
-    {
-      name: 'PGS. TS. Nguyễn Thị Ngọc Anh',
-      avatar: 'anhntn',
-    },
-    {
-      name: 'TS. Thái Minh Hạnh',
-      avatar: 'hanhtm',
-    },
-    {
-      name: 'TS. Đào Thành Chung',
-      avatar: 'chungdt',
-    },
-    {
-      name: 'ThS. Lê Trung Kiên',
-      avatar: 'kienlt',
-    },
-    {
-      name: 'TS. Trần Văn Đặng',
-      avatar: 'dangtv',
-    },
-    {
-      name: 'TS. Nguyễn Thúc Hương Giang',
-      avatar: 'giangnth',
-    },
-    {
-      name: 'TS. Hà Thị Thư Trang',
-      avatar: 'tranghtt',
-    },
-    {
-      name: 'TS. Nguyễn Hữu Đức',
-      avatar: 'ducnh',
-    },
-    {
-      name: 'TS. Đỗ Bá Lâm',
-      avatar: 'lamdb',
-    },
-    {
-      name: 'TS. Trần Vĩnh Đức',
-      avatar: 'ductv',
-    },
-    {
-      name: 'TS. Trịnh Tuấn Đạt',
-      avatar: 'dattt',
-    },
-
-    {
-      name: 'TS. Dương Mạnh Cường',
-      avatar: 'cuongdm',
-    },
-    {
-      name: 'TS. Nguyễn Văn Hạnh',
-      avatar: 'hanhnv',
-    },
-    {
-      name: 'TS. Nguyễn Hữu Du',
-      avatar: 'dunh',
-    },
-    {
-      name: 'TS. Nguyễn Trung Dũng',
-      avatar: 'dungnt',
-    },
-    {
-      name: 'TS. Trần Ngọc Thăng',
-      avatar: 'thangtn',
-    },
-  ]
+export default async function Member() {
+  const payload = await getPayload({ config })
+  const { docs: members } = await payload.find({
+    collection: 'members',
+    sort: ['rank'],
+  })
   return (
     <>
       <Layout>
@@ -99,7 +25,7 @@ export default function Member() {
               </div>
               <div className="row gutter-24 justify-content-center">
                 {members.map((member) => (
-                  <div className="col-xl-3 col-lg-4 col-md-6 col-sm-8" key={member.avatar}>
+                  <div className="col-xl-3 col-lg-4 col-md-6 col-sm-8" key={member.id}>
                     <div className="team__item-three shine-animate-item">
                       <div
                         className="team__thumb-three shine-animate"
@@ -111,35 +37,23 @@ export default function Member() {
                         }}
                       >
                         <img
-                          src={`/assets/img/member/${member.avatar}.png`}
+                          src={(member.avatar as Media).url}
                           alt=""
                           style={{ maxHeight: '300px', aspectRatio: '3/4' }}
                         />
                       </div>
                       <div className="team__content-three">
                         <h4 className="title">
-                          <Link href="/team-details">{member.name}</Link>
+                          <Link href="/members">{member.name}</Link>
                         </h4>
                         <span>{member.role}</span>
                       </div>
-                      {/*<div className="team-social team__social-three">*/}
-                      {/*  <SocialToggle />*/}
-                      {/*</div>*/}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
-          {/* team-area-three */}
-          {/* brand-area */}
-          {/*<div className="brand__area-six">*/}
-          {/*  <div className="container">*/}
-          {/*    <div className="swiper-container brand-active">*/}
-          {/*      <BrandActiveSlider />*/}
-          {/*    </div>*/}
-          {/*  </div>*/}
-          {/*</div>*/}
         </div>
       </Layout>
     </>

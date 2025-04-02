@@ -1,6 +1,21 @@
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { getTranslations } from 'next-intl/server'
+import NewsCard from '@/components/news/NewsCard'
+import { getUserLocale } from '@/i18n/localeService'
 
-export default function News() {
+export default async function News() {
+  const t = await getTranslations()
+  const payload = await getPayload({ config })
+  const lang = await getUserLocale()
+  const { docs } = await payload.find({
+    collection: 'news',
+    limit: 3,
+    pagination: false,
+    sort: ['-publishedAt'],
+    where: { lang: { equals: lang } },
+  })
   return (
     <>
       <section
@@ -12,130 +27,20 @@ export default function News() {
           <div className="row justify-content-center">
             <div className="col-xl-6">
               <div className="section-title text-center mb-40 tg-heading-subheading animation-style3">
-                <h2 className="title tg-element-title">News & Event</h2>
+                <h2 className="title tg-element-title">{t('HomePage.sections.news.title')}</h2>
               </div>
             </div>
           </div>
           <div className="row justify-content-center">
-            <div className="col-xl-4 col-lg-6 col-md-10">
-              <div className="blog-post-item shine-animate-item">
-                <div className="blog-post-thumb">
-                  <Link href="/blog-details" className="shine-animate">
-                    <img src="/assets/img/blog/blog_post01.jpg" alt="" />
-                  </Link>
-                </div>
-                <div className="blog-post-content">
-                  <h2 className="title">
-                    <Link href="/blog-details">
-                      Marketing your are business downturn now a days
-                    </Link>
-                  </h2>
-                  <div className="blog-post-meta">
-                    <ul className="list-wrap">
-                      <li>
-                        <Link href="/blog-details" className="btn">
-                          Read More
-                        </Link>
-                      </li>
-                      <li>
-                        <i className="fas fa-calendar-alt" />
-                        Oct 21, 2024
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-4 col-lg-6 col-md-10">
-              <div className="blog-post-item shine-animate-item">
-                <div className="blog-post-thumb">
-                  <Link href="/blog-details" className="shine-animate">
-                    <img src="/assets/img/blog/blog_post02.jpg" alt="" />
-                  </Link>
-                  {/* <Link href="/blog" className="post-tag">
-                    Audit
-                  </Link> */}
-                </div>
-                <div className="blog-post-content">
-                  <h2 className="title">
-                    <Link href="/blog-details">
-                      Marketing your are business downturn now a days
-                    </Link>
-                  </h2>
-                  {/* <div className="blog-avatar">
-                    <div className="avatar-thumb">
-                      <img src="/assets/img/blog/blog_avatar01.png" alt="" />
-                    </div>
-                    <div className="avatar-content">
-                      <p>
-                        By <Link href="/blog-details">Doman Smith</Link>
-                      </p>
-                    </div>
-                  </div> */}
-                  <div className="blog-post-meta">
-                    <ul className="list-wrap">
-                      <li>
-                        <Link href="/blog-details" className="btn">
-                          Read More
-                        </Link>
-                      </li>
-                      <li>
-                        <i className="fas fa-calendar-alt" />
-                        Oct 21, 2024
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-xl-4 col-lg-6 col-md-10">
-              <div className="blog-post-item shine-animate-item">
-                <div className="blog-post-thumb">
-                  <Link href="/blog-details" className="shine-animate">
-                    <img src="/assets/img/blog/blog_post03.jpg" alt="" />
-                  </Link>
-                  {/* <Link href="/blog" className="post-tag">
-                    Investment
-                  </Link> */}
-                </div>
-                <div className="blog-post-content">
-                  <h2 className="title">
-                    <Link href="/blog-details">
-                      Marketing your are business downturn now a days
-                    </Link>
-                  </h2>
-                  {/* <div className="blog-avatar">
-                    <div className="avatar-thumb">
-                      <img src="/assets/img/blog/blog_avatar01.png" alt="" />
-                    </div>
-                    <div className="avatar-content">
-                      <p>
-                        By <Link href="/blog-details">Doman Smith</Link>
-                      </p>
-                    </div>
-                  </div> */}
-                  <div className="blog-post-meta">
-                    <ul className="list-wrap">
-                      <li>
-                        <Link href="/blog-details" className="btn">
-                          Read More
-                        </Link>
-                      </li>
-                      <li>
-                        <i className="fas fa-calendar-alt" />
-                        Oct 21, 2024
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {docs.map((doc) => (
+              <NewsCard doc={doc} key={doc.id} />
+            ))}
           </div>
           <div className="row justify-content-center">
             <div className="col-xl-6">
               <div className="section-title text-center mb-40 tg-heading-subheading animation-style3">
                 <Link href="/news" className="btn">
-                  See all news
+                  {t('HomePage.sections.news.seeAll')}
                 </Link>
               </div>
             </div>

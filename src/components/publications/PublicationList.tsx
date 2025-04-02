@@ -19,10 +19,6 @@ export default function PublicationList({ style, showItem, showPagination }: New
   const [limit] = useState(showLimit)
   const [pages, setPages] = useState(Math.ceil(data.length / limit))
 
-  useEffect(() => {
-    cratePagination()
-  }, [limit, pages])
-
   const cratePagination = () => {
     // set pagination
     const arr = new Array(Math.ceil(data.length / limit)).fill(0).map((_, idx) => idx + 1)
@@ -30,6 +26,9 @@ export default function PublicationList({ style, showItem, showPagination }: New
     setPagination(arr)
     setPages(Math.ceil(data.length / limit))
   }
+  useEffect(() => {
+    cratePagination()
+  }, [limit, pages])
 
   const startIndex = currentPage * limit - limit
   const endIndex = startIndex + limit

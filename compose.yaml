@@ -1,0 +1,12 @@
+services:
+  db:
+    restart: always
+    image: mongo:latest
+    ports:
+      - '27026:27017'
+    command:
+      - --storageEngine=wiredTiger
+    volumes:
+      - "/home/ducnm/code/bkft/db:/data/db"
+    logging:
+      driver: none

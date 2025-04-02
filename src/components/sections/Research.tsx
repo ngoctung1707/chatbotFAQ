@@ -19,19 +19,19 @@ export default function Publication() {
               <div className="col-xl-3 col-md-6">
                 <div className="project-item">
                   <div className="project-thumb">
-                    <Link href="/project-details">
+                    <Link href="/">
                       <img src="/assets/img/publications/sea-lion.png" alt="" />
                     </Link>
                   </div>
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/project-details">An Improved Sea Lion ...</Link>
+                        <Link href="/">An Improved Sea Lion ...</Link>
                       </h4>
                       <span>2022</span>
                     </div>
                     <div className="link-arrow">
-                      <Link href="/project-details">
+                      <Link href="/">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                           <path
                             fillRule="evenodd"
@@ -54,19 +54,19 @@ export default function Publication() {
               <div className="col-xl-3 col-md-6">
                 <div className="project-item">
                   <div className="project-thumb">
-                    <Link href="/project-details">
+                    <Link href="/">
                       <img src="/assets/img/publications/employee.png" alt="" />
                     </Link>
                   </div>
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/project-details">Integrating Employee ...</Link>
+                        <Link href="/">Integrating Employee ...</Link>
                       </h4>
                       <span>2020</span>
                     </div>
                     <div className="link-arrow">
-                      <Link href="/project-details">
+                      <Link href="/">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                           <path
                             fillRule="evenodd"
@@ -89,19 +89,19 @@ export default function Publication() {
               <div className="col-xl-3 col-md-6">
                 <div className="project-item">
                   <div className="project-thumb">
-                    <Link href="/project-details">
+                    <Link href="/">
                       <img src="/assets/img/publications/female.png" alt="" />
                     </Link>
                   </div>
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/project-details">Effects of female ...</Link>
+                        <Link href="/">Effects of female ...</Link>
                       </h4>
                       <span>2022</span>
                     </div>
                     <div className="link-arrow">
-                      <Link href="/project-details">
+                      <Link href="/">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                           <path
                             fillRule="evenodd"
@@ -124,19 +124,19 @@ export default function Publication() {
               <div className="col-xl-3 col-md-6">
                 <div className="project-item">
                   <div className="project-thumb">
-                    <Link href="/project-details">
+                    <Link href="/">
                       <img src="/assets/img/publications/b4e.png" alt="" />
                     </Link>
                   </div>
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/project-details">Blockchain for Education...</Link>
+                        <Link href="/">Blockchain for Education...</Link>
                       </h4>
                       <span>2022</span>
                     </div>
                     <div className="link-arrow">
-                      <Link href="/project-details">
+                      <Link href="/">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                           <path
                             fillRule="evenodd"

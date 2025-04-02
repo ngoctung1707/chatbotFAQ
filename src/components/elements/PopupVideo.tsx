@@ -2,9 +2,11 @@
 import { useState } from 'react'
 import ModalVideo from 'react-modal-video'
 import '../../../node_modules/react-modal-video/css/modal-video.css'
+import { useTranslations } from 'next-intl'
 
 export default function VideoPopup({ style }: { style?: number }) {
   const [isOpen, setOpen] = useState(false)
+  const t = useTranslations('Misc')
   return (
     <>
       {!style && (
@@ -12,7 +14,7 @@ export default function VideoPopup({ style }: { style?: number }) {
         //   <i className="fas fa-play" />
         // </a>
         <div onClick={() => setOpen(true)} className="btn" data-aos="fade-up" data-aos-delay={600}>
-          WATCH VIDEO
+          {t('watchVideo').toUpperCase()}
         </div>
       )}
       {style === 1 && (

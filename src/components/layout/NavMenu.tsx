@@ -1,27 +1,29 @@
 'use client'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function NavMenu() {
+  const t = useTranslations('Menu')
   return (
     <>
       <ul className="navigation">
         <li>
-          <Link href="/">Home</Link>
+          <Link href="/">{t('home')}</Link>
         </li>
         <li>
-          <Link href="/publications">Research</Link>
+          <Link href="/publications">{t('research')}</Link>
         </li>
         <li>
-          <Link href="/#solutions">Application</Link>
+          <Link href="/#solutions">{t('application')}</Link>
         </li>
         <li>
-          <Link href="/academic">Education & Training</Link>
+          <Link href="/academic">{t('education')}</Link>
         </li>
         <li>
-          <Link href="/news">News</Link>
+          <Link href="/news">{t('news')}</Link>
         </li>
         <li>
-          <Link href="/members">About</Link>
+          <Link href="/members">{t('about')}</Link>
         </li>
       </ul>
     </>

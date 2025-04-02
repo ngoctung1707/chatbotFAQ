@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function Solutions() {
+  const t = useTranslations('HomePage.sections.projects')
   return (
     <>
       <section className="project__area-two" id="solutions">
@@ -8,8 +10,8 @@ export default function Solutions() {
           <div className="row">
             <div className="col-xl-5 col-lg-6">
               <div className="section-title mb-50 tg-heading-subheading animation-style3">
-                <span className="sub-title">OUR PROJECTS</span>
-                <h2 className="title tg-element-title">Innovative Solutions</h2>
+                <span className="sub-title">{t('subtitle')}</span>
+                <h2 className="title tg-element-title">{t('title')}</h2>
               </div>
             </div>
           </div>
@@ -23,9 +25,7 @@ export default function Solutions() {
                   <h2 className="title">
                     <Link href="/solutions/vchain">VChain</Link>
                   </h2>
-                  <span>
-                    A Platform for Development and Deployment of Decentralized Applications
-                  </span>
+                  <span>{t('vchain')}</span>
                   <div className="link-arrow link-arrow-two">
                     <Link href="/solutions/vchain">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
@@ -56,10 +56,7 @@ export default function Solutions() {
                   <h2 className="title">
                     <Link href="/solutions/b4e">B4E</Link>
                   </h2>
-                  <span>
-                    Digital certificate generation and verification system using Remote Digital
-                    Dignature and Blockchain
-                  </span>
+                  <span>{t('b4e')}</span>
                   <div className="link-arrow link-arrow-two">
                     <Link href="/solutions/b4e">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
@@ -90,9 +87,7 @@ export default function Solutions() {
                   <h2 className="title">
                     <Link href="/solutions/bagri">BAgri</Link>
                   </h2>
-                  <span>
-                    Blockchain-based Agricultural product traceability and management system
-                  </span>
+                  <span>{t('bagri')}</span>
                   <div className="link-arrow link-arrow-two">
                     <Link href="/solutions/bagri">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
@@ -123,9 +118,7 @@ export default function Solutions() {
                   <h2 className="title">
                     <Link href="/solutions/bsign">BSign</Link>
                   </h2>
-                  <span>
-                    Internal digital signature system using remote digital signature technology
-                  </span>
+                  <span>{t('bsign')}</span>
                   <div className="link-arrow link-arrow-two">
                     <Link href="/solutions/bsign">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
