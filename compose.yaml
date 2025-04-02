@@ -1,4 +1,14 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    volumes:
+      - "/home/hust/bkfintech/media:/app/media"
+    ports:
+      - "3003:3000"
   db:
     restart: always
     image: mongo:latest
