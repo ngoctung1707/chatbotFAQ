@@ -9,6 +9,7 @@ export default async function Member() {
   const { docs: members } = await payload.find({
     collection: 'members',
     sort: ['rank'],
+    limit: 100,
   })
   return (
     <>

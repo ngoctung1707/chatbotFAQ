@@ -23,6 +23,7 @@ export default async function News({ params }: Props) {
     limit: 6,
     draft: false,
     pagination: true,
+    page: currentPage,
     sort: ['-publishedAt'],
     where: {
       lang: {

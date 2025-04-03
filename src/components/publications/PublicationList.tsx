@@ -1,34 +1,34 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import data from '@/util/publications.json'
+import React, { useCallback, useEffect, useState } from 'react'
 import PublicationCard from './PublicationCard'
 import Pagination from './Pagination'
+import { Publication } from '@/payload-types'
 
 interface NewsPostProps {
-  style: number
   showItem: number
-  showPagination: boolean
+  publications: Publication[]
 }
 
-export default function PublicationList({ style, showItem, showPagination }: NewsPostProps) {
+export default function PublicationList({ showItem, publications }: NewsPostProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const showLimit = showItem,
     paginationItem = 4
-
+  const data = publications
   const [pagination, setPagination] = useState<number[]>([])
   const [limit] = useState(showLimit)
   const [pages, setPages] = useState(Math.ceil(data.length / limit))
 
-  const cratePagination = () => {
+  const cratePagination = useCallback(() => {
     // set pagination
     const arr = new Array(Math.ceil(data.length / limit)).fill(0).map((_, idx) => idx + 1)
 
     setPagination(arr)
     setPages(Math.ceil(data.length / limit))
-  }
+  }, [data.length, limit])
+
   useEffect(() => {
     cratePagination()
-  }, [limit, pages])
+  }, [cratePagination, limit, pages])
 
   const startIndex = currentPage * limit - limit
   const endIndex = startIndex + limit
@@ -51,25 +51,19 @@ export default function PublicationList({ style, showItem, showPagination }: New
   }
   return (
     <>
-      {getPaginatedProducts.length === 0 && <h3>No Products Found </h3>}
-
+      {getPaginatedProducts.length === 0 && <h3>No Publication</h3>}
       {getPaginatedProducts.map((item) => (
-        <React.Fragment key={item.link}>
-          {!style && <PublicationCard item={item} />}
-          {style === 1 && <PublicationCard item={item} />}
-        </React.Fragment>
+        <PublicationCard item={item} key={item.link} />
       ))}
-
-      {showPagination && (
-        <Pagination
-          getPaginationGroup={getPaginationGroup}
-          currentPage={currentPage}
-          pages={pages}
-          next={next}
-          prev={prev}
-          handleActive={handleActive}
-        />
-      )}
+      <Pagination
+        getPaginationGroup={getPaginationGroup}
+        currentPage={currentPage}
+        pages={pages}
+        next={next}
+        prev={prev}
+        handleActive={handleActive}
+      />
+      )
     </>
   )
 }
