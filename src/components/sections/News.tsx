@@ -11,6 +11,7 @@ export default async function News() {
   const lang = await getUserLocale()
   const { docs } = await payload.find({
     collection: 'news',
+    draft: false,
     limit: 3,
     pagination: false,
     sort: ['-publishedAt'],

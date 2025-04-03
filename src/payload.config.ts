@@ -21,7 +21,7 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    livePreview: { url: 'http://localhost:3000', collections: ['news'] },
+    livePreview: { url: process.env.NEXT_PUBLIC_SERVER_URL, collections: ['news'] },
   },
   collections: [Users, Media, News, Members, Publications],
   editor: lexicalEditor({

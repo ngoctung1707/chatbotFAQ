@@ -14,7 +14,7 @@ export default function NewsCard({ doc }: NewsCardProps) {
         <div className="blog-post-item shine-animate-item">
           <div className="blog-post-thumb">
             <Link href={`/news/${doc.slug}`} className="shine-animate">
-              <img src={(doc.heroImage as Media).url} alt={(doc.heroImage as Media).caption} />
+              <img src={(doc.heroImage as Media)?.url} alt={(doc.heroImage as Media)?.caption} />
             </Link>
           </div>
           <div className="blog-post-content">

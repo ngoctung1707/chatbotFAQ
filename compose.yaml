@@ -6,16 +6,14 @@ services:
     depends_on:
       - db
     volumes:
-      - "/home/hust/bkfintech/media:/app/media"
+      - "/home/hust/bkfintech/media:/app/public/media"
     ports:
       - "3003:3000"
   db:
     restart: always
-    image: mongo:latest
+    image: mongo:4.4.6
     ports:
       - '27026:27017'
-    command:
-      - --storageEngine=wiredTiger
     volumes:
       - "/home/hust/bkfintech/db:/data/db"
     logging:

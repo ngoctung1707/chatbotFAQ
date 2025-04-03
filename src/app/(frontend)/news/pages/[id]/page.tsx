@@ -21,6 +21,7 @@ export default async function News({ params }: Props) {
   const { docs, totalPages, nextPage, prevPage } = await payload.find({
     collection: 'news',
     limit: 6,
+    draft: false,
     pagination: true,
     sort: ['-publishedAt'],
     where: {
