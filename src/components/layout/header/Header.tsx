@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Menu from '../NavMenu'
+import Menu from '../Menu'
 import { MouseEventHandler, useTransition } from 'react'
 import { useLocale } from 'next-intl'
 import { setUserLocale } from '@/i18n/localeService'
@@ -36,7 +36,11 @@ export default function Header({ scroll, handleMobileMenu, transparent }: Header
                   <nav className="tgmenu__nav">
                     <div className="logo">
                       <Link href="/">
-                        <img src="/assets/img/logo/logo.png" alt="Logo" />
+                        <img
+                          style={{ maxHeight: '60px' }}
+                          src="/assets/img/logo/logo.png"
+                          alt="Logo"
+                        />
                       </Link>
                     </div>
                     <div className="tgmenu__navbar-wrap tgmenu__main-menu d-none d-lg-flex">
