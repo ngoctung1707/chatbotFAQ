@@ -9,7 +9,7 @@ export default function Certification() {
                 <h2 className="title">Certification</h2>
               </div>
               <div className="row justify-content-center">
-                <div className="col-lg-6 col-md-10 mb-40">
+                <div className="col-lg-6 col-md-10 mb-40" data-aos="fade-right">
                   <img src="/assets/img/academic/cert1.png" alt="Outstanding" />
                   <div
                     className="team__content-four"
@@ -21,14 +21,14 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Course Certificate</span>
+                      <span style={{ color: 'white' }}>Certification of Complete</span>
                     </h2>
                     <span style={{ color: 'white' }}>
-                      Issued by Hanoi University of Science <br /> and Technology
+                      Issued by Hanoi University of Science and Technology
                     </span>
                   </div>
                 </div>
-                <div className="col-lg-6 col-md-10">
+                <div className="col-lg-6 col-md-10" data-aos="fade-left">
                   <img src="/assets/img/academic/cert2.png" alt="Outstanding" />
                   <div
                     className="team__content-four"
@@ -40,7 +40,7 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Course Certificate</span>
+                      <span style={{ color: 'white' }}>Certification of Paticipation</span>
                     </h2>
                     <span style={{ color: 'white' }}>Issued by BKFintech & partners</span>
                   </div>

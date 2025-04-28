@@ -33,6 +33,28 @@ export const en = {
       },
     },
   },
+  Education: {
+    sections: {
+      banner: {
+        title: 'Education & Training',
+        description:
+          'The Institute of Technology and Digital Economy, Hanoi University of Science and Technology (BK Fintech) aims to train students, university students, and working people with the necessary knowledge and skills in the digital economy era; and train businesses with a tendency towards digital transformation.',
+      },
+      courses: {
+        course: {
+          title: 'Short-term courses',
+          da: "The course is designed to help students master data analysis using today's most popular tools such as SQL, Power BI, Python and AI.",
+          ai: 'The course provides a basic knowledge base of artificial intelligence (AI), AI tools and programming for beginners.',
+          bc: 'The course provides knowledge about AI, Blockchain, Fintech for students and researchers, opening up future career opportunities.',
+        },
+        publicLectures: {
+          title: 'Public Lectures',
+          ai: 'The course provides a basic knowledge base of artificial intelligence (AI), AI tools and programming for beginners.',
+          da: 'The course is designed to help students master data analysis using today`s most popular tools such as SQL, Power BI, Python and AI.',
+        },
+      },
+    },
+  },
 }
 
 export const vi: typeof en = {
@@ -68,6 +90,28 @@ export const vi: typeof en = {
         da: 'Khóa học được thiết kế giúp học viên thành thạo phân tích dữ liệu bằng các công cụ phổ biến nhất hiện nay như SQL, Power BI, Python và AI',
         ai: 'Khóa học cung cấp nền tảng kiến thức cơ bản về trí tuệ nhân tạo (AI), công cụ và lập trình AI dành cho người mới bắt đầu',
         bc: 'Khóa học nhằm trang bị những kiến thức phổ cập về Trí tuệ nhân tạo (AI), Chuỗi khối (Blockchain) và Công nghệ tài chính (Fintech) cho các nhà nghiên cứu trẻ, sinh viên, học viên sau đại học các ngành kinh tế và kinh doanh, sinh viên ngành công nghệ với mong muốn giúp các học viên tiếp cận với các hướng nghề nghiệp tiềm năng của tương lai.',
+      },
+    },
+  },
+  Education: {
+    sections: {
+      banner: {
+        title: 'Giáo dục & Đào tạo',
+        description:
+          'Viện Công nghệ và Kinh tế số, Trường Đại học Bách khoa Hà Nội (BK Fintech) hướng tới việc đào tạo cho sinh viên, học viên cao học, nghiên cứu sinh và người đi làm những kiến thức và kỹ năng cần thiết trong thời đại kinh tế số; đào tạo cho các doanh nghiệp có xu hướng chuyển đổi số.',
+      },
+      courses: {
+        course: {
+          title: 'Các khóa đào tạo ngắn hạn',
+          da: 'Khóa học được thiết kế giúp học viên thành thạo phân tích dữ liệu bằng các công cụ phổ biến nhất hiện nay như SQL, Power BI, Python và AI',
+          ai: 'Khóa học cung cấp nền tảng kiến thức cơ bản về trí tuệ nhân tạo (AI), công cụ và lập trình AI dành cho người mới bắt đầu',
+          bc: 'Khóa học nhằm trang bị những kiến thức phổ cập về Trí tuệ nhân tạo (AI), Chuỗi khối (Blockchain) và Công nghệ tài chính (Fintech) cho các nhà nghiên cứu trẻ, sinh viên, học viên sau đại học các ngành kinh tế và kinh doanh, sinh viên ngành công nghệ với mong muốn giúp các học viên tiếp cận với các hướng nghề nghiệp tiềm năng của tương lai.',
+        },
+        publicLectures: {
+          title: 'Các bài giảng công khai',
+          ai: 'Khóa học cung cấp nền tảng kiến thức cơ bản về trí tuệ nhân tạo (AI), công cụ và lập trình AI dành cho người mới bắt đầu',
+          da: 'Khóa học được thiết kế giúp học viên thành thạo phân tích dữ liệu bằng các công cụ phổ biến nhất hiện nay như SQL, Power BI, Python và AI',
+        },
       },
     },
   },

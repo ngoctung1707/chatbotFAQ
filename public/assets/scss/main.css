@@ -8646,8 +8646,8 @@ textarea {
   border-radius: 10px;
   text-align: center;
   margin: 0 24px;
-  padding: 20px 20px;
-  margin-top: -65px;
+  padding: 16px 16px;
+  margin-top: -40px;
   position: relative;
   z-index: 1;
 }

@@ -21,8 +21,8 @@ const slugifyHook: FieldHook = ({ data, operation, value }) => {
   return value
 }
 
-export const News: CollectionConfig = {
-  slug: 'news',
+export const Courses: CollectionConfig = {
+  slug: 'courses',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -30,12 +30,12 @@ export const News: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    defaultColumns: ['title', 'slug', 'publishedAt', 'lang'],
+    defaultColumns: ['title', 'slug', 'lang'],
     livePreview: {
-      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'news' }),
+      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'courses' }),
     },
     preview: (data, { req }) =>
-      generatePreviewPath({ req, slug: <string>data.slug, collection: 'news' }),
+      generatePreviewPath({ req, slug: <string>data.slug, collection: 'courses' }),
     useAsTitle: 'title',
   },
   fields: [
@@ -56,6 +56,12 @@ export const News: CollectionConfig = {
       },
     },
     {
+      name: 'description',
+      type: 'textarea',
+      label: 'Mô tả',
+      required: true,
+    },
+    {
       name: 'lang',
       type: 'select',
       options: ['en', 'vi'],
@@ -66,14 +72,20 @@ export const News: CollectionConfig = {
     {
       name: 'tag',
       type: 'select',
-      options: ['news', 'workshop', 'seminar'],
+      options: ['short-course', 'public-lecture'],
       label: 'Tag',
       required: true,
     },
     {
-      name: 'publishedAt',
-      type: 'date',
-      label: 'Ngày đăng',
+      name: 'duration',
+      type: 'text',
+      label: 'Thời lượng khóa học',
+      required: true,
+    },
+    {
+      name: 'modules',
+      type: 'number',
+      label: 'Số module',
       required: true,
     },
     {

@@ -1,4 +1,4 @@
-import { Montserrat } from 'next/font/google'
+import { Inter, Outfit } from 'next/font/google'
 import '../../../public/assets/css/animate.min.css'
 import '../../../public/assets/css/bootstrap.min.css'
 import '../../../public/assets/css/flaticon.css'
@@ -13,13 +13,13 @@ import React from 'react'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale } from 'next-intl/server'
 
-const montserratBody = Montserrat({
+const interBody = Inter({
   weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--tg-body-font-family',
   display: 'swap',
 })
-const montserratHeading = Montserrat({
+const outfitHeading = Outfit({
   weight: ['400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   variable: '--tg-heading-font-family',
@@ -38,7 +38,7 @@ export default async function RootLayout({
   const locale = await getLocale()
   return (
     <html lang={locale}>
-      <body className={`${montserratBody.variable} ${montserratHeading.variable}`}>
+      <body className={`${interBody.variable} ${outfitHeading.variable}`}>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

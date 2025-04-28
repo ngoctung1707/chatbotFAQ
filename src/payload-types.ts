@@ -72,6 +72,8 @@ export interface Config {
     news: News;
     members: Member;
     publications: Publication;
+    'upcoming-events': UpcomingEvent;
+    courses: Course;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +86,8 @@ export interface Config {
     news: NewsSelect<false> | NewsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     publications: PublicationsSelect<false> | PublicationsSelect<true>;
+    'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -172,6 +176,7 @@ export interface News {
   title: string;
   slug: string;
   lang: 'en' | 'vi';
+  tag: 'news' | 'workshop' | 'seminar';
   publishedAt: string;
   heroImage: string | Media;
   content: {
@@ -221,6 +226,50 @@ export interface Publication {
   background?: (string | null) | Media;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "upcoming-events".
+ */
+export interface UpcomingEvent {
+  id: string;
+  title: string;
+  time: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  lang: 'en' | 'vi';
+  tag: 'short-course' | 'public-lecture';
+  duration: string;
+  modules: number;
+  heroImage: string | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -342,6 +391,14 @@ export interface PayloadLockedDocument {
         value: string | Publication;
       } | null)
     | ({
+        relationTo: 'upcoming-events';
+        value: string | UpcomingEvent;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: string | Course;
+      } | null)
+    | ({
         relationTo: 'payload-jobs';
         value: string | PayloadJob;
       } | null);
@@ -428,6 +485,7 @@ export interface NewsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   lang?: T;
+  tag?: T;
   publishedAt?: T;
   heroImage?: T;
   content?: T;
@@ -461,6 +519,34 @@ export interface PublicationsSelect<T extends boolean = true> {
   background?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "upcoming-events_select".
+ */
+export interface UpcomingEventsSelect<T extends boolean = true> {
+  title?: T;
+  time?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  lang?: T;
+  tag?: T;
+  duration?: T;
+  modules?: T;
+  heroImage?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -533,10 +619,15 @@ export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    doc?: {
-      relationTo: 'news';
-      value: string | News;
-    } | null;
+    doc?:
+      | ({
+          relationTo: 'news';
+          value: string | News;
+        } | null)
+      | ({
+          relationTo: 'courses';
+          value: string | Course;
+        } | null);
     global?: string | null;
     user?: (string | null) | User;
   };

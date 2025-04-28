@@ -11,6 +11,8 @@ import { Media } from './collections/Media'
 import { News } from './collections/News'
 import { Members } from '@/collections/Members'
 import { Publications } from '@/collections/Publications'
+import { UpcomingEvents } from '@/collections/UpcomingEvents'
+import { Courses } from './collections/Courses'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -21,9 +23,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    livePreview: { url: process.env.NEXT_PUBLIC_SERVER_URL, collections: ['news'] },
+    livePreview: { url: process.env.NEXT_PUBLIC_SERVER_URL, collections: ['news', 'courses'] },
   },
-  collections: [Users, Media, News, Members, Publications],
+  collections: [Users, Media, News, Members, Publications, UpcomingEvents, Courses],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
   }),

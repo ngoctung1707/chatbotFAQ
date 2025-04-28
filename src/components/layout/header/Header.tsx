@@ -3,6 +3,7 @@ import Menu from '../Menu'
 import { MouseEventHandler, useTransition } from 'react'
 import { useLocale } from 'next-intl'
 import { setUserLocale } from '@/i18n/localeService'
+import MobileMenu from '../MobileMenu'
 
 interface HeaderProps {
   scroll?: boolean
@@ -101,22 +102,7 @@ export default function Header({ scroll, handleMobileMenu, transparent }: Header
                   </nav>
                 </div>
                 {/* Mobile Menu  */}
-                <div className="tgmobile__menu">
-                  <nav className="tgmobile__menu-box">
-                    <div className="close-btn" onClick={handleMobileMenu}>
-                      <i className="fas fa-times" />
-                    </div>
-                    <div className="nav-logo">
-                      <Link href="/">
-                        <img src="/assets/img/logo/logo.png" alt="Logo" />
-                      </Link>
-                    </div>
-
-                    <div className="tgmobile__menu-outer">
-                      <Menu />
-                    </div>
-                  </nav>
-                </div>
+                <MobileMenu handleMobileMenu={handleMobileMenu} />
                 <div className="tgmobile__menu-backdrop" onClick={handleMobileMenu} />
                 {/* End Mobile Menu */}
               </div>
