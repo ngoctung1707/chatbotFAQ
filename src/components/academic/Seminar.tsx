@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import NewsCard from '@/components/news/NewsCard'
 import { getUserLocale } from '@/i18n/localeService'
+import SeminarSlider from './SeminarSlider'
 
 export default async function Seminar() {
   const payload = await getPayload({ config })
@@ -46,9 +46,7 @@ export default async function Seminar() {
           </div>
         </div>
         <div className="row justify-content-center">
-          {seminars.map((doc) => (
-            <NewsCard doc={doc} key={doc.id} />
-          ))}
+          <SeminarSlider seminars={seminars} />
         </div>
         {/* Upcoming Events */}
         <div className="row justify-content-center">
