@@ -8,10 +8,10 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
   { id: 2, name: 'vision', path: '/vision-and-operating-philosophy' },
   { id: 3, name: 'advisory', path: '/advisory-board' },
   { id: 4, name: 'council', path: '/institute-council' },
-  { id: 5, name: 'dean', path: '/board-of-deans' },
+  { id: 5, name: 'deans', path: '/board-of-deans' },
   { id: 6, name: 'researchers', path: '/researchers-and-assistants' },
   { id: 7, name: 'office', path: '/back-office' },
-].map(({ path, ...link }) => ({ ...link, path: `/about/${path}` }))
+].map(({ path, ...link }) => ({ ...link, path: `/about${path}` }))
 
 export default function Menu() {
   const pathname = usePathname()
