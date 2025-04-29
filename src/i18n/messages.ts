@@ -6,6 +6,13 @@ export const en = {
     education: 'Education & Training',
     news: 'News',
     about: 'About',
+    welcome: 'Welcome To Institute',
+    vision: 'Vision And Operating Philosophy',
+    advisory: 'Advisory Board',
+    council: 'Institute Council',
+    dean: 'Board Of Dean',
+    researchers: 'Researchers And Assistants',
+    office: 'Back Office',
   },
   Misc: {
     watchVideo: 'Watch Video',
@@ -71,6 +78,13 @@ export const vi: typeof en = {
     education: 'Giáo dục & Đào tạo',
     news: 'Tin tức',
     about: 'Giới thiệu',
+    welcome: 'Chào mừng',
+    vision: 'Tầm nhìn và Triết lý hoạt động',
+    advisory: 'Ban cố vấn',
+    council: 'Hội đồng Viện',
+    dean: 'Ban lãnh đạo',
+    researchers: 'Nghiên cứu sinh và Trợ lý',
+    office: 'Văn phòng',
   },
   HomePage: {
     description:

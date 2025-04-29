@@ -3,16 +3,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useState } from 'react'
-
-const aboutLinks: { id: number; name: string; path: string }[] = [
-  { id: 1, name: 'Welcome to Institute', path: '/welcome-to-institute' },
-  { id: 2, name: 'Vision and Operating Philosophy', path: '/vision-and-operating-philosophy' },
-  { id: 3, name: 'Advisory Board', path: '/advisory-board' },
-  { id: 4, name: 'Institute Council', path: '/institute-council' },
-  { id: 5, name: 'Board of Deans', path: '/board-of-deans' },
-  { id: 6, name: 'Researchers and Assistants', path: '/researchers-and-assistants' },
-  { id: 7, name: 'Back Office', path: '/back-office' },
-]
+import { aboutLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -67,7 +58,7 @@ export default function MobileMenu({
                   return (
                     <li key={link.id}>
                       <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                        {link.name}
+                        {t(link.name)}
                       </Link>
                     </li>
                   )

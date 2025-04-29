@@ -41,7 +41,7 @@ export default function NewsCard({ doc }: NewsCardProps) {
                   <i className="fas fa-calendar-alt" />
                   {new Date(doc.publishedAt).toLocaleDateString('vi-VN', {
                     year: 'numeric',
-                    day: 'numeric',
+                    day: '2-digit',
                     month: '2-digit',
                   })}
                 </li>

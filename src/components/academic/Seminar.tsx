@@ -1,21 +1,31 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import NewsCard from '@/components/news/NewsCard'
+import { getUserLocale } from '@/i18n/localeService'
 
 export default async function Seminar() {
   const payload = await getPayload({ config })
-  // const { docs: seminars } = await payload.find({
-  //   collection: 'news',
-  //   draft: false,
-  //   where: {
-  //     tag: {
-  //       in: ['seminar', 'workshop'],
-  //     },
-  //   },
-  // })
+  const lang = await getUserLocale()
+  const { docs: seminars } = await payload.find({
+    collection: 'news',
+    draft: false,
+    limit: 3,
+    pagination: false,
+    sort: ['-publishedAt'],
+    where: {
+      tag: {
+        in: ['seminar', 'workshop'],
+      },
+      lang: {
+        equals: lang,
+      },
+    },
+  })
 
   const { docs: upcomingEvents } = await payload.find({
     collection: 'upcoming-events',
     draft: false,
+    sort: ['-time'],
     where: {
       time: { greater_than: new Date() },
     },
@@ -34,6 +44,11 @@ export default async function Seminar() {
               <h2 className="title tg-element-title">Seminar & Workshop</h2>
             </div>
           </div>
+        </div>
+        <div className="row justify-content-center">
+          {seminars.map((doc) => (
+            <NewsCard doc={doc} key={doc.id} />
+          ))}
         </div>
         {/* Upcoming Events */}
         <div className="row justify-content-center">
@@ -55,7 +70,7 @@ export default async function Seminar() {
                         <i className="fas fa-calendar-alt" />
                         {new Date(event.time).toLocaleDateString('vi-VN', {
                           year: 'numeric',
-                          day: 'numeric',
+                          day: '2-digit',
                           month: '2-digit',
                         })}
                       </li>
