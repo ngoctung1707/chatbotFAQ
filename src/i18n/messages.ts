@@ -6,7 +6,7 @@ export const en = {
     education: 'Education & Training',
     news: 'News',
     about: 'About',
-    welcome: 'Welcome To Institute',
+    welcome: 'Welcome Message',
     vision: 'Vision And Operating Philosophy',
     advisory: 'Advisory Board',
     council: 'Institute Council',

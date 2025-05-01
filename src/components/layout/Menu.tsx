@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 
 export const aboutLinks: { id: number; name: string; path: string }[] = [
-  { id: 1, name: 'welcome', path: '/welcome-to-institute' },
+  { id: 1, name: 'welcome', path: '/welcome-message' },
   { id: 2, name: 'vision', path: '/vision-and-operating-philosophy' },
   { id: 3, name: 'advisory', path: '/advisory-board' },
   { id: 4, name: 'council', path: '/institute-council' },

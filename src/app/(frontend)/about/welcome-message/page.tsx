@@ -10,24 +10,19 @@ export default function WelcomeToInstitute() {
               <div className="row">
                 <div className="blog__details-wrap">
                   <div className="blog__details-content">
-                    <h2>Welcome to Institute</h2>
+                    <h2>Welcome Message</h2>
                     <br />
                     <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '30px' }}>
                       <div>
                         <p style={{ textAlign: 'justify' }}>
                           Welcome you to Institute for Digital Technology and Economy. We are a
                           research and development unit at the forefront of digital transformation,
-                          emerging technologies, and economic innovation in Vietnam.
-                        </p>
-                        <p style={{ textAlign: 'justify' }}>
-                          We are on our way to becoming a leading force in Vietnam and Southeast
-                          Asia, excelling in scientific research, product development, technology
-                          transfer, training, and startup incubation. Our mission is to develop
-                          cutting-edge financial technology solutions, innovative digital
+                          emerging technologies, and economic innovation in Vietnam. Our mission is
+                          to develop cutting-edge financial technology solutions, innovative digital
                           technologies, advanced digital economy models, and transformative digital
-                          society initiatives. We are committed to making a positive impact and
-                          contributing to the growth of the country&apos;s digital economy and
-                          society during this exciting era of national advancement.
+                          society initiatives for Vietnam. We are committed to making a positive
+                          impact and contributing to the growth of the country&apos;s digital
+                          economy and society during this exciting era of national advancement.
                         </p>
                         <p style={{ textAlign: 'justify' }}>
                           Our key values and implementation include:
