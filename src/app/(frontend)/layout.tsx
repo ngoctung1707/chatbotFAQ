@@ -29,7 +29,7 @@ const outfitHeading = Outfit({
 export const metadata = {
   title: 'BK Fintech',
 }
-
+export const dynamic = 'force-dynamic'
 export default async function RootLayout({
   children,
 }: Readonly<{

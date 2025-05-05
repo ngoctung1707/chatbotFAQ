@@ -12,7 +12,7 @@ import './custom.scss'
 type Args = {
   children: React.ReactNode
 }
-
+export const dynamic = 'force-dynamic'
 const serverFunction: ServerFunctionClient = async function (args) {
   'use server'
   return handleServerFunctions({
