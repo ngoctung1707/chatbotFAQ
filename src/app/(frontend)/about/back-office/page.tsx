@@ -1,30 +1,49 @@
 import Layout from '@/components/layout/Layout'
 
+const list = [
+  {
+    name: 'Vu Thi Thu Ha',
+    title: 'Chief Accountant',
+  },
+  {
+    name: 'Tran Minh Phuong',
+    title: 'Accountant',
+  },
+  {
+    name: 'Nguyen Thuy Hang',
+    title: 'Office Manager',
+  },
+  {
+    name: 'Nguyen Phuong Anh',
+    title: 'Training Manager',
+  },
+  {
+    name: 'Nguyen Cam Ly',
+    title: 'Business Development',
+  },
+]
+
 export default function BackOffice() {
   return (
     <>
       <Layout breadcrumbTitle="Back Office">
-        <div>
-          <section className="blog__details-area">
-            <div className="container">
-              <div className="blog__inner-wrap">
-                <div className="row">
-                  <div className="blog__details-wrap">
-                    <div className="blog__details-content">
-                      <div className="about__list-box">
-                        <ul className="list-wrap">
-                          <li>
-                            <i className="flaticon-user" /> Nguyen Thuy Hang
-                          </li>
-                        </ul>
-                      </div>
+        <section className="blog__details-area">
+          <div className="container">
+            <div className="about__list-box">
+              <ul className="list-wrap">
+                {list.map((item) => (
+                  <li key={item.name} style={{ marginBottom: '15px' }}>
+                    <i className="flaticon-user" />
+                    <div>
+                      <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.name}</span>
+                      <span style={{ fontSize: '18px' }}> ({item.title})</span>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </Layout>
     </>
   )
