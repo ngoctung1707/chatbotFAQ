@@ -45,7 +45,7 @@ export default function SeminarSlider({ seminars }: SeminarSliderProps) {
                     alt={(doc.heroImage as Media)?.caption}
                     style={{
                       aspectRatio: '16/9',
-                      opacity: 0.5,
+                      opacity: 0.8,
                       transition: 'opacity 0.3s ease',
                     }}
                   />

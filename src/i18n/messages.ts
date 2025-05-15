@@ -2,6 +2,8 @@ export const en = {
   Menu: {
     home: 'Home',
     research: 'Research',
+    publications: 'Publications',
+    ecotech: 'ECOTECH Conference',
     application: 'Application',
     education: 'Education & Training',
     news: 'News',
@@ -74,6 +76,8 @@ export const vi: typeof en = {
   Menu: {
     home: 'Trang chủ',
     research: 'Nghiên cứu',
+    publications: 'Báo cáo',
+    ecotech: 'Hội nghị ECOTECH',
     application: 'Ứng dụng',
     education: 'Giáo dục & Đào tạo',
     news: 'Tin tức',

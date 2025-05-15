@@ -13,10 +13,16 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
   { id: 7, name: 'office', path: '/back-office' },
 ].map(({ path, ...link }) => ({ ...link, path: `/about${path}` }))
 
+export const researchLinks: { id: number; name: string; path: string }[] = [
+  { id: 1, name: 'publications', path: '/publications' },
+  { id: 2, name: 'ecotech', path: '/ecotech' },
+].map(({ path, ...link }) => ({ ...link, path: `/research${path}` }))
+
 export default function Menu() {
   const pathname = usePathname()
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
+  const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
   const t = useTranslations('Menu')
   return (
     <>
@@ -24,8 +30,21 @@ export default function Menu() {
         <li>
           <Link href="/">{t('home')}</Link>
         </li>
-        <li>
-          <Link href="/publications">{t('research')}</Link>
+        <li className="menu-item-has-children">
+          <Link href="#" className={isResearchLinkActive() ? 'active' : ''}>
+            {t('research')}
+          </Link>
+          <ul className="sub-menu" style={{ width: '300px' }}>
+            {researchLinks.map((link) => {
+              return (
+                <li key={link.id}>
+                  <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                    {t(link.name)}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         </li>
         <li>
           <Link href="/#solutions">{t('application')}</Link>

@@ -2581,7 +2581,7 @@ textarea {
 .banner-content p {
   margin-bottom: 30px;
   color: #383952;
-  text-transform: capitalize;
+  text-transform: inherit;
   width: 90%;
 }
 @media (max-width: 1199.98px) {
@@ -4470,13 +4470,13 @@ textarea {
 .services__bg-four {
   background-size: cover;
   background-position: center;
-  padding: 120px 0 90px;
+  padding: 200px 0 90px;
   position: relative;
   z-index: 1;
 }
 @media (max-width: 767.98px) {
   .services__bg-four {
-    padding: 100px 0 70px;
+    padding: 150px 0 70px;
   }
 }
 .services__bg-five {
