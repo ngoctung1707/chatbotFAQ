@@ -2,19 +2,19 @@ import React from 'react'
 
 const studentLifeData = [
   {
-    title: 'Facilities',
+    title: 'Facility',
     img: '/assets/img/student-life/hust.jpg',
-    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    desc: 'Modern, tech-enabled learning spaces designed to support collaboration, innovation and hands-on practice.',
   },
   {
-    title: 'Activities',
+    title: 'Activity',
     img: '/assets/img/student-life/activities.jpg',
-    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    desc: 'A dynamic calendar of workshops, lecturers and competitions that help students apply knowledge, develop skills and connect with industry experts.',
   },
   {
-    title: 'Communities',
+    title: 'Community',
     img: '/assets/img/student-life/communities.jpg',
-    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    desc: 'A vibrant network of student clubs and interest groups where learners collaborate, explore emerging technologies and grow together.',
   },
 ]
 
@@ -26,9 +26,10 @@ export default function Student() {
           <div className="section-title text-center">
             <h2 className="title">Student Life</h2>
           </div>
-          <p style={{ maxWidth: 800, margin: '16px auto 0', textAlign: 'center' }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-            incididunt ut labore et dolore magna aliqua. ut enim ad minim veniam
+          <p style={{ maxWidth: 1000, margin: '16px auto 0', textAlign: 'center' }}>
+            At the Institute for Digital Technology and Economy – HUST, student life is about more
+            than just lectures. It’s about being part of a vibrant, forward-thinking community where
+            students explore ideas, build skills, and grow personally and professionally.
           </p>
         </div>
         <div className="row justify-content-center">
@@ -52,7 +53,7 @@ export default function Student() {
               <h4 style={{ fontWeight: 700, color: '#2B2B6A', marginTop: 24, marginBottom: 12 }}>
                 {item.title}
               </h4>
-              <p style={{ textAlign: 'center', fontSize: 15, maxWidth: 340 }}>{item.desc}</p>
+              <p style={{ textAlign: 'center', fontSize: 15, maxWidth: 350 }}>{item.desc}</p>
             </div>
           ))}
         </div>

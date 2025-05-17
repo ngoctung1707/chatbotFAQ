@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useState } from 'react'
-import { aboutLinks, researchLinks } from './Menu'
+import { aboutLinks, researchLinks, rdLabsLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -14,9 +14,11 @@ export default function MobileMenu({
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
   const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
+  const isRdLabsLinkActive = () => rdLabsLinks.some((link) => link.path === pathname)
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
+  const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
 
   const toggleSubmenuAbout = () => {
     setIsSubmenuAboutOpen(!isSubmenuAboutOpen)
@@ -24,6 +26,10 @@ export default function MobileMenu({
 
   const toggleSubmenuResearch = () => {
     setIsSubmenuResearchOpen(!isSubmenuResearchOpen)
+  }
+
+  const toggleSubmenuRdLabs = () => {
+    setIsSubmenuRdLabsOpen(!isSubmenuRdLabsOpen)
   }
 
   return (
@@ -60,6 +66,31 @@ export default function MobileMenu({
                     </li>
                   )
                 })}
+                <li className="menu-item-has-children">
+                  <Link href="#" className={isRdLabsLinkActive() ? 'active' : ''}>
+                    {t('rdlabs')}
+                  </Link>
+                  <ul
+                    className="sub-menu"
+                    style={{ display: `${isSubmenuRdLabsOpen ? 'block' : 'none'}` }}
+                  >
+                    {rdLabsLinks.map((link) => {
+                      return (
+                        <li key={link.id}>
+                          <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                            {t(link.name)}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  <div
+                    className={isSubmenuRdLabsOpen ? 'dropdown-btn open' : 'dropdown-btn'}
+                    onClick={toggleSubmenuRdLabs}
+                  >
+                    <span className="plus-line" />
+                  </div>
+                </li>
               </ul>
               <div
                 className={isSubmenuResearchOpen ? 'dropdown-btn open' : 'dropdown-btn'}

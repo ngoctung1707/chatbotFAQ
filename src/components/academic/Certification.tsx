@@ -21,7 +21,7 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Certification of Complete</span>
+                      <span style={{ color: 'white' }}>Certificate of Completion</span>
                     </h2>
                     <span style={{ color: 'white' }}>
                       Issued by Hanoi University of Science and Technology
@@ -40,9 +40,9 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Certification of Paticipation</span>
+                      <span style={{ color: 'white' }}>Certificate of Participation</span>
                     </h2>
-                    <span style={{ color: 'white' }}>Issued by BKFintech & partners</span>
+                    <span style={{ color: 'white' }}>Issued by BK Fintech & our partners</span>
                   </div>
                 </div>
               </div>

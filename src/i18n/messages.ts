@@ -4,6 +4,11 @@ export const en = {
     research: 'Research',
     publications: 'Publications',
     ecotech: 'ECOTECH Conference',
+    rdlabs: 'R&D Labs',
+    software_engineering: 'Software Engineering and Decentralized Systems',
+    operational_efficiency: 'Operational Efficiency in Finance',
+    smart_finance: 'Smart Finance and Digital Banking',
+    hackathon: 'Hackathon',
     application: 'Application',
     education: 'Education & Training',
     news: 'News',
@@ -47,7 +52,7 @@ export const en = {
       banner: {
         title: 'Education & Training',
         description:
-          'The Institute of Technology and Digital Economy, Hanoi University of Science and Technology (BK Fintech) aims to train students, university students, and working people with the necessary knowledge and skills in the digital economy era; and train businesses with a tendency towards digital transformation.',
+          'The Institute for Technology and Digital Economy (BK Fintech) provides high-quality education and training programs, equipping learners with essential skills for the digital economy era and supporting enterprises in their digital transformation journey.',
       },
       courses: {
         course: {
@@ -78,6 +83,11 @@ export const vi: typeof en = {
     research: 'Nghiên cứu',
     publications: 'Báo cáo',
     ecotech: 'Hội nghị ECOTECH',
+    rdlabs: 'R&D Labs',
+    software_engineering: 'Kỹ thuật phần mềm và Hệ thống phi tập trung',
+    operational_efficiency: 'Hiệu quả hoạt động trong Tài chính',
+    smart_finance: 'Tài chính thông minh và Ngân hàng số',
+    hackathon: 'Hackathon',
     application: 'Ứng dụng',
     education: 'Giáo dục & Đào tạo',
     news: 'Tin tức',
