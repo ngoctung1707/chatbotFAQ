@@ -22,30 +22,30 @@ export default async function Hackathon() {
                 <div className="col-12">
                   <div className="services__content-four">
                     <p>
-                      Explore the potential of AI technology in the banking industry at HACK
-                      &lt;CX&gt; TOGETHER 2025 - where technology talents converge to shape the
-                      future of digital banking experiences.
+                      Discover the Potential of AI Technology in Banking at HACK &lt;CX&gt; TOGETHER
+                      2025 – where tech talents unite to shape the future of digital banking
+                      experiences.
                     </p>
 
                     <p>
-                      The event is organized by the Institute of Technology and Digital Economy -
-                      Hanoi University of Science and Technology and Lead Consulting with the
-                      strategic partner being TECHCOMBANK, accompanied by schools, institutes, and
-                      centers belonging to Hanoi University of Science and Technology (HUST). The
-                      competition is a golden opportunity for students and technology experts to
-                      develop creative solutions, turning ideas into practical applications with
-                      guidance from leading experts in the Fintech field.
+                      The event is organized by the Institute of Digital Technology and Economy –
+                      Hanoi University of Science and Technology (HUST) and Lead Consulting, with
+                      TECHCOMBANK as the strategic partner, and supported by various schools,
+                      institutes, and centers under HUST. This competition offers a golden
+                      opportunity for students and tech experts to co-develop innovative solutions,
+                      transforming ideas into practical applications with guidance from top Fintech
+                      professionals.
                     </p>
 
                     <p>
-                      Not just an intellectual playground, HACK &lt;CX&gt; TOGETHER 2025 also opens
-                      opportunities to transform projects into real products, connecting directly
-                      with the needs of the banking industry and contributing to shaping the future
-                      of digital financial services.
+                      More than just a playground for innovation, HACK &lt;CX&gt; TOGETHER 2025
+                      opens the door to turning projects into real-world products, directly aligned
+                      with the needs of the banking industry and contributing to the future of
+                      digital financial services.
                     </p>
 
                     <p>
-                      Learn more information and register to participate{' '}
+                      Learn more and register{' '}
                       <Link href="https://www.hacktogether.org/" target="_blank">
                         here
                       </Link>
