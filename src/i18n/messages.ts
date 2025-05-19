@@ -38,6 +38,9 @@ export const en = {
         b4e: 'Digital certificate generation and verification system using Remote Digital Dignature and Blockchain',
         bagri: 'Blockchain-based Agricultural product traceability and management system',
         bsign: 'Internal digital signature system using remote digital signature technology',
+        bkoffice: 'Document management and administration system for universities',
+        ediploma:
+          'System for creating and authenticating diplomas, certificates, digital certificates',
       },
       course: {
         title: 'Short-term courses',
@@ -112,6 +115,9 @@ export const vi: typeof en = {
         b4e: 'Hệ thống tạo và xác thực chứng chỉ số sử dụng công nghệ ký số từ xa và blockchain',
         bagri: 'Hệ thống quản lý và truy xuất nguồn gốc nông sản sử dụng công nghệ blockchain',
         bsign: 'Hệ thống ký số nội bộ sử dụng chữ ký số từ xa',
+        bkoffice: 'Hệ thống quản lý và quản trị tài liệu cho các trường đại học',
+        ediploma:
+          'Hệ thống tạo và xác thực chứng chỉ, bằng cấp, chứng chỉ số sử dụng công nghệ ký số từ xa',
       },
       course: {
         title: 'Các khóa đào tạo ngắn hạn',

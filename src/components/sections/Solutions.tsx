@@ -50,15 +50,15 @@ export default function Solutions() {
             <div className="col-lg-4 col-md-6">
               <div className="project__item-two">
                 <div className="project__thumb-two">
-                  <img src="/assets/img/project/b4e.png" alt="" />
+                  <img src="/assets/img/project/eDiploma.png" alt="" />
                 </div>
                 <div className="project__content-two">
                   <h2 className="title">
-                    <Link href="/solutions/b4e">B4E</Link>
+                    <Link href="/solutions/ediploma">eDiploma</Link>
                   </h2>
-                  <span>{t('b4e')}</span>
+                  <span>{t('ediploma')}</span>
                   <div className="link-arrow link-arrow-two">
-                    <Link href="/solutions/b4e">
+                    <Link href="/solutions/ediploma">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                         <path
                           fillRule="evenodd"
@@ -81,15 +81,15 @@ export default function Solutions() {
             <div className="col-lg-4 col-md-6">
               <div className="project__item-two">
                 <div className="project__thumb-two">
-                  <img src="/assets/img/project/bagri.png" alt="" />
+                  <img src="/assets/img/project/BKOffice.png" alt="" />
                 </div>
                 <div className="project__content-two">
                   <h2 className="title">
-                    <Link href="/solutions/bagri">BAgri</Link>
+                    <Link href="/solutions/bkoffice">BKOffice</Link>
                   </h2>
-                  <span>{t('bagri')}</span>
+                  <span>{t('bkoffice')}</span>
                   <div className="link-arrow link-arrow-two">
-                    <Link href="/solutions/bagri">
+                    <Link href="/solutions/bkoffice">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                         <path
                           fillRule="evenodd"
@@ -112,15 +112,15 @@ export default function Solutions() {
             <div className="col-lg-8">
               <div className="project__item-two">
                 <div className="project__thumb-two">
-                  <img src="/assets/img/project/bsign.png" alt="" />
+                  <img src="/assets/img/project/BKSign.png" alt="" />
                 </div>
                 <div className="project__content-two">
                   <h2 className="title">
-                    <Link href="/solutions/bsign">BSign</Link>
+                    <Link href="/solutions/bksign">BKSign</Link>
                   </h2>
                   <span>{t('bsign')}</span>
                   <div className="link-arrow link-arrow-two">
-                    <Link href="/solutions/bsign">
+                    <Link href="/solutions/bksign">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
                         <path
                           fillRule="evenodd"
