@@ -92,14 +92,6 @@ export default function Menu() {
             {t('research')}
           </Link>
           <ul className="sub-menu" style={{ width: '300px' }}>
-            <li>
-              <Link
-                href="/research/publications"
-                className={isActive('/research/publications') ? 'active' : ''}
-              >
-                {t('publications')}
-              </Link>
-            </li>
             <li className="nested-parent">
               <Link href="#" className={isActive('/research/r&d-labs') ? 'active' : ''}>
                 {t('rdlabs')}
@@ -123,6 +115,14 @@ export default function Menu() {
                   </li>
                 ))}
               </ul>
+            </li>
+            <li>
+              <Link
+                href="/research/publications"
+                className={isActive('/research/publications') ? 'active' : ''}
+              >
+                {t('publications')}
+              </Link>
             </li>
             <li>
               <Link

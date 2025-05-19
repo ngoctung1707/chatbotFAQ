@@ -57,15 +57,6 @@ export default function MobileMenu({
                 className="sub-menu"
                 style={{ display: `${isSubmenuResearchOpen ? 'block' : 'none'}` }}
               >
-                {researchLinks.map((link) => {
-                  return (
-                    <li key={link.id}>
-                      <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                        {t(link.name)}
-                      </Link>
-                    </li>
-                  )
-                })}
                 <li className="menu-item-has-children">
                   <Link href="#" className={isRdLabsLinkActive() ? 'active' : ''}>
                     {t('rdlabs')}
@@ -91,6 +82,15 @@ export default function MobileMenu({
                     <span className="plus-line" />
                   </div>
                 </li>
+                {researchLinks.map((link) => {
+                  return (
+                    <li key={link.id}>
+                      <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                        {t(link.name)}
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
               <div
                 className={isSubmenuResearchOpen ? 'dropdown-btn open' : 'dropdown-btn'}
