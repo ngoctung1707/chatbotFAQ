@@ -1805,7 +1805,7 @@ textarea {
 .tgmenu__navbar-wrap > ul > li a {
   font-size: 16px;
   font-weight: 500;
-  text-transform: capitalize;
+  text-transform: inherit;
   color: var(--tg-color-dark-blue);
   padding: 42px 0px;
   display: block;
@@ -1847,7 +1847,7 @@ textarea {
   line-height: 1.4;
   display: block;
   color: var(--tg-heading-color);
-  text-transform: capitalize;
+  text-transform: inherit;
 }
 .tgmenu__navbar-wrap > ul > li .sub-menu > li:hover > a, .tgmenu__navbar-wrap > ul > li .sub-menu > li.active > a {
   color: var(--tg-theme-primary);
