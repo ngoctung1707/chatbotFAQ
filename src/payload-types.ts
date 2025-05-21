@@ -74,6 +74,7 @@ export interface Config {
     publications: Publication;
     'upcoming-events': UpcomingEvent;
     courses: Course;
+    solutions: Solution;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     publications: PublicationsSelect<false> | PublicationsSelect<true>;
     'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
+    solutions: SolutionsSelect<false> | SolutionsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -273,6 +275,35 @@ export interface Course {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions".
+ */
+export interface Solution {
+  id: string;
+  title: string;
+  shortDescription: string;
+  lang: 'en' | 'vi';
+  backgroundImage: string | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
@@ -397,6 +428,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'courses';
         value: string | Course;
+      } | null)
+    | ({
+        relationTo: 'solutions';
+        value: string | Solution;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -550,6 +585,20 @@ export interface CoursesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions_select".
+ */
+export interface SolutionsSelect<T extends boolean = true> {
+  title?: T;
+  shortDescription?: T;
+  lang?: T;
+  backgroundImage?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs_select".
  */
 export interface PayloadJobsSelect<T extends boolean = true> {
@@ -627,6 +676,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'courses';
           value: string | Course;
+        } | null)
+      | ({
+          relationTo: 'solutions';
+          value: string | Solution;
         } | null);
     global?: string | null;
     user?: (string | null) | User;
