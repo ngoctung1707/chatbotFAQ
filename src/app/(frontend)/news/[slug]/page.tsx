@@ -37,7 +37,7 @@ const queryPostBySlug = cache(async ({ slug, lang }: { slug: string; lang: Local
   const result = await payload.find({
     collection: 'news',
     draft,
-    limit: 1,
+    limit: 2,
     overrideAccess: draft,
     pagination: false,
     where: {

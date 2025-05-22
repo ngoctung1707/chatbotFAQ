@@ -1,4 +1,4 @@
-import { Inter, Outfit } from 'next/font/google'
+import { Inter, Montserrat } from 'next/font/google'
 import '../../../public/assets/css/animate.min.css'
 import '../../../public/assets/css/bootstrap.min.css'
 import '../../../public/assets/css/flaticon.css'
@@ -19,7 +19,8 @@ const interBody = Inter({
   variable: '--tg-body-font-family',
   display: 'swap',
 })
-const outfitHeading = Outfit({
+
+const montserratHeading = Montserrat({
   weight: ['400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   variable: '--tg-heading-font-family',
@@ -38,7 +39,7 @@ export default async function RootLayout({
   const locale = await getLocale()
   return (
     <html lang={locale}>
-      <body className={`${interBody.variable} ${outfitHeading.variable}`}>
+      <body className={`${interBody.variable} ${montserratHeading.variable}`}>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

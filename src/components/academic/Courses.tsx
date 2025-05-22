@@ -1,26 +1,36 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import CourseCard from '../courses/CourseCard'
+import { getUserLocale } from '@/i18n/localeService'
 
 export default async function Courses() {
+  const lang = await getUserLocale()
   const payload = await getPayload({ config })
 
   const { docs: shortCourses } = await payload.find({
     collection: 'courses',
+    sort: ['-publishedAt'],
     draft: false,
     where: {
       tag: {
         like: 'short-course',
+      },
+      lang: {
+        equals: lang,
       },
     },
   })
 
   const { docs: publicLectures } = await payload.find({
     collection: 'courses',
+    sort: ['-publishedAt'],
     draft: false,
     where: {
       tag: {
         like: 'public-lecture',
+      },
+      lang: {
+        equals: lang,
       },
     },
   })
