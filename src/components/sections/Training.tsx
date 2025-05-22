@@ -1,8 +1,11 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import CourseCard from '../courses/CourseCard'
+import ShortCourses from '../courses/ShortCourses'
+import PublicLectures from '../courses/PublicLectures'
+import { getUserLocale } from '@/i18n/localeService'
 
 export default async function Training() {
+  const lang = await getUserLocale()
   const payload = await getPayload({ config })
 
   const { docs: shortCourses } = await payload.find({
@@ -11,6 +14,9 @@ export default async function Training() {
     where: {
       tag: {
         like: 'short-course',
+      },
+      lang: {
+        equals: lang,
       },
     },
   })
@@ -21,6 +27,9 @@ export default async function Training() {
     where: {
       tag: {
         like: 'public-lecture',
+      },
+      lang: {
+        equals: lang,
       },
     },
   })
@@ -33,34 +42,12 @@ export default async function Training() {
         id="training"
       >
         <div className="container">
-          <div>
-            <div className="row justify-content-center">
-              <div className="col-lg-6">
-                <div className="section-title white-title text-center mb-50 tg-heading-subheading animation-style3">
-                  <h2 className="title tg-element-title">Short-term Courses</h2>
-                </div>
-              </div>
+          {shortCourses.length > 0 && <ShortCourses shortCourses={shortCourses} page="training" />}
+          {publicLectures.length > 0 && (
+            <div style={{ marginTop: '50px' }}>
+              <PublicLectures publicLectures={publicLectures} page="training" />
             </div>
-            <div className="row justify-content-center gutter-24">
-              {shortCourses.map((course) => (
-                <CourseCard doc={course} key={course.id} />
-              ))}
-            </div>
-          </div>
-          <div style={{ marginTop: '50px' }}>
-            <div className="row justify-content-center">
-              <div className="col-lg-6">
-                <div className="section-title white-title text-center mb-50 tg-heading-subheading animation-style3">
-                  <h2 className="title tg-element-title">Public Lectures</h2>
-                </div>
-              </div>
-            </div>
-            <div className="row justify-content-center gutter-24">
-              {publicLectures.map((course) => (
-                <CourseCard doc={course} key={course.id} />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </>
