@@ -2443,7 +2443,7 @@ textarea {
 .banner-bg {
   background-size: cover;
   background-position: center;
-  min-height: 870px;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   padding: 200px 0 100px;

@@ -6,11 +6,24 @@ export default function Banner() {
   const t = useTranslations('HomePage')
   return (
     <>
-      <section
-        className="banner-area banner-bg"
-        id="banner"
-        data-background="/assets/img/banner/banner.gif"
-      >
+      <section className="banner-area banner-bg" id="banner" style={{ position: 'relative' }}>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.4,
+          }}
+        >
+          <source src="/assets/img/banner/banner-video.mp4" type="video/mp4" />
+        </video>
         <div className="container">
           <div className="row">
             <div className="col-lg-6">

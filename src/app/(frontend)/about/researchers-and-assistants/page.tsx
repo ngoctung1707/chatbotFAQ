@@ -64,6 +64,7 @@ const Researchers = [
     name: 'Dr. Nguyen Trung Dung',
     title: 'FAMI, HUST',
   },
+  { name: 'Dr. Tran Ngoc Thang', title: 'FAMI, HUST' },
 ]
 
 const Assistants = [
@@ -98,34 +99,36 @@ export default function ResearchersAndAssistants() {
     <>
       <Layout breadcrumbTitle="Researchers & Assistants">
         <section className="blog__details-area">
-          <div className="container" style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div className="about__list-box">
-              <h4 style={{ marginBottom: '16px' }}>Researchers</h4>
-              <ul className="list-wrap">
-                {Researchers.map((item) => (
-                  <li key={item.name} style={{ marginBottom: '15px' }}>
-                    <i className="flaticon-user" />
-                    <div>
-                      <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.name}</span>
-                      {item.title && <span style={{ fontSize: '18px' }}> ({item.title})</span>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="about__list-box">
-              <h4 style={{ marginBottom: '16px' }}>Assistants</h4>
-              <ul className="list-wrap">
-                {Assistants.map((item) => (
-                  <li key={item.name} style={{ marginBottom: '15px' }}>
-                    <i className="flaticon-user" />
-                    <div>
-                      <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.name}</span>
-                      {item.title && <span style={{ fontSize: '18px' }}> ({item.title})</span>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+          <div className="container">
+            <div className="row">
+              <div className="about__list-box col-lg-6 col-md-12 mb-5">
+                <h4 style={{ marginBottom: '16px' }}>Researchers</h4>
+                <ul className="list-wrap">
+                  {Researchers.map((item) => (
+                    <li key={item.name} style={{ marginBottom: '15px' }}>
+                      <i className="flaticon-user" />
+                      <div>
+                        <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.name}</span>
+                        {item.title && <span style={{ fontSize: '18px' }}> ({item.title})</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="about__list-box col-lg-6 col-md-12">
+                <h4 style={{ marginBottom: '16px' }}>Assistants</h4>
+                <ul className="list-wrap">
+                  {Assistants.map((item) => (
+                    <li key={item.name} style={{ marginBottom: '15px' }}>
+                      <i className="flaticon-user" />
+                      <div>
+                        <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.name}</span>
+                        {item.title && <span style={{ fontSize: '18px' }}> ({item.title})</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </section>
