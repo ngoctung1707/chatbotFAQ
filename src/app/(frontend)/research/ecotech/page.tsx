@@ -1,7 +1,23 @@
 import Layout from '@/components/layout/Layout'
-import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
-export default async function Ecotech() {
+import NewsCard from '@/components/news/NewsCard'
+
+export default async function Hackathon() {
+  const payload = await getPayload({ config })
+
+  const { docs: ecotechNews } = await payload.find({
+    collection: 'news',
+    draft: false,
+    pagination: false,
+    where: {
+      title: {
+        like: /ecotech/i,
+      },
+    },
+    sort: ['-publishedAt'],
+  })
   return (
     <>
       <Layout transparent>
@@ -18,52 +34,16 @@ export default async function Ecotech() {
                   </div>
                 </div>
               </div>
-              <div className="row">
-                <div className="col-12">
-                  <div className="services__content-four">
-                    <p>
-                      In recent years, the Digital Technology, Digital Economy and Fintech sectors
-                      in Vietnam have experienced rapid growth due to the surge in the number of
-                      smart device users and online services. The population, especially the youth,
-                      is increasingly tech-savvy and passionate about technology. The government is
-                      also providing extensive support to businesses in the digital economy sector.
-                      These favorable conditions create opportunities for national economic
-                      development and bring about comprehensive changes in the financial industry
-                      over time.
-                    </p>
-
-                    <p className="mb-2">
-                      The Conference on Digital Economy and Technology (ECOTECH) will address
-                      several urgent issues currently facing the Fintech sector in Vietnam,
-                      including:
-                    </p>
-
-                    <ul>
-                      <li className="mb-2">
-                        Creating a bridge for researchers, scientists, managers and policymakers to
-                        discuss emerging technology trends; to exchange and share scientific
-                        knowledge and expertise on the impact of technology on the economy and
-                        finance in the context of digital transformation.
-                      </li>
-                      <li className="mb-2">
-                        Seeking innovative and breakthrough ideas; offering feedback, revisions, and
-                        support to realize promising projects and initiatives, thereby promoting the
-                        growth of the digital economy and digital finance in Vietnam.
-                      </li>
-                      <li>
-                        Collaborating with leading experts across various fields to propose
-                        solutions, models, strategic messages, and development policies that
-                        integrate technology, economics, and finance in the new era.
-                      </li>
-                    </ul>
-
-                    <p>
-                      Information about the 2nd ECOTECH 2025 conference is available{' '}
-                      <Link href="https://ecotech.bkfin.tech/" target="_blank">
-                        here
-                      </Link>
-                      .
-                    </p>
+              <div className="blog__inner-wrap">
+                <div className="row">
+                  <div className="col-100">
+                    <div className="blog-post-wrap">
+                      <div className="row gutter-24 justify-content-center">
+                        {ecotechNews.map((doc) => (
+                          <NewsCard doc={doc} key={doc.id} />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
