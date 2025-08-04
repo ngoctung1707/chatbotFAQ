@@ -1,20 +1,30 @@
 import Layout from '@/components/layout/Layout'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-
 import NewsCard from '@/components/news/NewsCard'
+import { getUserLocale } from '@/i18n/localeService'
 
 export default async function Hackathon() {
   const payload = await getPayload({ config })
+  const lang = await getUserLocale()
 
   const { docs: ecotechNews } = await payload.find({
     collection: 'news',
     draft: false,
     pagination: false,
     where: {
-      title: {
-        like: /ecotech/i,
-      },
+      and: [
+        {
+          title: {
+            like: /ecotech/i,
+          },
+        },
+        {
+          lang: {
+            equals: lang,
+          },
+        },
+      ],
     },
     sort: ['-publishedAt'],
   })

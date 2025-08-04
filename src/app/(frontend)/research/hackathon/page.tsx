@@ -2,8 +2,10 @@ import Layout from '@/components/layout/Layout'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import NewsCard from '@/components/news/NewsCard'
+import { getUserLocale } from '@/i18n/localeService'
 
 export default async function Hackathon() {
+  const lang = await getUserLocale()
   const payload = await getPayload({ config })
 
   const { docs: hackdayNews } = await payload.find({
@@ -11,9 +13,18 @@ export default async function Hackathon() {
     draft: false,
     pagination: false,
     where: {
-      title: {
-        like: /hack(day|athon)/i,
-      },
+      and: [
+        {
+          title: {
+            like: /hack/i,
+          },
+        },
+        {
+          lang: {
+            equals: lang,
+          },
+        },
+      ],
     },
     sort: ['-publishedAt'],
   })
