@@ -70,6 +70,42 @@ export const en = {
           da: 'The course is designed to help students master data analysis using today`s most popular tools such as SQL, Power BI, Python and AI.',
         },
       },
+      certification: {
+        title: 'Certification',
+        items: {
+          completion: {
+            title: 'Certificate of Completion',
+            issuer: 'Issued by Hanoi University of Science and Technology',
+          },
+          participation: {
+            title: 'Certificate of Participation',
+            issuer: 'Issued by BK Fintech & our partners',
+          },
+        },
+      },
+      seminar: {
+        title: 'Seminar & Workshop',
+        upcoming: 'Upcoming Events',
+      },
+      student: {
+        title: 'Student Life',
+        description:
+          'At the Institute for Digital Technology and Economy – HUST, student life is about more than just lectures. It’s about being part of a vibrant, forward-thinking community where students explore ideas, build skills, and grow personally and professionally.',
+        items: {
+          facility: {
+            title: 'Facility',
+            desc: 'Modern, tech-enabled learning spaces designed to support collaboration, innovation and hands-on practice',
+          },
+          activity: {
+            title: 'Activity',
+            desc: 'A dynamic calendar of workshops, lecturers and competitions that help students apply knowledge, develop skills and connect with industry experts',
+          },
+          community: {
+            title: 'Community',
+            desc: 'A vibrant network of student clubs and interest groups where learners collaborate, explore emerging technologies and grow together',
+          },
+        },
+      },
     },
   },
 }
@@ -145,6 +181,42 @@ export const vi: typeof en = {
           title: 'Các bài giảng công khai',
           ai: 'Khóa học cung cấp nền tảng kiến thức cơ bản về trí tuệ nhân tạo (AI), công cụ và lập trình AI dành cho người mới bắt đầu',
           da: 'Khóa học được thiết kế giúp học viên thành thạo phân tích dữ liệu bằng các công cụ phổ biến nhất hiện nay như SQL, Power BI, Python và AI',
+        },
+      },
+      certification: {
+        title: 'Chứng chỉ',
+        items: {
+          completion: {
+            title: 'Chứng chỉ Hoàn thành',
+            issuer: 'Cấp bởi Trường Đại học Bách khoa Hà Nội',
+          },
+          participation: {
+            title: 'Chứng nhận Tham gia',
+            issuer: 'Cấp bởi BK Fintech & đối tác',
+          },
+        },
+      },
+      seminar: {
+        title: 'Seminar & Hội thảo',
+        upcoming: 'Sự kiện sắp diễn ra',
+      },
+      student: {
+        title: 'Sinh viên - Học viên',
+        description:
+          'Tại Viện Công nghệ và Kinh tế số – HUST, đời sống sinh viên không chỉ giới hạn trong các buổi học lý thuyết. Đây là môi trường học thuật hiện đại, sáng tạo, nơi sinh viên được khám phá ý tưởng mới, trau dồi kỹ năng và phát triển toàn diện cả về chuyên môn lẫn cá nhân.',
+        items: {
+          facility: {
+            title: 'Cơ sở vật chất',
+            desc: 'Không gian học tập hiện đại, được trang bị công nghệ tiên tiến nhằm hỗ trợ tối đa cho việc học tập, làm việc nhóm và thực hành thực tế.',
+          },
+          activity: {
+            title: 'Hoạt động',
+            desc: 'Lịch hoạt động đa dạng với các workshop, hội thảo, cuộc thi học thuật giúp sinh viên, học viên vận dụng kiến thức, phát triển kỹ năng thực tế và kết nối với chuyên gia trong ngành.',
+          },
+          community: {
+            title: 'Cộng đồng',
+            desc: 'Câu lạc bộ sinh viên và cộng đồng chuyên môn - nơi sinh viên, học viên cùng nhau chia sẻ kiến thức, khám phá công nghệ mới và phát triển bản thân trong một môi trường năng động và sáng tạo.',
+          },
         },
       },
     },

@@ -2,8 +2,10 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getUserLocale } from '@/i18n/localeService'
 import SeminarSlider from './SeminarSlider'
+import { getTranslations } from 'next-intl/server'
 
 export default async function Seminar() {
+  const t = await getTranslations()
   const payload = await getPayload({ config })
   const lang = await getUserLocale()
   const { docs: seminars } = await payload.find({
@@ -41,7 +43,7 @@ export default async function Seminar() {
         <div className="row justify-content-center">
           <div className="col-lg-6">
             <div className="section-title white-title text-center mb-50 tg-heading-subheading animation-style3">
-              <h2 className="title tg-element-title">Seminar & Workshop</h2>
+              <h2 className="title tg-element-title">{t('Education.sections.seminar.title')}</h2>
             </div>
           </div>
         </div>
@@ -52,7 +54,7 @@ export default async function Seminar() {
         <div className="row justify-content-center">
           <div className="col-lg-6">
             <div className="section-title white-title text-center mb-50 tg-heading-subheading animation-style3">
-              <h2 className="title tg-element-title">Upcoming Events</h2>
+              <h2 className="title tg-element-title">{t('Education.sections.seminar.upcoming')}</h2>
             </div>
           </div>
           <div className="row justify-content-center gutter-24">

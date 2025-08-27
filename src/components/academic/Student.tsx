@@ -1,44 +1,51 @@
+'use client'
 import React from 'react'
+import { useTranslations } from 'next-intl'
 
-const studentLifeData = [
-  {
-    title: 'Facility',
-    img: '/assets/img/student-life/hust.jpg',
-    desc: 'Modern, tech-enabled learning spaces designed to support collaboration, innovation and hands-on practice.',
-  },
-  {
-    title: 'Activity',
-    img: '/assets/img/student-life/activities.jpg',
-    desc: 'A dynamic calendar of workshops, lecturers and competitions that help students apply knowledge, develop skills and connect with industry experts.',
-  },
-  {
-    title: 'Community',
-    img: '/assets/img/student-life/communities.jpg',
-    desc: 'A vibrant network of student clubs and interest groups where learners collaborate, explore emerging technologies and grow together.',
-  },
-]
+const studentLifeImages = {
+  facility: '/assets/img/student-life/hust.jpg',
+  activity: '/assets/img/student-life/activities.jpg',
+  community: '/assets/img/student-life/communities.jpg',
+} as const
 
 export default function Student() {
+  const t = useTranslations('Education.sections.student')
+  const studentLifeData = [
+    {
+      key: 'facility',
+      title: t('items.facility.title'),
+      img: studentLifeImages.facility,
+      desc: t('items.facility.desc'),
+    },
+    {
+      key: 'activity',
+      title: t('items.activity.title'),
+      img: studentLifeImages.activity,
+      desc: t('items.activity.desc'),
+    },
+    {
+      key: 'community',
+      title: t('items.community.title'),
+      img: studentLifeImages.community,
+      desc: t('items.community.desc'),
+    },
+  ] as const
   return (
     <section className="project__area-two" id="student" style={{ position: 'relative' }}>
       <div className="container" data-aos="fade-up">
         <div className="row justify-content-center mb-4">
           <div className="section-title text-center">
-            <h2 className="title">Student Life</h2>
+            <h2 className="title">{t('title')}</h2>
           </div>
-          <p style={{ maxWidth: 1000, margin: '16px auto 0', textAlign: 'center' }}>
-            At the Institute for Digital Technology and Economy – HUST, student life is about more
-            than just lectures. It’s about being part of a vibrant, forward-thinking community where
-            students explore ideas, build skills, and grow personally and professionally.
-          </p>
+          <p style={{ margin: '16px', textAlign: 'center' }}>{t('description')}</p>
         </div>
         <div className="row justify-content-center">
           {studentLifeData.map((item) => (
-            <div className="col-md-4 d-flex flex-column align-items-center mb-4" key={item.title}>
+            <div className="col-md-4 d-flex flex-column align-items-center mb-4" key={item.key}>
               <div
                 style={{
                   width: '100%',
-                  maxWidth: 350,
+                  maxWidth: 400,
                   borderRadius: 16,
                   overflow: 'hidden',
                   boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
@@ -53,7 +60,7 @@ export default function Student() {
               <h4 style={{ fontWeight: 700, color: '#2B2B6A', marginTop: 24, marginBottom: 12 }}>
                 {item.title}
               </h4>
-              <p style={{ textAlign: 'center', fontSize: 15, maxWidth: 350 }}>{item.desc}</p>
+              <p style={{ textAlign: 'center', fontSize: 15, maxWidth: 400 }}>{item.desc}</p>
             </div>
           ))}
         </div>

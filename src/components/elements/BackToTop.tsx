@@ -1,21 +1,23 @@
+'use client'
 import { useEffect, useState } from 'react'
 
 export default function BackToTop() {
   const [hasScrolled, setHasScrolled] = useState(false)
 
   useEffect(() => {
-    window.addEventListener('scroll', onScroll)
+    const handleScroll = () => {
+      setHasScrolled(window.scrollY > 100)
+    }
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('scroll', handleScroll)
     }
-  })
+  }, [])
 
-  const onScroll = () => {
-    if (window.scrollY > 100 && !hasScrolled) {
-      setHasScrolled(true)
-    } else if (window.scrollY < 100 && hasScrolled) {
-      setHasScrolled(false)
-    }
+  const handleBackToTopClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -23,8 +25,10 @@ export default function BackToTop() {
       {hasScrolled && (
         <a
           className="scroll__top scroll-to-target open"
-          href="#breadcrumb"
+          href="#"
+          onClick={handleBackToTopClick}
           style={{ position: 'fixed', zIndex: 2147483647 }}
+          aria-label="Back to top"
         >
           <i className="fas fa-angle-up"></i>
         </a>

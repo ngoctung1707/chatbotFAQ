@@ -1,4 +1,7 @@
+import { useTranslations } from 'next-intl'
+
 export default function Certification() {
+  const t = useTranslations('Education.sections.certification')
   return (
     <section className="about__area-five">
       <div className="container">
@@ -6,7 +9,7 @@ export default function Certification() {
           <div className="col-lg-12">
             <div className="about__content-five">
               <div className="section-title mb-30 text-center">
-                <h2 className="title">Certification</h2>
+                <h2 className="title">{t('title')}</h2>
               </div>
               <div className="row justify-content-center">
                 <div className="col-lg-6 col-md-10 mb-40" data-aos="fade-right">
@@ -21,11 +24,9 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Certificate of Completion</span>
+                      <span style={{ color: 'white' }}>{t('items.completion.title')}</span>
                     </h2>
-                    <span style={{ color: 'white' }}>
-                      Issued by Hanoi University of Science and Technology
-                    </span>
+                    <span style={{ color: 'white' }}>{t('items.completion.issuer')}</span>
                   </div>
                 </div>
                 <div className="col-lg-6 col-md-10" data-aos="fade-left">
@@ -40,9 +41,9 @@ export default function Certification() {
                     }}
                   >
                     <h2 className="title">
-                      <span style={{ color: 'white' }}>Certificate of Participation</span>
+                      <span style={{ color: 'white' }}>{t('items.participation.title')}</span>
                     </h2>
-                    <span style={{ color: 'white' }}>Issued by BK Fintech & our partners</span>
+                    <span style={{ color: 'white' }}>{t('items.participation.issuer')}</span>
                   </div>
                 </div>
               </div>
