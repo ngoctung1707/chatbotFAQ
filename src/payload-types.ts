@@ -75,6 +75,7 @@ export interface Config {
     'upcoming-events': UpcomingEvent;
     courses: Course;
     solutions: Solution;
+    researchs: Research;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
     solutions: SolutionsSelect<false> | SolutionsSelect<true>;
+    researchs: ResearchsSelect<false> | ResearchsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -178,7 +180,7 @@ export interface News {
   title: string;
   slug: string;
   lang: 'en' | 'vi';
-  tag: 'news' | 'workshop' | 'seminar';
+  tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech';
   publishedAt: string;
   heroImage: string | Media;
   content: {
@@ -283,6 +285,41 @@ export interface Solution {
   shortDescription: string;
   lang: 'en' | 'vi';
   backgroundImage: string | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "researchs".
+ */
+export interface Research {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  lang: 'en' | 'vi';
+  publishedAt: string;
+  tag:
+    | 'software-engineering-and-decentralized-systems'
+    | 'operational-efficiency-in-finance'
+    | 'smart-finance-and-digital-banking';
+  heroImage: string | Media;
   content: {
     root: {
       type: string;
@@ -432,6 +469,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'solutions';
         value: string | Solution;
+      } | null)
+    | ({
+        relationTo: 'researchs';
+        value: string | Research;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -599,6 +640,23 @@ export interface SolutionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "researchs_select".
+ */
+export interface ResearchsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  lang?: T;
+  publishedAt?: T;
+  tag?: T;
+  heroImage?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs_select".
  */
 export interface PayloadJobsSelect<T extends boolean = true> {
@@ -680,6 +738,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'solutions';
           value: string | Solution;
+        } | null)
+      | ({
+          relationTo: 'researchs';
+          value: string | Research;
         } | null);
     global?: string | null;
     user?: (string | null) | User;

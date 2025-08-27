@@ -21,8 +21,8 @@ const slugifyHook: FieldHook = ({ data, operation, value }) => {
   return value
 }
 
-export const News: CollectionConfig = {
-  slug: 'news',
+export const Researchs: CollectionConfig = {
+  slug: 'researchs',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -30,12 +30,13 @@ export const News: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    defaultColumns: ['title', 'tag', 'publishedAt', 'lang'],
+    defaultColumns: ['title', 'tag', 'lang'],
     livePreview: {
-      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'news' }),
+      url: ({ data, req }) =>
+        generatePreviewPath({ req, slug: data.slug, collection: 'researchs' }),
     },
     preview: (data, { req }) =>
-      generatePreviewPath({ req, slug: <string>data.slug, collection: 'news' }),
+      generatePreviewPath({ req, slug: <string>data.slug, collection: 'researchs' }),
     useAsTitle: 'title',
   },
   fields: [
@@ -56,6 +57,12 @@ export const News: CollectionConfig = {
       },
     },
     {
+      name: 'description',
+      type: 'textarea',
+      label: 'Mô tả',
+      required: true,
+    },
+    {
       name: 'lang',
       type: 'select',
       options: ['en', 'vi'],
@@ -64,16 +71,20 @@ export const News: CollectionConfig = {
       required: true,
     },
     {
-      name: 'tag',
-      type: 'select',
-      options: ['news', 'workshop', 'seminar', 'hackathon', 'ecotech'],
-      label: 'Tag',
-      required: true,
-    },
-    {
       name: 'publishedAt',
       type: 'date',
       label: 'Ngày đăng',
+      required: true,
+    },
+    {
+      name: 'tag',
+      type: 'select',
+      options: [
+        'software-engineering-and-decentralized-systems',
+        'operational-efficiency-in-finance',
+        'smart-finance-and-digital-banking',
+      ],
+      label: 'Tag',
       required: true,
     },
     {

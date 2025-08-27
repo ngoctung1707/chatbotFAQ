@@ -68,9 +68,9 @@ export default async function News({ params }: Props) {
                                 <li className="next_link page-item">
                                   {currentPage === 1 ? null : (
                                     <Link href={`/news/pages/${prevPage}`}>
-                                      <a className="page-link">
+                                      <span className="page-link">
                                         <i className="fas fa-angle-double-left" />
-                                      </a>
+                                      </span>
                                     </Link>
                                   )}
                                 </li>
@@ -95,9 +95,9 @@ export default async function News({ params }: Props) {
                                 <li className="next_link page-item">
                                   {currentPage >= totalPages ? null : (
                                     <Link href={`/news/pages/${nextPage}`}>
-                                      <a className="page-link">
+                                      <span className="page-link">
                                         <i className="fas fa-angle-double-right" />
-                                      </a>
+                                      </span>
                                     </Link>
                                   )}
                                 </li>

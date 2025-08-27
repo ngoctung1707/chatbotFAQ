@@ -6,14 +6,15 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
-import { News } from './collections/News'
+import { Users } from '@/collections/Users'
+import { Media } from '@/collections/Media'
+import { News } from '@/collections/News'
 import { Members } from '@/collections/Members'
 import { Publications } from '@/collections/Publications'
 import { UpcomingEvents } from '@/collections/UpcomingEvents'
-import { Courses } from './collections/Courses'
-import { Solutions } from './collections/Solutions'
+import { Courses } from '@/collections/Courses'
+import { Solutions } from '@/collections/Solutions'
+import { Researchs } from '@/collections/Researchs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,10 +27,20 @@ export default buildConfig({
     },
     livePreview: {
       url: process.env.NEXT_PUBLIC_SERVER_URL,
-      collections: ['news', 'courses', 'solutions'],
+      collections: ['news', 'courses', 'solutions', 'researchs'],
     },
   },
-  collections: [Users, Media, News, Members, Publications, UpcomingEvents, Courses, Solutions],
+  collections: [
+    Users,
+    Media,
+    News,
+    Members,
+    Publications,
+    UpcomingEvents,
+    Courses,
+    Solutions,
+    Researchs,
+  ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
   }),

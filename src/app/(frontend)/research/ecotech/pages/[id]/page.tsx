@@ -4,6 +4,7 @@ import config from '@payload-config'
 import React from 'react'
 import NewsCard from '@/components/news/NewsCard'
 import Link from 'next/link'
+import { getUserLocale } from '@/i18n/localeService'
 
 type Props = {
   params: Promise<{
@@ -11,26 +12,25 @@ type Props = {
   }>
 }
 
-export default async function EcotechPaginated({ params }: Props) {
+export default async function News({ params }: Props) {
   const { id = '1' } = await params
+  const lang = await getUserLocale()
   const currentPage = isNaN(Number(id)) ? 1 : Number(id),
     paginationItem = 4
   const payload = await getPayload({ config })
-  const {
-    docs: ecotechNews,
-    totalPages,
-    nextPage,
-    prevPage,
-  } = await payload.find({
+  const { docs, totalPages, nextPage, prevPage } = await payload.find({
     collection: 'news',
-    limit: 6,
     draft: false,
+    limit: 6,
     pagination: true,
     page: currentPage,
     sort: ['-publishedAt'],
     where: {
-      title: {
-        like: /ecotech/i,
+      tag: {
+        in: ['ecotech'],
+      },
+      lang: {
+        equals: lang,
       },
     },
   })
@@ -61,55 +61,53 @@ export default async function EcotechPaginated({ params }: Props) {
                   <div className="col-100">
                     <div className="blog-post-wrap">
                       <div className="row gutter-24 justify-content-center">
-                        {ecotechNews.map((doc) => (
+                        {docs.map((doc) => (
                           <NewsCard doc={doc} key={doc.id} />
                         ))}
-                        {totalPages > 1 && (
-                          <div className="pagination-wrap mt-40">
-                            <nav aria-label="Page navigation example">
-                              <ul className="pagination list-wrap">
-                                {getPaginationGroup.length <= 0 ? null : (
-                                  <li className="next_link page-item">
-                                    {currentPage === 1 ? null : (
-                                      <Link href={`/research/ecotech/pages/${prevPage}`}>
-                                        <a className="page-link">
-                                          <i className="fas fa-angle-double-left" />
-                                        </a>
-                                      </Link>
-                                    )}
-                                  </li>
-                                )}
+                        <div className="pagination-wrap mt-40">
+                          <nav aria-label="Page navigation example">
+                            <ul className="pagination list-wrap">
+                              {getPaginationGroup.length <= 0 ? null : (
+                                <li className="next_link page-item">
+                                  {currentPage === 1 ? null : (
+                                    <Link href={`/research/ecotech/pages/${prevPage}`}>
+                                      <span className="page-link">
+                                        <i className="fas fa-angle-double-left" />
+                                      </span>
+                                    </Link>
+                                  )}
+                                </li>
+                              )}
 
-                                {getPaginationGroup.map((item, index) => {
-                                  return (
-                                    <li
-                                      key={index}
-                                      className={
-                                        currentPage === item ? 'page-item active' : 'page-item'
-                                      }
-                                    >
-                                      <Link href={`/research/ecotech/pages/${item}`}>
-                                        <span className="page-link">{item}</span>
-                                      </Link>
-                                    </li>
-                                  )
-                                })}
-
-                                {getPaginationGroup.length <= 0 ? null : (
-                                  <li className="next_link page-item">
-                                    {currentPage >= totalPages ? null : (
-                                      <Link href={`/research/ecotech/pages/${nextPage}`}>
-                                        <a className="page-link">
-                                          <i className="fas fa-angle-double-right" />
-                                        </a>
-                                      </Link>
-                                    )}
+                              {getPaginationGroup.map((item, index) => {
+                                return (
+                                  <li
+                                    key={index}
+                                    className={
+                                      currentPage === item ? 'page-item active' : 'page-item'
+                                    }
+                                  >
+                                    <Link href={`/research/ecotech/pages/${item}`}>
+                                      <span className="page-link">{item}</span>
+                                    </Link>
                                   </li>
-                                )}
-                              </ul>
-                            </nav>
-                          </div>
-                        )}
+                                )
+                              })}
+
+                              {getPaginationGroup.length <= 0 ? null : (
+                                <li className="next_link page-item">
+                                  {currentPage >= totalPages ? null : (
+                                    <Link href={`/research/ecotech/pages/${nextPage}`}>
+                                      <span className="page-link">
+                                        <i className="fas fa-angle-double-right" />
+                                      </span>
+                                    </Link>
+                                  )}
+                                </li>
+                              )}
+                            </ul>
+                          </nav>
+                        </div>
                       </div>
                     </div>
                   </div>
