@@ -13,7 +13,7 @@ export default function ResearchCard({ doc }: ResearchCardProps) {
       <div className="col-xl-4 col-lg-6 col-md-10">
         <div className="blog-post-item shine-animate-item">
           <div className="blog-post-thumb">
-            <Link href={`/research/r&d-labs/${doc.slug}`} className="shine-animate">
+            <Link href={`/research/${doc.slug}`} className="shine-animate">
               <img src={(doc.heroImage as Media)?.url} alt={(doc.heroImage as Media)?.caption} />
             </Link>
           </div>
@@ -28,12 +28,12 @@ export default function ResearchCard({ doc }: ResearchCardProps) {
                 textOverflow: 'ellipsis',
               }}
             >
-              <Link href={`/research/r&d-labs/${doc.slug}`}>{doc.title}</Link>
+              <Link href={`/research/${doc.slug}`}>{doc.title}</Link>
             </h2>
             <div className="blog-post-meta">
               <ul className="list-wrap">
                 <li>
-                  <Link href={`/research/r&d-labs/${doc.slug}`} className="btn">
+                  <Link href={`/research/${doc.slug}`} className="btn">
                     {t('readMore')}
                   </Link>
                 </li>

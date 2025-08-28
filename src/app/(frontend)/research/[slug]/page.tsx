@@ -18,7 +18,7 @@ export default async function Page({ params: paramsPromise }: Args) {
   const lang = await getUserLocale()
   const { isEnabled: draft } = await draftMode()
   const { slug = '' } = await paramsPromise
-  const url = '/research/r&d-labs/'
+  const url = '/research/'
   const research = await queryPostBySlug({ slug, lang })
   if (!research) redirect(url)
   return (
