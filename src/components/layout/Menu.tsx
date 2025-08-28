@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export const aboutLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'welcome', path: '/welcome-message' },
@@ -13,12 +14,6 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
   { id: 7, name: 'office', path: '/back-office' },
 ].map(({ path, ...link }) => ({ ...link, path: `/about${path}` }))
 
-export const rdLabsLinks: { id: number; name: string; path: string }[] = [
-  { id: 1, name: 'software_engineering', path: '/software-engineering-and-decentralized-systems' },
-  { id: 2, name: 'operational_efficiency', path: '/operational-efficiency-in-finance' },
-  { id: 3, name: 'smart_finance', path: '/smart-finance-and-digital-banking' },
-].map(({ path, ...link }) => ({ ...link, path: `/research/r&d-labs${path}` }))
-
 export const researchLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'publications', path: '/publications' },
   { id: 2, name: 'ecotech', path: '/ecotech' },
@@ -27,12 +22,32 @@ export const researchLinks: { id: number; name: string; path: string }[] = [
 
 export default function Menu() {
   const pathname = usePathname()
+  const locale = useLocale()
+  const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
-    rdLabsLinks.some((link) => link.path === pathname)
+    pathname.startsWith('/research/r&d-labs')
   const t = useTranslations('Menu')
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadLabs() {
+      try {
+        const res = await fetch(`/api/research-labs?lang=${locale}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = (await res.json()) as { labs: { slug: string; title: string }[] }
+        if (isMounted) setRdLabs(data.labs)
+      } catch {
+        // ignore
+      }
+    }
+    loadLabs()
+    return () => {
+      isMounted = false
+    }
+  }, [locale])
 
   return (
     <>
@@ -44,7 +59,7 @@ export default function Menu() {
           width: 300px;
           background-color: #fff;
           box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-          padding: 10px 0;
+          padding: 15px 0;
           z-index: 999;
           display: none;
           list-style-type: none;
@@ -78,9 +93,19 @@ export default function Menu() {
         }
 
         .nested-submenu li {
-          padding: 0 15px;
+          padding: 0px;
           position: relative;
           list-style-type: none;
+        }
+
+        .nested-submenu li a {
+          display: block;
+          transition: all 0.3s ease-out 0s;
+        }
+
+        .nested-submenu li a:hover {
+          color: #f8a51c !important;
+          transform: translateX(8px);
         }
       `}</style>
       <ul className="navigation">
@@ -93,7 +118,7 @@ export default function Menu() {
           </Link>
           <ul className="sub-menu" style={{ width: '300px' }}>
             <li className="nested-parent">
-              <Link href="#" className={isActive('/research/r&d-labs') ? 'active' : ''}>
+              <Link href="#" className={pathname.startsWith('/research/r&d-labs') ? 'active' : ''}>
                 {t('rdlabs')}
                 <svg
                   className="arrow-right"
@@ -107,13 +132,16 @@ export default function Menu() {
                 </svg>
               </Link>
               <ul className="nested-submenu">
-                {rdLabsLinks.map((rdLink) => (
-                  <li key={rdLink.id}>
-                    <Link href={rdLink.path} className={isActive(rdLink.path) ? 'active' : ''}>
-                      {t(rdLink.name)}
-                    </Link>
-                  </li>
-                ))}
+                {rdLabs.map((lab) => {
+                  const path = `/research/r&d-labs/${lab.slug}`
+                  return (
+                    <li key={lab.slug}>
+                      <a href={path} className={isActive(path) ? 'active' : ''}>
+                        {lab.title}
+                      </a>
+                    </li>
+                  )
+                })}
               </ul>
             </li>
             <li>

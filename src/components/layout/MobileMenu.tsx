@@ -1,9 +1,9 @@
 'use client'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
-import { MouseEventHandler, useState } from 'react'
-import { aboutLinks, researchLinks, rdLabsLinks } from './Menu'
+import { MouseEventHandler, useEffect, useState } from 'react'
+import { aboutLinks, researchLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -11,10 +11,12 @@ export default function MobileMenu({
   handleMobileMenu: MouseEventHandler<HTMLDivElement>
 }) {
   const pathname = usePathname()
+  const locale = useLocale()
+  const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
   const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
-  const isRdLabsLinkActive = () => rdLabsLinks.some((link) => link.path === pathname)
+  const isRdLabsLinkActive = () => pathname.startsWith('/research/r&d-labs')
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
@@ -31,6 +33,24 @@ export default function MobileMenu({
   const toggleSubmenuRdLabs = () => {
     setIsSubmenuRdLabsOpen(!isSubmenuRdLabsOpen)
   }
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadLabs() {
+      try {
+        const res = await fetch(`/api/research-labs?lang=${locale}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = (await res.json()) as { labs: { slug: string; title: string }[] }
+        if (isMounted) setRdLabs(data.labs)
+      } catch {
+        // ignore
+      }
+    }
+    loadLabs()
+    return () => {
+      isMounted = false
+    }
+  }, [locale])
 
   return (
     <div className="tgmobile__menu">
@@ -65,11 +85,12 @@ export default function MobileMenu({
                     className="sub-menu"
                     style={{ display: `${isSubmenuRdLabsOpen ? 'block' : 'none'}` }}
                   >
-                    {rdLabsLinks.map((link) => {
+                    {rdLabs.map((lab) => {
+                      const path = `/research/r&d-labs/${lab.slug}`
                       return (
-                        <li key={link.id}>
-                          <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                            {t(link.name)}
+                        <li key={lab.slug}>
+                          <Link href={path} className={isActive(path) ? 'active' : ''}>
+                            {lab.title}
                           </Link>
                         </li>
                       )

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { LivePreviewListener } from '@/components/news/LivePreviewListener'
 import { getUserLocale } from '@/i18n/localeService'
 import { Locale } from '@/i18n/config'
-import ResearchPage from '@/components/researchs/ResearchPage'
+import ResearchLabsPage from '@/components/researchs/ResearchLabsPage'
 
 type Args = {
   params: Promise<{
@@ -18,13 +18,13 @@ export default async function Page({ params: paramsPromise }: Args) {
   const lang = await getUserLocale()
   const { isEnabled: draft } = await draftMode()
   const { slug = '' } = await paramsPromise
-  const url = '/research/'
+  const url = '/research/r&d-labs/'
   const research = await queryPostBySlug({ slug, lang })
   if (!research) redirect(url)
   return (
     <article>
       {draft && <LivePreviewListener />}
-      <ResearchPage data={research} />
+      <ResearchLabsPage data={research} />
     </article>
   )
 }
@@ -35,7 +35,7 @@ const queryPostBySlug = cache(async ({ slug, lang }: { slug: string; lang: Local
   const payload = await getPayload({ config })
 
   const result = await payload.find({
-    collection: 'researchs',
+    collection: 'research-labs',
     draft,
     limit: 2,
     overrideAccess: draft,

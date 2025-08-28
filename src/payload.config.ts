@@ -14,7 +14,7 @@ import { Publications } from '@/collections/Publications'
 import { UpcomingEvents } from '@/collections/UpcomingEvents'
 import { Courses } from '@/collections/Courses'
 import { Solutions } from '@/collections/Solutions'
-import { Researchs } from '@/collections/Researchs'
+import { ResearchLabs } from './collections/ResearchLabs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,8 +27,11 @@ export default buildConfig({
     },
     livePreview: {
       url: process.env.NEXT_PUBLIC_SERVER_URL,
-      collections: ['news', 'courses', 'solutions', 'researchs'],
+      collections: ['news', 'courses', 'solutions', 'research-labs'],
     },
+  },
+  routes: {
+    api: '/payload',
   },
   collections: [
     Users,
@@ -39,7 +42,7 @@ export default buildConfig({
     UpcomingEvents,
     Courses,
     Solutions,
-    Researchs,
+    ResearchLabs,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],

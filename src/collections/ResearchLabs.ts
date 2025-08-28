@@ -21,8 +21,8 @@ const slugifyHook: FieldHook = ({ data, operation, value }) => {
   return value
 }
 
-export const Researchs: CollectionConfig = {
-  slug: 'researchs',
+export const ResearchLabs: CollectionConfig = {
+  slug: 'research-labs',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -30,13 +30,13 @@ export const Researchs: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    defaultColumns: ['title', 'tag', 'lang'],
+    defaultColumns: ['title', 'slug', 'lang'],
     livePreview: {
       url: ({ data, req }) =>
-        generatePreviewPath({ req, slug: data.slug, collection: 'researchs' }),
+        generatePreviewPath({ req, slug: data.slug, collection: 'research-labs' }),
     },
     preview: (data, { req }) =>
-      generatePreviewPath({ req, slug: <string>data.slug, collection: 'researchs' }),
+      generatePreviewPath({ req, slug: <string>data.slug, collection: 'research-labs' }),
     useAsTitle: 'title',
   },
   fields: [
@@ -74,17 +74,6 @@ export const Researchs: CollectionConfig = {
       name: 'publishedAt',
       type: 'date',
       label: 'Ngày đăng',
-      required: true,
-    },
-    {
-      name: 'tag',
-      type: 'select',
-      options: [
-        'software-engineering-and-decentralized-systems',
-        'operational-efficiency-in-finance',
-        'smart-finance-and-digital-banking',
-      ],
-      label: 'Tag',
       required: true,
     },
     {

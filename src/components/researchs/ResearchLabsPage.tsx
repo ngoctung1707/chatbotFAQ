@@ -1,12 +1,12 @@
 'use client'
 import Layout from '@/components/layout/Layout'
-import { Research } from '@/payload-types'
 import React from 'react'
 import { JSXConvertersFunction, RichText } from '@payloadcms/richtext-lexical/react'
 import { DefaultNodeTypes, SerializedUploadNode } from '@payloadcms/richtext-lexical'
+import { ResearchLab } from '@/payload-types'
 
 type Props = {
-  data: Research
+  data: ResearchLab
 }
 
 function CustomUploadComponent({ node }: { node: SerializedUploadNode }) {
@@ -29,7 +29,7 @@ const jsxConverters: JSXConvertersFunction<DefaultNodeTypes> = ({ defaultConvert
   upload: ({ node }) => <CustomUploadComponent node={node} />,
 })
 
-export default function ResearchPage({ data }: Props) {
+export default function ResearchLabsPage({ data }: Props) {
   return (
     <>
       <Layout>

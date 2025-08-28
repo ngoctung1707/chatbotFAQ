@@ -75,7 +75,7 @@ export interface Config {
     'upcoming-events': UpcomingEvent;
     courses: Course;
     solutions: Solution;
-    researchs: Research;
+    'research-labs': ResearchLab;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,7 +91,7 @@ export interface Config {
     'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
     solutions: SolutionsSelect<false> | SolutionsSelect<true>;
-    researchs: ResearchsSelect<false> | ResearchsSelect<true>;
+    'research-labs': ResearchLabsSelect<false> | ResearchLabsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -306,19 +306,15 @@ export interface Solution {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "researchs".
+ * via the `definition` "research-labs".
  */
-export interface Research {
+export interface ResearchLab {
   id: string;
   title: string;
   slug: string;
   description: string;
   lang: 'en' | 'vi';
   publishedAt: string;
-  tag:
-    | 'software-engineering-and-decentralized-systems'
-    | 'operational-efficiency-in-finance'
-    | 'smart-finance-and-digital-banking';
   heroImage: string | Media;
   content: {
     root: {
@@ -471,8 +467,8 @@ export interface PayloadLockedDocument {
         value: string | Solution;
       } | null)
     | ({
-        relationTo: 'researchs';
-        value: string | Research;
+        relationTo: 'research-labs';
+        value: string | ResearchLab;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -640,15 +636,14 @@ export interface SolutionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "researchs_select".
+ * via the `definition` "research-labs_select".
  */
-export interface ResearchsSelect<T extends boolean = true> {
+export interface ResearchLabsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   description?: T;
   lang?: T;
   publishedAt?: T;
-  tag?: T;
   heroImage?: T;
   content?: T;
   updatedAt?: T;
@@ -740,8 +735,8 @@ export interface TaskSchedulePublish {
           value: string | Solution;
         } | null)
       | ({
-          relationTo: 'researchs';
-          value: string | Research;
+          relationTo: 'research-labs';
+          value: string | ResearchLab;
         } | null);
     global?: string | null;
     user?: (string | null) | User;
