@@ -180,7 +180,7 @@ export interface News {
   title: string;
   slug: string;
   lang: 'en' | 'vi';
-  tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech';
+  tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech' | 'hackday';
   publishedAt: string;
   heroImage: string | Media;
   content: {

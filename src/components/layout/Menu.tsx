@@ -18,6 +18,7 @@ export const researchLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'publications', path: '/publications' },
   { id: 2, name: 'ecotech', path: '/ecotech' },
   { id: 3, name: 'hackathon', path: '/hackathon' },
+  { id: 4, name: 'hackday', path: '/hackday' },
 ].map(({ path, ...link }) => ({ ...link, path: `/research${path}` }))
 
 export default function Menu() {
@@ -166,6 +167,14 @@ export default function Menu() {
                 className={isActive('/research/hackathon') ? 'active' : ''}
               >
                 {t('hackathon')}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/research/hackday"
+                className={isActive('/research/hackday') ? 'active' : ''}
+              >
+                {t('hackday')}
               </Link>
             </li>
           </ul>

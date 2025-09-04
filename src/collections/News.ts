@@ -66,7 +66,7 @@ export const News: CollectionConfig = {
     {
       name: 'tag',
       type: 'select',
-      options: ['news', 'workshop', 'seminar', 'hackathon', 'ecotech'],
+      options: ['news', 'workshop', 'seminar', 'hackathon', 'ecotech', 'hackday'],
       label: 'Tag',
       required: true,
     },
