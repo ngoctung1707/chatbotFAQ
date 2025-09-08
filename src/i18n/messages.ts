@@ -189,8 +189,8 @@ export const vi: typeof en = {
         title: 'Chứng chỉ',
         items: {
           completion: {
-            title: 'Chứng chỉ Hoàn thành',
-            issuer: 'Cấp bởi Trường Đại học Bách khoa Hà Nội',
+            title: 'Chứng nhận Hoàn thành',
+            issuer: 'Cấp bởi Đại học Bách khoa Hà Nội',
           },
           participation: {
             title: 'Chứng nhận Tham gia',
