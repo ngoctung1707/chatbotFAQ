@@ -18,8 +18,11 @@ export const researchLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'publications', path: '/publications' },
   { id: 2, name: 'ecotech', path: '/ecotech' },
   { id: 3, name: 'hackathon', path: '/hackathon' },
-  { id: 4, name: 'hackday', path: '/hackday' },
-].map(({ path, ...link }) => ({ ...link, path: `/research${path}` }))
+  { id: 4, name: 'hackday', path: 'http://159.223.65.237:5001/research/hackday' },
+].map(({ path, ...link }) => ({
+  ...link,
+  path: path.startsWith('http') ? path : `/research${path}`,
+}))
 
 export default function Menu() {
   const pathname = usePathname()
@@ -170,12 +173,7 @@ export default function Menu() {
               </Link>
             </li>
             <li>
-              <Link
-                href="/research/hackday"
-                className={isActive('/research/hackday') ? 'active' : ''}
-              >
-                {t('hackday')}
-              </Link>
+              <a href="http://159.223.65.237:5001/research/hackday">{t('hackday')}</a>
             </li>
           </ul>
         </li>
