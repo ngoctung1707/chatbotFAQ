@@ -63,7 +63,6 @@ export default function PublicationList({ showItem, publications }: NewsPostProp
         prev={prev}
         handleActive={handleActive}
       />
-      )
     </>
   )
 }

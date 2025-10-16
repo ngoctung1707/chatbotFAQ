@@ -26,7 +26,7 @@ export default function Publication() {
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/">An Improved Sea Lion ...</Link>
+                        <Link href="/">An Improved Sea Lion...</Link>
                       </h4>
                       <span>2022</span>
                     </div>
@@ -61,7 +61,7 @@ export default function Publication() {
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/">Integrating Employee ...</Link>
+                        <Link href="/">Integrating Employee...</Link>
                       </h4>
                       <span>2020</span>
                     </div>
@@ -96,7 +96,7 @@ export default function Publication() {
                   <div className="project-content">
                     <div className="left-side-content">
                       <h4 className="title">
-                        <Link href="/">Effects of female ...</Link>
+                        <Link href="/">Effects of female...</Link>
                       </h4>
                       <span>2022</span>
                     </div>
@@ -160,7 +160,7 @@ export default function Publication() {
             <div className="row justify-content-center">
               <div className="col-12">
                 <div className="project-content-bottom">
-                  <Link href="/publications" className="btn">
+                  <Link href="research/publications" className="btn">
                     See All Publications
                   </Link>
                 </div>
