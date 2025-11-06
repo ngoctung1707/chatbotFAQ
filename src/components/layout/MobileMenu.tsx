@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useEffect, useState } from 'react'
-import { aboutLinks, researchLinks } from './Menu'
+import { aboutLinks, getInvolvedLinks, researchLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -15,13 +15,14 @@ export default function MobileMenu({
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
+  const isGetInvolvedLinkActive = () => getInvolvedLinks.some((link) => link.path === pathname)
   const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
   const isRdLabsLinkActive = () => pathname.startsWith('/research/r&d-labs')
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
-
+  const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
   const toggleSubmenuAbout = () => {
     setIsSubmenuAboutOpen(!isSubmenuAboutOpen)
   }
@@ -32,6 +33,10 @@ export default function MobileMenu({
 
   const toggleSubmenuRdLabs = () => {
     setIsSubmenuRdLabsOpen(!isSubmenuRdLabsOpen)
+  }
+
+  const toggleSubmenuGetInvolved = () => {
+    setIsSubmenuGetInvolvedOpen(!isSubmenuGetInvolvedOpen)
   }
 
   useEffect(() => {
@@ -125,6 +130,31 @@ export default function MobileMenu({
             </li>
             <li>
               <Link href="/academic">{t('education')}</Link>
+            </li>
+            <li className="menu-item-has-children">
+              <Link href="#" className={isGetInvolvedLinkActive() ? 'active' : ''}>
+                {t('get_involved')}
+              </Link>
+              <ul
+                className="sub-menu"
+                style={{ display: `${isSubmenuGetInvolvedOpen ? 'block' : 'none'}` }}
+              >
+                {getInvolvedLinks.map((link) => {
+                  return (
+                    <li key={link.id}>
+                      <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                        {t(link.name)}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div
+                className={isSubmenuGetInvolvedOpen ? 'dropdown-btn open' : 'dropdown-btn'}
+                onClick={toggleSubmenuGetInvolved}
+              >
+                <span className="plus-line" />
+              </div>
             </li>
             <li>
               <Link href="/news">{t('news')}</Link>

@@ -69,14 +69,6 @@ const Researchers = [
 
 const Assistants = [
   {
-    name: 'Dr. Nguyen Thu Thuy',
-    title: 'Environmental Science',
-  },
-  {
-    name: 'Dinh Hoang Nam',
-    title: 'Computer Science',
-  },
-  {
     name: 'Pham Thi Huong Quynh',
     title: 'Computer Engineering',
   },

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function Page() {
-  redirect('/research/hackathon/pages/1')
+  redirect('/get-involved/hackathon/pages/1')
 }

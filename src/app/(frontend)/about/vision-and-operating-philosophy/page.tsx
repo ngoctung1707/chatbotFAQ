@@ -11,27 +11,29 @@ export default function VisionAndPhilosophy() {
                 <div className="row">
                   <div className="blog__details-wrap">
                     <div className="blog__details-content">
-                      <h2 className="title">OUR VISION</h2>
-                      <p>
-                        The Institute for Digital Technology and Economy at Hanoi University of
-                        Science and Technology envisions becoming a leading scientific research
-                        unit, product development center, technology transfer hub, training
-                        institution, and startup incubator in Vietnam and Southeast Asia. We aim to
-                        excel in the development and application of financial technology solutions,
-                        innovative digital technologies, advanced digital economy models, and
-                        transformative digital society initiatives. Our activities are designed to
-                        create positive impacts and contribute to the development of the
-                        country&#39;s digital economy and digital society during this era of
-                        national advancement.
+                      <h2 className="title">VISION</h2>
+                      <p style={{ textAlign: 'justify' }}>
+                        To be the driving force of Vietnam&apos;s digital revolution, with a reach
+                        extending throughout Southeast Asia.
+                      </p>
+                      <p style={{ textAlign: 'justify' }}>
+                        We envision a premier innovation ecosystem where scientific research,
+                        technology development, talent cultivation, and elite startup incubation
+                        converge. We will lead the application of financial technology, the
+                        development of digital technologies, and the construction of advanced
+                        digital economy and society models, creating a profound and sustainable
+                        impact on national prosperity.
                       </p>
                       <br />
-                      <h2 className="title">OUR OPERATING PHILOSOPHY</h2>
-                      <p>
-                        Our operating philosophy is to develop intelligent financial products and
-                        apply digital technology to enhance the digital economy, thereby promoting
-                        the development of a digital society. We aim to create innovative products
-                        as our ultimate goal, with research and publication serving as the creative
-                        and innovative pathways to achieve this.
+                      <h2 className="title">OPERATING PHILOSOPHY</h2>
+                      <p style={{ textAlign: 'justify' }}>
+                        Advancing the Digital Society through the power of the Digital Economy.
+                      </p>
+                      <p style={{ textAlign: 'justify' }}>
+                        We achieve this by developing intelligent financial products and applying
+                        breakthrough digital technologies. For us, research is the foundation of
+                        creativity, and innovative products are the ultimate vehicle for delivering
+                        practical value to society.
                       </p>
                     </div>
                   </div>

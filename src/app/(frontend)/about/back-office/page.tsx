@@ -18,6 +18,10 @@ const list = [
     title: 'Training Manager',
   },
   {
+    name: 'Le Nguyet Hang',
+    title: 'Training Manager',
+  },
+  {
     name: 'Nguyen Cam Ly',
     title: 'Business Development',
   },

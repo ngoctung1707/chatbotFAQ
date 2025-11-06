@@ -16,12 +16,23 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
 
 export const researchLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'publications', path: '/publications' },
-  { id: 2, name: 'ecotech', path: '/ecotech' },
-  { id: 3, name: 'hackathon', path: '/hackathon' },
-  { id: 4, name: 'hackday', path: '/hackday' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path.startsWith('http') ? path : `/research${path}`,
+}))
+
+export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
+  { id: 1, name: 'ecotech', path: '/get-involved/ecotech' },
+  {
+    id: 2,
+    name: 'vietnam_digital_economy_review',
+    path: '/get-involved/vietnam-digital-economy-review',
+  },
+  { id: 3, name: 'hackathon', path: '/get-involved/hackathon' },
+  { id: 4, name: 'hackday', path: '/research/hackday' },
+].map(({ path, ...link }) => ({
+  ...link,
+  path: path,
 }))
 
 export default function Menu() {
@@ -30,6 +41,7 @@ export default function Menu() {
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
+  const isGetInvolvedLinkActive = () => getInvolvedLinks.some((link) => link.path === pathname)
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
     pathname.startsWith('/research/r&d-labs')
@@ -156,25 +168,6 @@ export default function Menu() {
                 {t('publications')}
               </Link>
             </li>
-            <li>
-              <Link
-                href="/research/ecotech"
-                className={isActive('/research/ecotech') ? 'active' : ''}
-              >
-                {t('ecotech')}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/research/hackathon"
-                className={isActive('/research/hackathon') ? 'active' : ''}
-              >
-                {t('hackathon')}
-              </Link>
-            </li>
-            <li>
-              <a href="/research/hackday">{t('hackday')}</a>
-            </li>
           </ul>
         </li>
         <li>
@@ -182,6 +175,22 @@ export default function Menu() {
         </li>
         <li>
           <Link href="/academic">{t('education')}</Link>
+        </li>
+        <li className="menu-item-has-children">
+          <Link href="#" className={isGetInvolvedLinkActive() ? 'active' : ''}>
+            {t('get_involved')}
+          </Link>
+          <ul className="sub-menu" style={{ width: '300px' }}>
+            {getInvolvedLinks.map((link) => {
+              return (
+                <li key={link.id}>
+                  <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                    {t(link.name)}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         </li>
         <li>
           <Link href="/news">{t('news')}</Link>

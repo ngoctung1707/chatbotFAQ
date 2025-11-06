@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function Page() {
-  redirect('/research/ecotech/pages/1')
+  redirect('/get-involved/ecotech/pages/1')
 }
