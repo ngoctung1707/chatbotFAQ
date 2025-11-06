@@ -69,7 +69,7 @@ export default function WelcomeToInstitute() {
                         <p style={{ textAlign: 'justify' }}>
                           <strong>Assoc. Prof. Nguyen Binh Minh, Ph.D.</strong>
                           <br />
-                          Director
+                          Dean
                           <br />
                           Institute for Digital Technology and Economy
                           <br />

@@ -28,8 +28,9 @@ export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
     name: 'vietnam_digital_economy_review',
     path: '/get-involved/vietnam-digital-economy-review',
   },
-  { id: 3, name: 'hackathon', path: '/get-involved/hackathon' },
-  { id: 4, name: 'hackday', path: '/research/hackday' },
+  { id: 3, name: 'workshop_series', path: '/get-involved/workshop-series' },
+  { id: 4, name: 'hackathon', path: '/get-involved/hackathon' },
+  { id: 5, name: 'hackday', path: '/research/hackday' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path,

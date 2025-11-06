@@ -14,6 +14,7 @@ export const en = {
     education: 'Education & Training',
     get_involved: 'Get Involved',
     vietnam_digital_economy_review: 'Vietnam Digital Economy Review',
+    workshop_series: 'BKFintech Workshop Series',
     news: 'News',
     about: 'About',
     welcome: 'Welcome Message',
@@ -144,6 +145,7 @@ export const vi: typeof en = {
     researchers: 'Nghiên cứu sinh và Trợ lý',
     office: 'Văn phòng',
     vietnam_digital_economy_review: 'Đánh giá Kinh tế số Việt Nam',
+    workshop_series: 'BKFintech Workshop Series',
   },
   HomePage: {
     description:
