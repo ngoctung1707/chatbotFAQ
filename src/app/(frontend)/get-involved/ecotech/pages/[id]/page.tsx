@@ -70,7 +70,7 @@ export default async function News({ params }: Props) {
                               {getPaginationGroup.length <= 0 ? null : (
                                 <li className="next_link page-item">
                                   {currentPage === 1 ? null : (
-                                    <Link href={`/research/ecotech/pages/${prevPage}`}>
+                                    <Link href={`/get-involved/ecotech/pages/${prevPage}`}>
                                       <span className="page-link">
                                         <i className="fas fa-angle-double-left" />
                                       </span>
@@ -87,7 +87,7 @@ export default async function News({ params }: Props) {
                                       currentPage === item ? 'page-item active' : 'page-item'
                                     }
                                   >
-                                    <Link href={`/research/ecotech/pages/${item}`}>
+                                    <Link href={`/get-involved/ecotech/pages/${item}`}>
                                       <span className="page-link">{item}</span>
                                     </Link>
                                   </li>
@@ -97,7 +97,7 @@ export default async function News({ params }: Props) {
                               {getPaginationGroup.length <= 0 ? null : (
                                 <li className="next_link page-item">
                                   {currentPage >= totalPages ? null : (
-                                    <Link href={`/research/ecotech/pages/${nextPage}`}>
+                                    <Link href={`/get-involved/ecotech/pages/${nextPage}`}>
                                       <span className="page-link">
                                         <i className="fas fa-angle-double-right" />
                                       </span>

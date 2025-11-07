@@ -1,8 +1,26 @@
+'use client'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function Footer() {
+  const t = useTranslations('Menu')
   return (
     <>
+      <style jsx>{`
+        .footer-link-list.top-links ul.list-wrap {
+          margin: 0;
+          padding: 0;
+        }
+        .footer-link-list.top-links ul.list-wrap li {
+          margin-bottom: 6px;
+        }
+        .footer-link-list.top-links ul.list-wrap li a {
+          display: inline-block;
+          font-size: 14px;
+          line-height: 1.2;
+          padding: 2px 0;
+        }
+      `}</style>
       <footer>
         <div className="footer__area-two">
           <div className="footer__top-two">
@@ -34,22 +52,28 @@ export default function Footer() {
                 <div className="col-xl-3 col-lg-4 col-sm-6">
                   <div className="footer-widget">
                     <h4 className="fw-title">Top Links</h4>
-                    <div className="footer-link-list">
+                    <div className="footer-link-list top-links">
                       <ul className="list-wrap">
                         <li>
-                          <Link href="/#home">Home</Link>
+                          <Link href="/">{t('home')}</Link>
                         </li>
                         <li>
-                          <Link href="/#news">News</Link>
+                          <Link href="/research">{t('research')}</Link>
                         </li>
                         <li>
-                          <Link href="/#solutions">Solutions</Link>
+                          <Link href="/#solutions">{t('application')}</Link>
                         </li>
                         <li>
-                          <Link href="/#training">Academic</Link>
+                          <Link href="/academic">{t('education')}</Link>
                         </li>
                         <li>
-                          <Link href="/#publications">Research</Link>
+                          <Link href="/get-involved">{t('get_involved')}</Link>
+                        </li>
+                        <li>
+                          <Link href="/news">{t('news')}</Link>
+                        </li>
+                        <li>
+                          <Link href="/about/welcome-message">{t('about')}</Link>
                         </li>
                       </ul>
                     </div>

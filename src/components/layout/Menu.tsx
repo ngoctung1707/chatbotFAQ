@@ -15,7 +15,8 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
 ].map(({ path, ...link }) => ({ ...link, path: `/about${path}` }))
 
 export const researchLinks: { id: number; name: string; path: string }[] = [
-  { id: 1, name: 'publications', path: '/publications' },
+  { id: 1, name: 'r&d-funding-projects', path: '/r&d-funding-projects' },
+  { id: 2, name: 'publications', path: '/publications' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path.startsWith('http') ? path : `/research${path}`,
@@ -151,15 +152,24 @@ export default function Menu() {
               <ul className="nested-submenu">
                 {rdLabs.map((lab) => {
                   const path = `/research/r&d-labs/${lab.slug}`
+                  const displayTitle = lab.title.replace(/\s*Lab?$/i, '').trim()
                   return (
                     <li key={lab.slug}>
                       <a href={path} className={isActive(path) ? 'active' : ''}>
-                        {lab.title}
+                        {displayTitle}
                       </a>
                     </li>
                   )
                 })}
               </ul>
+            </li>
+            <li>
+              <Link
+                href="/research/r&d-funding-projects"
+                className={isActive('/research/r&d-funding-projects') ? 'active' : ''}
+              >
+                {t('r&d-funding-projects')}
+              </Link>
             </li>
             <li>
               <Link

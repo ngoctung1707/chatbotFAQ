@@ -92,10 +92,11 @@ export default function MobileMenu({
                   >
                     {rdLabs.map((lab) => {
                       const path = `/research/r&d-labs/${lab.slug}`
+                      const displayTitle = lab.title.replace(/\s*Lab?$/i, '').trim()
                       return (
                         <li key={lab.slug}>
                           <Link href={path} className={isActive(path) ? 'active' : ''}>
-                            {lab.title}
+                            {displayTitle}
                           </Link>
                         </li>
                       )

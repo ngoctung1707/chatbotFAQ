@@ -27,7 +27,7 @@ export default async function News({ params }: Props) {
     sort: ['-publishedAt'],
     where: {
       tag: {
-        in: ['hackathon'],
+        in: ['workshop'],
       },
       lang: {
         equals: lang,
@@ -52,7 +52,7 @@ export default async function News({ params }: Props) {
               <div className="row justify-content-center">
                 <div className="col-xl-6">
                   <div className="section-title text-center mb-40 tg-heading-subheading animation-style3">
-                    <h2 className="title tg-element-title">Hackathon</h2>
+                    <h2 className="title tg-element-title">BKFintech Workshop Series</h2>
                   </div>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export default async function News({ params }: Props) {
                               {getPaginationGroup.length <= 0 ? null : (
                                 <li className="next_link page-item">
                                   {currentPage === 1 ? null : (
-                                    <Link href={`/get-involved/hackathon/pages/${prevPage}`}>
+                                    <Link href={`/get-involved/workshop-series/pages/${prevPage}`}>
                                       <span className="page-link">
                                         <i className="fas fa-angle-double-left" />
                                       </span>
@@ -87,7 +87,7 @@ export default async function News({ params }: Props) {
                                       currentPage === item ? 'page-item active' : 'page-item'
                                     }
                                   >
-                                    <Link href={`/get-involved/hackathon/pages/${item}`}>
+                                    <Link href={`/get-involved/workshop-series/pages/${item}`}>
                                       <span className="page-link">{item}</span>
                                     </Link>
                                   </li>
@@ -97,7 +97,7 @@ export default async function News({ params }: Props) {
                               {getPaginationGroup.length <= 0 ? null : (
                                 <li className="next_link page-item">
                                   {currentPage >= totalPages ? null : (
-                                    <Link href={`/get-involved/hackathon/pages/${nextPage}`}>
+                                    <Link href={`/get-involved/workshop-series/pages/${nextPage}`}>
                                       <span className="page-link">
                                         <i className="fas fa-angle-double-right" />
                                       </span>
