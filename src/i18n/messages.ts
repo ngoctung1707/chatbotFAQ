@@ -1,5 +1,3 @@
-import { time } from 'console'
-
 export const en = {
   Menu: {
     home: 'Home',
@@ -123,25 +121,25 @@ export const en = {
     },
     mbbank: {
       title: 'MB Bank',
-      desc: "Military Commercial Joint Stock Bank also known as Military Bank, or abbreviated as MB, is an enterprise of the People's Army of Vietnam under the Ministry of National Defence. In addition to banking services, Military Bank also engages in securities brokerage, fund management, and real estate business by holding controlling shares in several enterprises in these fields. Currently, Military Bank has a nationwide network with over 100 branches and 180 transaction points spanning 48 provinces and cities. The bank also has branches in Laos and Cambodia.",
+      desc: "Military Commercial Joint Stock Bank (MB) is an enterprise of the People's Army of Vietnam under the Ministry of National Defence. Besides banking, MB operates in securities, fund management, and real estate through its subsidiaries. With over 100 branches and 180 transaction offices across 48 provinces, MB also has branches in Laos and Cambodia. In 2022, MB Bank sponsored a conference hall for the BKFintech institute on the first floor of the Digital Hub building.",
       sponsor:
         'In 2022, MB Bank sponsored a conference hall for the BKFintech institute on the first floor of the Digital Hub building.',
     },
     tntech: {
       title: 'TNTech',
-      desc: 'TNTech - A member of ROX Key. TNTech is a company specializing in providing modern technology solutions, applied to production and business activities in many fields: Finance - Banking, Real Estate, Services,...',
+      desc: 'TNTech, a member of ROX Key, specializes in delivering modern technology solutions for diverse sectors, including Finance–Banking, Real Estate, and Services. The company focuses on applying advanced technologies to enhance business operations and productivity. TNTech is partnering with the BKFintech institute in the fields of digital transformation for banks and enterprises.',
       sponsor:
         'TNTech is partnering with the BKFintech institute in the fields of digital transformation for banks and enterprises.',
     },
     oraichainlab: {
       title: 'Oraichain Labs',
-      desc: 'Oraichain Labs is dedicated to building a new era of Blockchain x Artificial Intelligence by bringing together blockchain specialists, data scientists, engineers, and advisors worldwide. Oraichain Labs plays an important role in Oraichain Foundation developing all essential infrastructure. Oraichain Mainnet is currently running version 3.0 which has a remarkable 1-second block time and innovative AI Oracle 2.0 - the first of its kind in the world.',
+      desc: 'Oraichain Labs is committed to advancing Blockchain x Artificial Intelligence by uniting global experts in blockchain, data science, and engineering. As a core developer for Oraichain Foundation, it builds essential infrastructure, including the Oraichain Mainnet v3.0 with 1-second block time and AI Oracle 2.0. Oraichain Labs partners with BKFintech to establish the BKFintech–Oraichain joint research lab.',
       sponsor:
         'Oraichain Labs is partnering with the BKFintech Institute to establish a joint research laboratory for Blockchain technology and Artificial Intelligence (BKFintech-Oraichain joint labs), located at the Institute.',
     },
     astargroup: {
       title: 'A-Star Group',
-      desc: "A-Star Group is a Web3 Venture Studio that has evolved from a research lab into a product development company, focusing on turning innovative ideas into scalable digital ventures. The group leverages an elite team comprised of the top 1% of IT talents in Vietnam, who are described as young, dynamic, and adept at mastering new technologies. Operating within Vietnam's rising digital innovation hub , A-Star Group concentrates its co-development and investment efforts on high-growth sectors including Web3, AI, Big Data, FinTech, and Tokenized Assets.",
+      desc: 'A-Star Group is a Web3 Venture Studio that evolved from a research lab into a product development company. Powered by Vietnam’s top 1% IT talents, the group focuses on building scalable ventures in Web3, AI, Big Data, FinTech, and Tokenized Assets. A-Star is collaborating with the BKFintech to foster innovation, entrepreneurship, and provide expert training and consulting.',
       sponsor:
         'A-Star Group is collaborating with the BKFintech institute on activities to support innovation and student entrepreneurship, as well as providing experts to participate in training and technology consulting.',
     },
@@ -272,7 +270,7 @@ export const vi: typeof en = {
     title: 'Đối tác',
     rikkei: {
       title: 'Rikkei',
-      desc: 'Founded in 2012, Rikkeisoft is a leading, award-winning technology company in Vietnam. Providing customized technology products and solutions to businesses for over 10 years, we have built lasting and meaningful relationships with small and medium-sized businesses around the world.',
+      desc: 'Được thành lập năm 2012, Rikkeisoft là công ty công nghệ hàng đầu tại Việt Nam, từng đoạt nhiều giải thưởng. Trong hơn 10 năm cung cấp các sản phẩm và giải pháp công nghệ tùy chỉnh cho doanh nghiệp, chúng tôi đã xây dựng những mối quan hệ bền vững và ý nghĩa với các doanh nghiệp nhỏ và vừa trên toàn thế giới.',
     },
     finxdemy: {
       title: 'Finxdemy',
@@ -280,25 +278,25 @@ export const vi: typeof en = {
     },
     mbbank: {
       title: 'MB Bank',
-      desc: "Military Commercial Joint Stock Bank also known as Military Bank, or abbreviated as MB, is an enterprise of the People's Army of Vietnam under the Ministry of National Defence. In addition to banking services, Military Bank also engages in securities brokerage, fund management, and real estate business by holding controlling shares in several enterprises in these fields. Currently, Military Bank has a nationwide network with over 100 branches and 180 transaction points spanning 48 provinces and cities. The bank also has branches in Laos and Cambodia.",
+      desc: 'Ngân hàng TMCP Quân đội (MB) là doanh nghiệp thuộc Bộ Quốc phòng Việt Nam. Ngoài hoạt động ngân hàng, MB còn đầu tư vào chứng khoán, quản lý quỹ và bất động sản thông qua các công ty thành viên. Hiện MB có hơn 100 chi nhánh và 180 điểm giao dịch tại 48 tỉnh, thành, cùng chi nhánh tại Lào và Campuchia. Năm 2022, MB Bank tài trợ Không gian sáng tạo số HUST-MB Digital Hub trực thuộc quản lý của BKFintech.',
       sponsor:
         'In 2022, MB Bank sponsored a conference hall for the BKFintech institute on the first floor of the Digital Hub building.',
     },
     tntech: {
       title: 'TNTech',
-      desc: 'TNTech - A member of ROX Key. TNTech is a company specializing in providing modern technology solutions, applied to production and business activities in many fields: Finance - Banking, Real Estate, Services,...',
+      desc: 'TNTech, thành viên của ROX Key, chuyên cung cấp các giải pháp công nghệ hiện đại ứng dụng trong nhiều lĩnh vực như Tài chính – Ngân hàng, Bất động sản và Dịch vụ. Công ty tập trung ứng dụng công nghệ để nâng cao hiệu quả hoạt động doanh nghiệp. TNTech hợp tác với BKFintech trong lĩnh vực chuyển đổi số cho ngân hàng và doanh nghiệp.',
       sponsor:
         'TNTech is partnering with the BKFintech institute in the fields of digital transformation for banks and enterprises.',
     },
     oraichainlab: {
       title: 'Oraichain Labs',
-      desc: 'Oraichain Labs is dedicated to building a new era of Blockchain x Artificial Intelligence by bringing together blockchain specialists, data scientists, engineers, and advisors worldwide. Oraichain Labs plays an important role in Oraichain Foundation developing all essential infrastructure. Oraichain Mainnet is currently running version 3.0 which has a remarkable 1-second block time and innovative AI Oracle 2.0 - the first of its kind in the world.',
+      desc: 'Oraichain Labs tiên phong phát triển kỷ nguyên mới của Blockchain kết hợp Trí tuệ nhân tạo, quy tụ chuyên gia toàn cầu trong lĩnh vực blockchain, khoa học dữ liệu và kỹ thuật. Là đơn vị chủ lực của Oraichain Foundation, Oraichain Labs phát triển hạ tầng cốt lõi như Mainnet v3.0 và AI Oracle 2.0. Oraichain Labs hợp tác cùng BKFintech thành lập phòng thí nghiệm chung BKFintech–Oraichain.',
       sponsor:
         'Oraichain Labs is partnering with the BKFintech Institute to establish a joint research laboratory for Blockchain technology and Artificial Intelligence (BKFintech-Oraichain joint labs), located at the Institute.',
     },
     astargroup: {
       title: 'A-Star Group',
-      desc: "A-Star Group is a Web3 Venture Studio that has evolved from a research lab into a product development company, focusing on turning innovative ideas into scalable digital ventures. The group leverages an elite team comprised of the top 1% of IT talents in Vietnam, who are described as young, dynamic, and adept at mastering new technologies. Operating within Vietnam's rising digital innovation hub , A-Star Group concentrates its co-development and investment efforts on high-growth sectors including Web3, AI, Big Data, FinTech, and Tokenized Assets.",
+      desc: ' A-Star Group là Web3 Venture Studio phát triển từ phòng nghiên cứu thành công ty phát triển sản phẩm. Với đội ngũ thuộc top 1% nhân tài CNTT Việt Nam, A-Star tập trung xây dựng các dự án trong Web3, AI, Dữ liệu lớn, FinTech và Tài sản số. A-Star Group cùng hợp tác với BKFintech thúc đẩy đổi mới, khởi nghiệp và đào tạo chuyên gia.',
       sponsor:
         'A-Star Group is collaborating with the BKFintech institute on activities to support innovation and student entrepreneurship, as well as providing experts to participate in training and technology consulting.',
     },
