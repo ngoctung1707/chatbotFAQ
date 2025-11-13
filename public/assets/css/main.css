@@ -412,6 +412,7 @@ textarea {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0;
@@ -445,7 +446,6 @@ textarea {
   content: "\f10a";
   font-family: flaticon;
   font-weight: var(--tg-fw-bold);
-  margin-left: 8px;
   font-size: 20px;
   line-height: 0;
   transition: all 0.3s ease-out 0s;

@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 const studentLifeImages = {
   facility: '/assets/img/student-life/hust.jpg',
@@ -16,18 +17,21 @@ export default function Student() {
       title: t('items.facility.title'),
       img: studentLifeImages.facility,
       desc: t('items.facility.desc'),
+      link: '/academic/facility',
     },
     {
       key: 'activity',
       title: t('items.activity.title'),
       img: studentLifeImages.activity,
       desc: t('items.activity.desc'),
+      link: '/academic/activity',
     },
     {
       key: 'community',
       title: t('items.community.title'),
       img: studentLifeImages.community,
       desc: t('items.community.desc'),
+      link: '/academic/community',
     },
   ] as const
   return (
@@ -42,25 +46,30 @@ export default function Student() {
         <div className="row justify-content-center">
           {studentLifeData.map((item) => (
             <div className="col-md-4 d-flex flex-column align-items-center mb-4" key={item.key}>
-              <div
-                style={{
-                  width: '100%',
-                  maxWidth: 400,
-                  borderRadius: 16,
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
-                }}
-              >
-                <img
-                  src={item.img}
-                  alt={item.title}
-                  style={{ width: '100%', height: 220, objectFit: 'cover' }}
-                />
-              </div>
-              <h4 style={{ fontWeight: 700, color: '#2B2B6A', marginTop: 24, marginBottom: 12 }}>
-                {item.title}
-              </h4>
-              <p style={{ textAlign: 'center', fontSize: 15, maxWidth: 400 }}>{item.desc}</p>
+              <Link href={item.link} key={item.key}>
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: 400,
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
+                  }}
+                >
+                  <img
+                    src={item.img}
+                    alt={item.title}
+                    style={{ width: '100%', height: 220, objectFit: 'cover' }}
+                  />
+                </div>
+                <h4
+                  className="text-center"
+                  style={{ fontWeight: 700, color: '#2B2B6A', marginTop: 24, marginBottom: 12 }}
+                >
+                  {item.title}
+                </h4>
+                <p style={{ textAlign: 'justify', fontSize: 15, maxWidth: 400 }}>{item.desc}</p>
+              </Link>
             </div>
           ))}
         </div>

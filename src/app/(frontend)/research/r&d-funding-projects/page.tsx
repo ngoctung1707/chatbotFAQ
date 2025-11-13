@@ -11,7 +11,7 @@ export default function page() {
               <div className="row">
                 <div className="blog__details-wrap">
                   <div className="blog__details-content">
-                    <h1>R&D Funding Projects</h1>
+                    <h1>Funds & Projects</h1>
                   </div>
                 </div>
               </div>

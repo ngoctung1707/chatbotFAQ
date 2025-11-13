@@ -1,6 +1,19 @@
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import PublicationCard from '@/components/publications/PublicationCard'
+import type { Publication } from '@/payload-types'
 
-export default function Publication() {
+export default async function Publication() {
+  const payload = await getPayload({ config })
+  const result = await payload.find({
+    collection: 'publications',
+    draft: false,
+    limit: 4,
+    pagination: false,
+    sort: ['-year'],
+  })
+  const publications = result.docs as Publication[]
   return (
     <>
       <section className="project-area" id="research">
@@ -14,148 +27,11 @@ export default function Publication() {
           </div>
         </div>
         <div className="project-item-wrap">
-          <div className="container custom-container-two">
-            <div className="row">
-              <div className="col-xl-3 col-md-6">
-                <div className="project-item">
-                  <div className="project-thumb">
-                    <Link href="/">
-                      <img src="/assets/img/publications/sea-lion.png" alt="" />
-                    </Link>
-                  </div>
-                  <div className="project-content">
-                    <div className="left-side-content">
-                      <h4 className="title">
-                        <Link href="/">An Improved Sea Lion...</Link>
-                      </h4>
-                      <span>2022</span>
-                    </div>
-                    <div className="link-arrow">
-                      <Link href="/">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-md-6">
-                <div className="project-item">
-                  <div className="project-thumb">
-                    <Link href="/">
-                      <img src="/assets/img/publications/employee.png" alt="" />
-                    </Link>
-                  </div>
-                  <div className="project-content">
-                    <div className="left-side-content">
-                      <h4 className="title">
-                        <Link href="/">Integrating Employee...</Link>
-                      </h4>
-                      <span>2020</span>
-                    </div>
-                    <div className="link-arrow">
-                      <Link href="/">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-md-6">
-                <div className="project-item">
-                  <div className="project-thumb">
-                    <Link href="/">
-                      <img src="/assets/img/publications/female.png" alt="" />
-                    </Link>
-                  </div>
-                  <div className="project-content">
-                    <div className="left-side-content">
-                      <h4 className="title">
-                        <Link href="/">Effects of female...</Link>
-                      </h4>
-                      <span>2022</span>
-                    </div>
-                    <div className="link-arrow">
-                      <Link href="/">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-md-6">
-                <div className="project-item">
-                  <div className="project-thumb">
-                    <Link href="/">
-                      <img src="/assets/img/publications/b4e.png" alt="" />
-                    </Link>
-                  </div>
-                  <div className="project-content">
-                    <div className="left-side-content">
-                      <h4 className="title">
-                        <Link href="/">Blockchain for Education...</Link>
-                      </h4>
-                      <span>2022</span>
-                    </div>
-                    <div className="link-arrow">
-                      <Link href="/">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M17.6293 3.27957C17.7117 2.80341 17.4427 2.34763 17.0096 2.17812C16.9477 2.15385 16.8824 2.13552 16.8144 2.12376L6.96081 0.419152C6.41654 0.325049 5.89911 0.689856 5.80491 1.23411C5.71079 1.77829 6.07564 2.29578 6.61982 2.38993L14.0946 3.68295L1.36574 12.6573C0.914365 12.9756 0.806424 13.5995 1.12467 14.0509C1.44292 14.5022 2.06682 14.6102 2.51819 14.2919L15.247 5.31753L13.954 12.7923C13.8598 13.3365 14.2247 13.854 14.7689 13.9482C15.3131 14.0422 15.8305 13.6774 15.9248 13.1332L17.6293 3.27957Z"
-                            fill="currentcolor"
-                          />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="container">
+            <div className="row gutter-24 justify-content-center">
+              {publications.map((item) => (
+                <PublicationCard item={item} key={item.id} />
+              ))}
             </div>
             <div className="row justify-content-center">
               <div className="col-12">
