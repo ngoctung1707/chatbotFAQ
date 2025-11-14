@@ -15,14 +15,8 @@ export default function PublicationCard({ item }: PublicationCardProp) {
     <>
       <div className="col-12">
         <div
-          className="services__item-five text-start mb-3"
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-          }}
+          className="services__item-five text-start mb-3 d-flex align-items-center flex-column flex-sm-row gap-3"
+          style={{ padding: '20px' }}
         >
           <div className="services__content-five" style={{ flex: 1 }}>
             {/* <div style={{ fontWeight: 700, color: '#999', marginBottom: 6 }}>{item.year}</div> */}
