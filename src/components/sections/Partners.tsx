@@ -1,13 +1,15 @@
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 type Partner = {
   name: string
   img: string
   logo: string
   desc: string
+  link: string
 }
 
-function PartnerCard({ name, img, logo, desc }: Partner) {
+function PartnerCard({ name, img, logo, desc, link }: Partner) {
   return (
     <div className="project__item-two">
       <div
@@ -28,22 +30,24 @@ function PartnerCard({ name, img, logo, desc }: Partner) {
         <span style={{ fontSize: '14px', textAlign: 'justify' }}>{desc}</span>
       </div>
       <div style={{ position: 'relative', marginTop: -24 }}>
-        <div
-          style={{
-            background: '#fff',
-            borderRadius: 14,
-            boxShadow: '0 4px 4px rgba(0,0,0,0.08)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '14px 0px',
-            margin: '0 auto',
-            transform: 'translateY(-6px)',
-            width: '250px',
-          }}
-        >
-          <img src={logo} alt={`${name} logo`} style={{ height: 40, width: 'auto' }} />
-        </div>
+        <Link href={link} target="_blank">
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 14,
+              boxShadow: '0 4px 4px rgba(0,0,0,0.08)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '14px 0px',
+              margin: '0 auto',
+              transform: 'translateY(-6px)',
+              width: '250px',
+            }}
+          >
+            <img src={logo} alt={`${name} logo`} style={{ height: 40, width: 'auto' }} />
+          </div>
+        </Link>
       </div>
     </div>
   )
@@ -57,36 +61,42 @@ export default function Partners() {
       img: '/assets/img/partners/rikkei.jpeg',
       logo: '/assets/img/partners/rikkei-logo.png',
       desc: t('rikkei.desc'),
+      link: 'https://rikkeisoft.com/',
     },
     {
       name: 'MB Bank',
       img: '/assets/img/partners/mbbank.jpg',
       logo: '/assets/img/partners/mbbank-logo.png',
       desc: t('mbbank.desc'),
+      link: 'https://mbbank.com.vn/',
     },
     {
       name: 'Oraichain Labs',
       img: '/assets/img/partners/oraichain.jpg',
       logo: '/assets/img/partners/oraichain-logo.png',
       desc: t('oraichainlab.desc'),
+      link: 'https://orai.io/',
     },
     {
       name: 'A-Star Group',
       img: '/assets/img/partners/astar.jpg',
       logo: '/assets/img/partners/astar-logo.png',
       desc: t('astargroup.desc'),
+      link: 'https://a-star.group/',
     },
     {
       name: 'TNTech',
       img: '/assets/img/partners/tntech.jpg',
       logo: '/assets/img/partners/tntech-logo.png',
       desc: t('tntech.desc'),
+      link: 'https://tnteco.vn/',
     },
     {
       name: 'Finxdemy',
       img: '/assets/img/partners/finxdemy.jpg',
       logo: '/assets/img/partners/finxdemy-logo.png',
       desc: t('finxdemy.desc'),
+      link: 'https://finxdemy.edu.vn/',
     },
   ]
   return (
@@ -108,6 +118,7 @@ export default function Partners() {
                   img={partner.img}
                   logo={partner.logo}
                   desc={partner.desc}
+                  link={partner.link}
                 />
               </div>
             ))}
