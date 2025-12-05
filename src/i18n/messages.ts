@@ -11,6 +11,7 @@ export const en = {
     smart_finance: 'Smart Finance and Digital Banking',
     hackathon: 'BKFintech Hakathon',
     hackday: 'BKFintech Hackday',
+    club: 'BKFintech Club',
     application: 'Application',
     education: 'Education & Training',
     get_involved: 'Get Involved',
@@ -148,6 +149,58 @@ export const en = {
       desc: 'Finxdemy is a training and consulting organization specializing in technology, digital economy, and digital transformation. With the motto “Learn deeply – Act differently,” we aim to develop training and consulting programs that integrate academic knowledge with practical experience, guided by leading lecturers and seasoned industry experts.',
     },
   },
+  ClubPage: {
+    title:
+      'BK Fintech Club – Finance & Technology Club, Hanoi University of Science and Technology',
+    slogan: 'Slogan: "Never step back"',
+    intro: {
+      question:
+        'Are you passionate about finance, interested in technology, or eager to explore the booming global fintech trends?',
+      answer: '👉 BK FINTECH CLUB is the perfect place for you!',
+    },
+    sections: {
+      structure: {
+        title: '1. Organizational Structure',
+        desc: 'BK Fintech Club operates under the academic supervision of the Institute of Digital Technology and Economics (BK Fintech) and the organizational management of the Youth Union of Hanoi University of Science and Technology (HUST). The club follows a professional and transparent model, including: ',
+        board: '👑 Executive Board:',
+        boardDesc: '01 President & 02 Vice Presidents.',
+        divisionsTitle: '🧩 Specialized Divisions:',
+        divisions: [
+          'Specialist Department',
+          'External Relations & Finance – Human Resources Division',
+          'Media & Events Division',
+        ],
+      },
+      guidelines: {
+        title: '2. Action Guidelines',
+        desc: 'BK Fintech Club aims to build a creative, dynamic, academically strong community where students can:',
+        items: [
+          'Gain early exposure to fundamental knowledge in finance, technology, and fintech.',
+          'Participate in research and develop real-world applications, projects, and products.',
+          'Enhance academic skills: research, programming, and data analysis.',
+          'Join extracurricular activities that strengthen bonding and team spirit.',
+          'Develop essential soft skills: communication, teamwork, presentation, time management, etc.',
+        ],
+      },
+      activities: {
+        title: '3. Activities',
+        items: [
+          '🔥 Regular seminars on academic topics, as well as workshops on studying and research.',
+          '🏆 Support and guidance for members participating in technology and finance competitions.',
+        ],
+        memberDevTitle: '🚀 Member Development:',
+        memberDevItems: [
+          'Periodic internal training on programming, data analysis, basic and advanced finance.',
+          'Participation in research seminars, knowledge-sharing sessions, and career development discussions.',
+        ],
+      },
+      closing: {
+        desc1:
+          'BK Fintech Club is not only a place to learn but also a space for each member to grow, make an impact, and build a sustainable career journey.',
+        desc2: '🌟 BK Fintech Club – Never step back!',
+      },
+    },
+  },
 }
 
 export const vi: typeof en = {
@@ -169,6 +222,7 @@ export const vi: typeof en = {
     smart_finance: 'Tài chính thông minh và Ngân hàng số',
     hackathon: 'BKFintech Hackathon',
     hackday: 'BKFintech Hackday',
+    club: 'BKFintech Club',
     application: 'Ứng dụng',
     education: 'Giáo dục & Đào tạo',
     get_involved: 'Tham gia',
@@ -299,6 +353,57 @@ export const vi: typeof en = {
       desc: ' A-Star Group là Web3 Venture Studio phát triển từ phòng nghiên cứu thành công ty phát triển sản phẩm. Với đội ngũ thuộc top 1% nhân tài CNTT Việt Nam, A-Star tập trung xây dựng các dự án trong Web3, AI, Dữ liệu lớn, FinTech và Tài sản số. A-Star Group cùng hợp tác với BKFintech thúc đẩy đổi mới, khởi nghiệp và đào tạo chuyên gia.',
       sponsor:
         'A-Star Group is collaborating with the BKFintech institute on activities to support innovation and student entrepreneurship, as well as providing experts to participate in training and technology consulting.',
+    },
+  },
+  ClubPage: {
+    title: 'BK FINTECH CLUB - CLB Tài chính & Công nghệ, Đại học Bách khoa Hà Nội',
+    slogan: 'Slogan: "Never step back - không bao giờ lùi bước"',
+    intro: {
+      question:
+        'Bạn đam mê Tài chính, yêu thích Công nghệ, hoặc muốn khám phá xu hướng Fintech đang bùng nổ trên toàn thế giới?',
+      answer: '👉 BK FINTECH CLUB chính là nơi dành cho bạn!',
+    },
+    sections: {
+      structure: {
+        title: '1. Cơ cấu tổ chức',
+        desc: 'BK Fintech Club hoạt động dưới sự bảo trợ chuyên môn của Viện Công nghệ và Kinh tế số (BK Fintech) cùng sự bảo trợ về quản lý tổ chức từ Đoàn Thanh niên Đại học Bách khoa Hà Nội. CLB vận hành dưới mô hình chuyên nghiệp và minh bạch, gồm:',
+        board: '👑 Ban chủ nhiệm:',
+        boardDesc: '01 Chủ nhiệm & 02 Phó chủ nhiệm.',
+        divisionsTitle: '🧩 Các ban chuyên trách:',
+        divisions: [
+          'Ban Chuyên môn',
+          'Ban Tài chính Đối ngoại - Nhân sự',
+          'Ban Truyền thông - Sự kiện',
+        ],
+      },
+      guidelines: {
+        title: '2. Phương châm hoạt động',
+        desc: 'BK Fintech Club luôn hướng đến xây dựng một cộng đồng sáng tạo - năng động - chuyên môn vững, nơi sinh viên:',
+        items: [
+          'Được tiếp cận sớm kiến thức nền tảng về tài chính, công nghệ và Fintech',
+          'Tham gia nghiên cứu, phát triển dự án - sản phẩm ứng dụng, giải quyết bài toán thực tế',
+          'Rèn luyện kỹ năng học thuật, nghiên cứu, lập trình, phân tích dữ liệu',
+          'Giao lưu ngoại khóa, gắn kết thành viên, xây dựng tinh thần đồng đội',
+          'Phát triển kỹ năng mềm: giao tiếp, teamwork, thuyết trình, quản lý thời gian,...',
+        ],
+      },
+      activities: {
+        title: '3. Nội dung hoạt động',
+        items: [
+          '🔥 Seminar thường kỳ về chuyên môn, tổ chức các buổi tọa đàm về học tập và nghiên cứu',
+          '🏆 Được hỗ trợ tham gia các cuộc thi về công nghệ và tài chính',
+        ],
+        memberDevTitle: '🚀 Hỗ trợ thành viên:',
+        memberDevItems: [
+          'Đào tạo nội bộ định kỳ về lập trình, phân tích dữ liệu, tài chính cơ bản và nâng cao',
+          'Tham gia các seminar nghiên cứu, chia sẻ kinh nghiệm học tập & hội nhập nghề nghiệp',
+        ],
+      },
+      closing: {
+        desc1:
+          'BK Fintech Club không chỉ là nơi học tập, mà còn là nơi để mỗi thành viên trưởng thành, tạo dấu ấn và xây dựng hành trình sự nghiệp bền vững.',
+        desc2: '🌟 BK Fintech Club - Never step back!',
+      },
     },
   },
 }

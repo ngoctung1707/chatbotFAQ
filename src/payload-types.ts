@@ -76,6 +76,7 @@ export interface Config {
     courses: Course;
     solutions: Solution;
     'research-labs': ResearchLab;
+    'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     courses: CoursesSelect<false> | CoursesSelect<true>;
     solutions: SolutionsSelect<false> | SolutionsSelect<true>;
     'research-labs': ResearchLabsSelect<false> | ResearchLabsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -100,6 +102,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+  fallbackLocale: null;
   globals: {};
   globalsSelect: {};
   locale: null;
@@ -194,7 +197,7 @@ export interface News {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -267,7 +270,7 @@ export interface Course {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -296,7 +299,7 @@ export interface Solution {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -327,7 +330,7 @@ export interface ResearchLab {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -341,6 +344,23 @@ export interface ResearchLab {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -476,10 +496,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'research-labs';
         value: string | ResearchLab;
-      } | null)
-    | ({
-        relationTo: 'payload-jobs';
-        value: string | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -663,6 +679,14 @@ export interface ResearchLabsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

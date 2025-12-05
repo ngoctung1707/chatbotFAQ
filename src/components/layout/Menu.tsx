@@ -32,6 +32,7 @@ export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
   { id: 3, name: 'workshop_series', path: '/get-involved/workshop-series' },
   { id: 4, name: 'hackathon', path: '/get-involved/hackathon' },
   { id: 5, name: 'hackday', path: '/get-involved/hackday' },
+  { id: 6, name: 'club', path: '/get-involved/club' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path,
