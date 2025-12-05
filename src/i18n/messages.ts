@@ -11,7 +11,7 @@ export const en = {
     smart_finance: 'Smart Finance and Digital Banking',
     hackathon: 'BKFintech Hakathon',
     hackday: 'BKFintech Hackday',
-    club: 'BKFintech Club',
+    club: 'BKFintech Student Club',
     application: 'Application',
     education: 'Education & Training',
     get_involved: 'Get Involved',
@@ -199,6 +199,16 @@ export const en = {
           'BK Fintech Club is not only a place to learn but also a space for each member to grow, make an impact, and build a sustainable career journey.',
         desc2: '🌟 BK Fintech Club – Never step back!',
       },
+      contact: {
+        title: '4. Contact',
+        name: 'FINANCE & TECHNOLOGY CLUB, HANOI UNIVERSITY OF SCIENCE AND TECHNOLOGY',
+        fanpageLabel: 'Fanpage',
+        websiteLabel: 'Website',
+        emailLabel: 'Email',
+        addressLabel: 'Contact Address',
+        address:
+          'BKFintech office (Room 609 – Ta Quang Buu Library, Hanoi University of Science and Technology)',
+      },
     },
   },
 }
@@ -222,7 +232,7 @@ export const vi: typeof en = {
     smart_finance: 'Tài chính thông minh và Ngân hàng số',
     hackathon: 'BKFintech Hackathon',
     hackday: 'BKFintech Hackday',
-    club: 'BKFintech Club',
+    club: 'BKFintech Student Club',
     application: 'Ứng dụng',
     education: 'Giáo dục & Đào tạo',
     get_involved: 'Tham gia',
@@ -403,6 +413,16 @@ export const vi: typeof en = {
         desc1:
           'BK Fintech Club không chỉ là nơi học tập, mà còn là nơi để mỗi thành viên trưởng thành, tạo dấu ấn và xây dựng hành trình sự nghiệp bền vững.',
         desc2: '🌟 BK Fintech Club - Never step back!',
+      },
+      contact: {
+        title: '4. Liên hệ',
+        name: 'Câu lạc bộ Tài chính và Công nghệ Đại học Bách khoa Hà Nội - BK FINTECH CLUB',
+        fanpageLabel: 'Fanpage',
+        websiteLabel: 'Website',
+        emailLabel: 'Email',
+        addressLabel: 'Địa chỉ liên hệ',
+        address:
+          'Văn phòng Viện Công nghệ và Kinh tế số (Phòng 609 – Thư viện Tạ Quang Bửu, Đại học Bách khoa Hà Nội)',
       },
     },
   },

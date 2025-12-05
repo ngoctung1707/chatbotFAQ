@@ -68,6 +68,35 @@ export default function ClubPage() {
           <p style={{ textAlign: 'justify' }}>{t('sections.closing.desc1')}</p>
           <p style={{ fontStyle: 'italic', fontWeight: 600 }}>{t('sections.closing.desc2')}</p>
         </section>
+
+        <section style={{ marginTop: 48 }}>
+          <p style={{ fontWeight: 600 }}>{t('sections.contact.name')}</p>
+          <ul className="space-y-1" style={{ marginTop: 8 }}>
+            <li>
+              {t('sections.contact.fanpageLabel')}:&nbsp;
+              <a
+                href="https://www.facebook.com/FinTechHUST"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://www.facebook.com/FinTechHUST
+              </a>
+            </li>
+            <li>
+              {t('sections.contact.websiteLabel')}:&nbsp;
+              <a href="https://bkfin.tech/" target="_blank" rel="noopener noreferrer">
+                https://bkfin.tech/
+              </a>
+            </li>
+            <li>
+              {t('sections.contact.emailLabel')}:&nbsp;
+              <a href="mailto:fintech.hust@gmail.com">fintech.hust@gmail.com</a>
+            </li>
+            <li>
+              {t('sections.contact.addressLabel')}: {t('sections.contact.address')}
+            </li>
+          </ul>
+        </section>
       </div>
     </Layout>
   )
