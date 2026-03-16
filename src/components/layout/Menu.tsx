@@ -24,19 +24,27 @@ export const researchLinks: { id: number; name: string; path: string }[] = [
 
 export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
   { id: 1, name: 'ecotech', path: '/get-involved/ecotech' },
-  {
-    id: 2,
-    name: 'vietnam_digital_economy_review',
-    path: '/get-involved/vietnam-digital-economy-review',
-  },
-  { id: 3, name: 'workshop_series', path: '/get-involved/workshop-series' },
-  { id: 4, name: 'hackathon', path: '/get-involved/hackathon' },
-  { id: 5, name: 'hackday', path: '/get-involved/hackday' },
-  { id: 6, name: 'club', path: '/get-involved/club' },
+  { id: 2, name: 'workshop_series', path: '/get-involved/workshop-series' },
+  { id: 3, name: 'hackathon', path: '/get-involved/hackathon' },
+  { id: 4, name: 'hackday', path: '/get-involved/hackday' },
+  { id: 5, name: 'club', path: '/get-involved/club' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path,
 }))
+
+const vietnamDigitalEconomyReviewLinks = [
+  {
+    id: 1,
+    label: '2024',
+    path: '/get-involved/vietnam-digital-economy-review/2024',
+  },
+  {
+    id: 2,
+    label: '2025',
+    path: '/get-involved/vietnam-digital-economy-review/2025',
+  },
+]
 
 export default function Menu() {
   const pathname = usePathname()
@@ -44,7 +52,9 @@ export default function Menu() {
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
-  const isGetInvolvedLinkActive = () => getInvolvedLinks.some((link) => link.path === pathname)
+  const isGetInvolvedLinkActive = () =>
+    getInvolvedLinks.some((link) => link.path === pathname) ||
+    pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
     pathname.startsWith('/research/r&d-labs')
@@ -137,7 +147,11 @@ export default function Menu() {
           </Link>
           <ul className="sub-menu" style={{ width: '300px' }}>
             <li className="nested-parent">
-              <Link href="#" className={pathname.startsWith('/research/r&d-labs') ? 'active' : ''}>
+              <Link
+                href="#"
+                className={pathname.startsWith('/research/r&d-labs') ? 'active' : ''}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
                 {t('rdlabs')}
                 <svg
                   className="arrow-right"
@@ -192,16 +206,58 @@ export default function Menu() {
           <Link href="#" className={isGetInvolvedLinkActive() ? 'active' : ''}>
             {t('get_involved')}
           </Link>
-          <ul className="sub-menu" style={{ width: '300px' }}>
-            {getInvolvedLinks.map((link) => {
-              return (
-                <li key={link.id}>
-                  <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                    {t(link.name)}
-                  </Link>
-                </li>
-              )
-            })}
+          <ul className="sub-menu" style={{ width: '350px' }}>
+            <li>
+              <Link
+                href="/get-involved/ecotech"
+                className={isActive('/get-involved/ecotech') ? 'active' : ''}
+              >
+                {t('ecotech')}
+              </Link>
+            </li>
+            <li className="nested-parent">
+              <Link
+                href="#"
+                className={
+                  pathname.startsWith('/get-involved/vietnam-digital-economy-review')
+                    ? 'active'
+                    : ''
+                }
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                {t('vietnam_digital_economy_review')}
+                <svg
+                  className="arrow-right"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlnsXlink="http://www.w3.org/1999/xlink"
+                  fill="#0E104B"
+                  viewBox="0 0 330 330"
+                  xmlSpace="preserve"
+                >
+                  <path d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606C255,161.018,253.42,157.202,250.606,154.389z" />
+                </svg>
+              </Link>
+              <ul className="nested-submenu" style={{ width: '200px' }}>
+                {vietnamDigitalEconomyReviewLinks.map((link) => (
+                  <li key={link.id}>
+                    <a href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+            {getInvolvedLinks
+              .filter((link) => link.name !== 'ecotech')
+              .map((link) => {
+                return (
+                  <li key={link.id}>
+                    <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                      {t(link.name)}
+                    </Link>
+                  </li>
+                )
+              })}
           </ul>
         </li>
         <li>

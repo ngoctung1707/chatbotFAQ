@@ -15,14 +15,20 @@ export default function MobileMenu({
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
-  const isGetInvolvedLinkActive = () => getInvolvedLinks.some((link) => link.path === pathname)
+  const isGetInvolvedLinkActive = () =>
+    getInvolvedLinks.some((link) => link.path === pathname) ||
+    pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
   const isRdLabsLinkActive = () => pathname.startsWith('/research/r&d-labs')
+  const isVietnamDigitalEconomyReviewActive = () =>
+    pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
   const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
+  const [isSubmenuVietnamDigitalEconomyReviewOpen, setIsSubmenuVietnamDigitalEconomyReviewOpen] =
+    useState(false)
   const toggleSubmenuAbout = () => {
     setIsSubmenuAboutOpen(!isSubmenuAboutOpen)
   }
@@ -37,6 +43,10 @@ export default function MobileMenu({
 
   const toggleSubmenuGetInvolved = () => {
     setIsSubmenuGetInvolvedOpen(!isSubmenuGetInvolvedOpen)
+  }
+
+  const toggleSubmenuVietnamDigitalEconomyReview = () => {
+    setIsSubmenuVietnamDigitalEconomyReviewOpen(!isSubmenuVietnamDigitalEconomyReviewOpen)
   }
 
   useEffect(() => {
@@ -140,7 +150,46 @@ export default function MobileMenu({
                 className="sub-menu"
                 style={{ display: `${isSubmenuGetInvolvedOpen ? 'block' : 'none'}` }}
               >
-                {getInvolvedLinks.map((link) => {
+                <li>
+                  <Link href="/get-involved/ecotech" className={isActive('/get-involved/ecotech') ? 'active' : ''}>
+                    {t('ecotech')}
+                  </Link>
+                </li>
+                <li className="menu-item-has-children">
+                  <Link href="#" className={isVietnamDigitalEconomyReviewActive() ? 'active' : ''}>
+                    {t('vietnam_digital_economy_review')}
+                  </Link>
+                  <ul
+                    className="sub-menu"
+                    style={{ display: `${isSubmenuVietnamDigitalEconomyReviewOpen ? 'block' : 'none'}` }}
+                  >
+                    <li>
+                      <Link
+                        href="/get-involved/vietnam-digital-economy-review/2024"
+                        className={isActive('/get-involved/vietnam-digital-economy-review/2024') ? 'active' : ''}
+                      >
+                        2024
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/get-involved/vietnam-digital-economy-review/2025"
+                        className={isActive('/get-involved/vietnam-digital-economy-review/2025') ? 'active' : ''}
+                      >
+                        2025
+                      </Link>
+                    </li>
+                  </ul>
+                  <div
+                    className={
+                      isSubmenuVietnamDigitalEconomyReviewOpen ? 'dropdown-btn open' : 'dropdown-btn'
+                    }
+                    onClick={toggleSubmenuVietnamDigitalEconomyReview}
+                  >
+                    <span className="plus-line" />
+                  </div>
+                </li>
+                {getInvolvedLinks.filter((link) => link.name !== 'ecotech').map((link) => {
                   return (
                     <li key={link.id}>
                       <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
