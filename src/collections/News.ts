@@ -32,7 +32,8 @@ export const News: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'tag', 'publishedAt', 'lang'],
     livePreview: {
-      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'news' }),
+      url: ({ data, req }) =>
+        generatePreviewPath({ req, slug: typeof data?.slug === 'string' ? data.slug : '', collection: 'news' }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.slug, collection: 'news' }),

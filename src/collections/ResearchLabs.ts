@@ -33,7 +33,11 @@ export const ResearchLabs: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'lang'],
     livePreview: {
       url: ({ data, req }) =>
-        generatePreviewPath({ req, slug: data.slug, collection: 'research-labs' }),
+        generatePreviewPath({
+          req,
+          slug: typeof data?.slug === 'string' ? data.slug : '',
+          collection: 'research-labs',
+        }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.slug, collection: 'research-labs' }),

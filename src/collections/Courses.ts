@@ -32,7 +32,12 @@ export const Courses: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'slug', 'lang'],
     livePreview: {
-      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'courses' }),
+      url: ({ data, req }) =>
+        generatePreviewPath({
+          req,
+          slug: typeof data?.slug === 'string' ? data.slug : '',
+          collection: 'courses',
+        }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.slug, collection: 'courses' }),

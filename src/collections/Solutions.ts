@@ -16,7 +16,11 @@ export const Solutions: CollectionConfig = {
     defaultColumns: ['title', 'shortDescription', 'lang'],
     livePreview: {
       url: ({ data, req }) =>
-        generatePreviewPath({ req, slug: data.title, collection: 'solutions' }),
+        generatePreviewPath({
+          req,
+          slug: typeof data?.title === 'string' ? data.title : '',
+          collection: 'solutions',
+        }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.title, collection: 'solutions' }),
