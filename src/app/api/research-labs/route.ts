@@ -22,10 +22,14 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  const labs = docs.map((doc: { slug: string; title: string }) => ({
-    slug: doc.slug,
-    title: doc.title,
-  }))
+  const labs = docs
+    .map((doc: { slug?: string; title?: string }) => {
+      const slug = typeof doc.slug === 'string' ? doc.slug.trim() : ''
+      if (!slug) return null
+      const title = typeof doc.title === 'string' && doc.title.trim() ? doc.title : slug
+      return { slug, title }
+    })
+    .filter((lab): lab is { slug: string; title: string } => lab !== null)
 
   return NextResponse.json({ labs })
 }

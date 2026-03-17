@@ -60,14 +60,28 @@ export default function Menu() {
     pathname.startsWith('/research/r&d-labs')
   const t = useTranslations('Menu')
 
+  const normalizeLabs = (labs: unknown): { slug: string; title: string }[] => {
+    if (!Array.isArray(labs)) return []
+    return labs
+      .map((lab) => {
+        if (!lab || typeof lab !== 'object') return null
+        const slug = typeof (lab as { slug?: unknown }).slug === 'string' ? (lab as { slug: string }).slug.trim() : ''
+        if (!slug) return null
+        const rawTitle = (lab as { title?: unknown }).title
+        const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle : slug
+        return { slug, title }
+      })
+      .filter((lab): lab is { slug: string; title: string } => lab !== null)
+  }
+
   useEffect(() => {
     let isMounted = true
     async function loadLabs() {
       try {
         const res = await fetch(`/api/research-labs?lang=${locale}`, { cache: 'no-store' })
         if (!res.ok) return
-        const data = (await res.json()) as { labs: { slug: string; title: string }[] }
-        if (isMounted) setRdLabs(data.labs)
+        const data = (await res.json()) as { labs?: unknown }
+        if (isMounted) setRdLabs(normalizeLabs(data?.labs))
       } catch {
         // ignore
       }
@@ -167,7 +181,7 @@ export default function Menu() {
               <ul className="nested-submenu">
                 {rdLabs.map((lab) => {
                   const path = `/research/r&d-labs/${lab.slug}`
-                  const displayTitle = lab.title.replace(/\s*Lab?$/i, '').trim()
+                  const displayTitle = lab.title.replace(/\s*Lab?$/i, '').trim() || lab.slug
                   return (
                     <li key={lab.slug}>
                       <a href={path} className={isActive(path) ? 'active' : ''}>
