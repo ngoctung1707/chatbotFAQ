@@ -9,19 +9,19 @@ importers:
   .:
     dependencies:
       '@payloadcms/db-mongodb':
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(@aws-sdk/credential-providers@3.943.0)(payload@3.66.0(graphql@16.12.0)(typescript@5.9.3))
       '@payloadcms/live-preview-react':
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@payloadcms/next':
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(@types/react@19.2.7)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.5.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.94.2))(payload@3.66.0(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.3)
       '@payloadcms/payload-cloud':
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(payload@3.66.0(graphql@16.12.0)(typescript@5.9.3))
       '@payloadcms/richtext-lexical':
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(@faceless-ui/modal@3.0.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@faceless-ui/scroll-info@2.0.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@payloadcms/next@3.66.0(@types/react@19.2.7)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.5.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.94.2))(payload@3.66.0(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.3))(@types/react@19.2.7)(monaco-editor@0.55.1)(next@15.5.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.94.2))(payload@3.66.0(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.3)(yjs@13.6.27)
       '@sindresorhus/slugify':
         specifier: ^3.0.0
@@ -39,7 +39,7 @@ importers:
         specifier: ^4.3.7
         version: 4.5.8(next@15.5.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.94.2))(react@19.1.1)(typescript@5.9.3)
       payload:
-        specifier: ^3.55.1
+        specifier: 3.66.0
         version: 3.66.0(graphql@16.12.0)(typescript@5.9.3)
       react:
         specifier: 19.1.1

@@ -1,7 +1,6 @@
 import { CollectionConfig, FieldHook } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { anyone } from '@/access/anyone'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import slugify from '@sindresorhus/slugify'
 import { generatePreviewPath } from '@/util/generatePreviewPath'
 
@@ -32,8 +31,7 @@ export const News: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'tag', 'publishedAt', 'lang'],
     livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({ req, slug: typeof data?.slug === 'string' ? data.slug : '', collection: 'news' }),
+      url: ({ data, req }) => generatePreviewPath({ req, slug: data.slug, collection: 'news' }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.slug, collection: 'news' }),
@@ -87,9 +85,6 @@ export const News: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      editor: lexicalEditor({
-        features: ({ rootFeatures, defaultFeatures }) => [...rootFeatures, ...defaultFeatures],
-      }),
       label: 'Nội dung',
       required: true,
     },

@@ -1,7 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { anyone } from '@/access/anyone'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { generatePreviewPath } from '@/util/generatePreviewPath'
 
 export const Solutions: CollectionConfig = {
@@ -16,11 +15,7 @@ export const Solutions: CollectionConfig = {
     defaultColumns: ['title', 'shortDescription', 'lang'],
     livePreview: {
       url: ({ data, req }) =>
-        generatePreviewPath({
-          req,
-          slug: typeof data?.title === 'string' ? data.title : '',
-          collection: 'solutions',
-        }),
+        generatePreviewPath({ req, slug: data.title, collection: 'solutions' }),
     },
     preview: (data, { req }) =>
       generatePreviewPath({ req, slug: <string>data.title, collection: 'solutions' }),
@@ -57,9 +52,6 @@ export const Solutions: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      editor: lexicalEditor({
-        features: ({ rootFeatures, defaultFeatures }) => [...rootFeatures, ...defaultFeatures],
-      }),
       label: 'Nội dung',
       required: true,
     },

@@ -18,7 +18,6 @@ import { ResearchLabs } from './collections/ResearchLabs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const livePreviewServerURL = process.env.NEXT_PUBLIC_SERVER_URL
 
 export default buildConfig({
   admin: {
@@ -26,14 +25,10 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    ...(livePreviewServerURL
-      ? {
-          livePreview: {
-            url: livePreviewServerURL,
-            collections: ['news', 'courses', 'solutions', 'research-labs'],
-          },
-        }
-      : {}),
+    livePreview: {
+      url: process.env.NEXT_PUBLIC_SERVER_URL,
+      collections: ['news', 'courses', 'solutions', 'research-labs'],
+    },
   },
   routes: {
     api: '/payload',
