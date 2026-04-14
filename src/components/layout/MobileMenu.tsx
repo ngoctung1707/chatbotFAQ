@@ -158,7 +158,11 @@ export default function MobileMenu({
                         >
                           {fundingProjectsLinks.map((sub) => (
                             <li key={sub.id}>
-                              <Link href={sub.path} className={isActive(sub.path) ? 'active' : ''}>
+                              <Link
+                                href={sub.path}
+                                className={isActive(sub.path) ? 'active' : ''}
+                                target={sub.target}
+                              >
                                 {sub.label}
                               </Link>
                             </li>

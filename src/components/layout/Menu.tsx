@@ -51,11 +51,13 @@ export const fundingProjectsLinks = [
     id: 1,
     label: 'Cyber Clinic',
     path: '/research/r&d-funding-projects/cyber-clinic',
+    target: '_self',
   },
   {
     id: 2,
     label: 'AiPad',
     path: '/aipad',
+    target: '_blank',
   },
 ]
 
@@ -230,7 +232,11 @@ export default function Menu() {
               <ul className="nested-submenu">
                 {fundingProjectsLinks.map((link) => (
                   <li key={link.id}>
-                    <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                    <Link
+                      href={link.path}
+                      className={isActive(link.path) ? 'active' : ''}
+                      target={link.target}
+                    >
                       {link.label}
                     </Link>
                   </li>
