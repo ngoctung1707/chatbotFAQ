@@ -52,6 +52,11 @@ export const fundingProjectsLinks = [
     label: 'Cyber Clinic',
     path: '/research/r&d-funding-projects/cyber-clinic',
   },
+  {
+    id: 2,
+    label: 'AiPad',
+    path: '/aipad',
+  },
 ]
 
 export default function Menu() {
