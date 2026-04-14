@@ -1,24 +1,5 @@
-import Layout from '@/components/layout/Layout'
-import React from 'react'
+import { redirect } from 'next/navigation'
 
 export default function page() {
-  return (
-    <Layout>
-      <div>
-        <section className="blog__details-area">
-          <div className="container">
-            <div className="blog__inner-wrap">
-              <div className="row">
-                <div className="blog__details-wrap">
-                  <div className="blog__details-content">
-                    <h1>Funds & Projects</h1>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </Layout>
-  )
+  redirect('/research/r&d-funding-projects/cyber-clinic')
 }

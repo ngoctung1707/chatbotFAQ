@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useEffect, useState } from 'react'
-import { aboutLinks, getInvolvedLinks, researchLinks } from './Menu'
+import { aboutLinks, fundingProjectsLinks, getInvolvedLinks, researchLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -18,14 +18,19 @@ export default function MobileMenu({
   const isGetInvolvedLinkActive = () =>
     getInvolvedLinks.some((link) => link.path === pathname) ||
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
-  const isResearchLinkActive = () => researchLinks.some((link) => link.path === pathname)
+  const isResearchLinkActive = () =>
+    researchLinks.some((link) => link.path === pathname) ||
+    pathname.startsWith('/research/r&d-labs') ||
+    pathname.startsWith('/research/r&d-funding-projects')
   const isRdLabsLinkActive = () => pathname.startsWith('/research/r&d-labs')
+  const isFundingProjectsLinkActive = () => pathname.startsWith('/research/r&d-funding-projects')
   const isVietnamDigitalEconomyReviewActive = () =>
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
+  const [isSubmenuFundingProjectsOpen, setIsSubmenuFundingProjectsOpen] = useState(false)
   const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
   const [isSubmenuVietnamDigitalEconomyReviewOpen, setIsSubmenuVietnamDigitalEconomyReviewOpen] =
     useState(false)
@@ -35,7 +40,10 @@ export default function MobileMenu({
     return labs
       .map((lab) => {
         if (!lab || typeof lab !== 'object') return null
-        const slug = typeof (lab as { slug?: unknown }).slug === 'string' ? (lab as { slug: string }).slug.trim() : ''
+        const slug =
+          typeof (lab as { slug?: unknown }).slug === 'string'
+            ? (lab as { slug: string }).slug.trim()
+            : ''
         if (!slug) return null
         const rawTitle = (lab as { title?: unknown }).title
         const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle : slug
@@ -53,6 +61,10 @@ export default function MobileMenu({
 
   const toggleSubmenuRdLabs = () => {
     setIsSubmenuRdLabsOpen(!isSubmenuRdLabsOpen)
+  }
+
+  const toggleSubmenuFundingProjects = () => {
+    setIsSubmenuFundingProjectsOpen(!isSubmenuFundingProjectsOpen)
   }
 
   const toggleSubmenuGetInvolved = () => {
@@ -134,6 +146,36 @@ export default function MobileMenu({
                   </div>
                 </li>
                 {researchLinks.map((link) => {
+                  if (link.path === '/research/r&d-funding-projects') {
+                    return (
+                      <li key={link.id} className="menu-item-has-children">
+                        <Link href="#" className={isFundingProjectsLinkActive() ? 'active' : ''}>
+                          {t('r&d-funding-projects')}
+                        </Link>
+                        <ul
+                          className="sub-menu"
+                          style={{ display: `${isSubmenuFundingProjectsOpen ? 'block' : 'none'}` }}
+                        >
+                          {fundingProjectsLinks.map((sub) => (
+                            <li key={sub.id}>
+                              <Link href={sub.path} className={isActive(sub.path) ? 'active' : ''}>
+                                {sub.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                        <div
+                          className={
+                            isSubmenuFundingProjectsOpen ? 'dropdown-btn open' : 'dropdown-btn'
+                          }
+                          onClick={toggleSubmenuFundingProjects}
+                        >
+                          <span className="plus-line" />
+                        </div>
+                      </li>
+                    )
+                  }
+
                   return (
                     <li key={link.id}>
                       <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
@@ -165,7 +207,10 @@ export default function MobileMenu({
                 style={{ display: `${isSubmenuGetInvolvedOpen ? 'block' : 'none'}` }}
               >
                 <li>
-                  <Link href="/get-involved/ecotech" className={isActive('/get-involved/ecotech') ? 'active' : ''}>
+                  <Link
+                    href="/get-involved/ecotech"
+                    className={isActive('/get-involved/ecotech') ? 'active' : ''}
+                  >
                     {t('ecotech')}
                   </Link>
                 </li>
@@ -175,12 +220,18 @@ export default function MobileMenu({
                   </Link>
                   <ul
                     className="sub-menu"
-                    style={{ display: `${isSubmenuVietnamDigitalEconomyReviewOpen ? 'block' : 'none'}` }}
+                    style={{
+                      display: `${isSubmenuVietnamDigitalEconomyReviewOpen ? 'block' : 'none'}`,
+                    }}
                   >
                     <li>
                       <Link
                         href="/get-involved/vietnam-digital-economy-review/2024"
-                        className={isActive('/get-involved/vietnam-digital-economy-review/2024') ? 'active' : ''}
+                        className={
+                          isActive('/get-involved/vietnam-digital-economy-review/2024')
+                            ? 'active'
+                            : ''
+                        }
                       >
                         2024
                       </Link>
@@ -188,7 +239,11 @@ export default function MobileMenu({
                     <li>
                       <Link
                         href="/get-involved/vietnam-digital-economy-review/2025"
-                        className={isActive('/get-involved/vietnam-digital-economy-review/2025') ? 'active' : ''}
+                        className={
+                          isActive('/get-involved/vietnam-digital-economy-review/2025')
+                            ? 'active'
+                            : ''
+                        }
                       >
                         2025
                       </Link>
@@ -196,22 +251,26 @@ export default function MobileMenu({
                   </ul>
                   <div
                     className={
-                      isSubmenuVietnamDigitalEconomyReviewOpen ? 'dropdown-btn open' : 'dropdown-btn'
+                      isSubmenuVietnamDigitalEconomyReviewOpen
+                        ? 'dropdown-btn open'
+                        : 'dropdown-btn'
                     }
                     onClick={toggleSubmenuVietnamDigitalEconomyReview}
                   >
                     <span className="plus-line" />
                   </div>
                 </li>
-                {getInvolvedLinks.filter((link) => link.name !== 'ecotech').map((link) => {
-                  return (
-                    <li key={link.id}>
-                      <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                        {t(link.name)}
-                      </Link>
-                    </li>
-                  )
-                })}
+                {getInvolvedLinks
+                  .filter((link) => link.name !== 'ecotech')
+                  .map((link) => {
+                    return (
+                      <li key={link.id}>
+                        <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                          {t(link.name)}
+                        </Link>
+                      </li>
+                    )
+                  })}
               </ul>
               <div
                 className={isSubmenuGetInvolvedOpen ? 'dropdown-btn open' : 'dropdown-btn'}

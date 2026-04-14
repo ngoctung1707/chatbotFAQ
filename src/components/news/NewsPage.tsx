@@ -18,7 +18,7 @@ function CustomUploadComponent({ node }: { node: SerializedUploadNode }) {
   const { caption, url } = uploadDoc
   return (
     <figure className="text-center">
-      <img alt={caption} src={url} className="mt-20" />
+      <img alt={caption} src={url} className="mt-20" style={{ maxWidth: '75%' }} />
       <figcaption className="mt-20 mb-30">{caption}</figcaption>
     </figure>
   )

@@ -46,6 +46,14 @@ const vietnamDigitalEconomyReviewLinks = [
   },
 ]
 
+export const fundingProjectsLinks = [
+  {
+    id: 1,
+    label: 'Cyber Clinic',
+    path: '/research/r&d-funding-projects/cyber-clinic',
+  },
+]
+
 export default function Menu() {
   const pathname = usePathname()
   const locale = useLocale()
@@ -57,7 +65,8 @@ export default function Menu() {
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
-    pathname.startsWith('/research/r&d-labs')
+    pathname.startsWith('/research/r&d-labs') ||
+    pathname.startsWith('/research/r&d-funding-projects')
   const t = useTranslations('Menu')
 
   const normalizeLabs = (labs: unknown): { slug: string; title: string }[] => {
@@ -65,7 +74,10 @@ export default function Menu() {
     return labs
       .map((lab) => {
         if (!lab || typeof lab !== 'object') return null
-        const slug = typeof (lab as { slug?: unknown }).slug === 'string' ? (lab as { slug: string }).slug.trim() : ''
+        const slug =
+          typeof (lab as { slug?: unknown }).slug === 'string'
+            ? (lab as { slug: string }).slug.trim()
+            : ''
         if (!slug) return null
         const rawTitle = (lab as { title?: unknown }).title
         const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle : slug
@@ -192,13 +204,33 @@ export default function Menu() {
                 })}
               </ul>
             </li>
-            <li>
+            <li className="nested-parent">
               <Link
-                href="/research/r&d-funding-projects"
-                className={isActive('/research/r&d-funding-projects') ? 'active' : ''}
+                href="#"
+                className={pathname.startsWith('/research/r&d-funding-projects') ? 'active' : ''}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 {t('r&d-funding-projects')}
+                <svg
+                  className="arrow-right"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlnsXlink="http://www.w3.org/1999/xlink"
+                  fill="#0E104B"
+                  viewBox="0 0 330 330"
+                  xmlSpace="preserve"
+                >
+                  <path d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606C255,161.018,253.42,157.202,250.606,154.389z" />
+                </svg>
               </Link>
+              <ul className="nested-submenu">
+                {fundingProjectsLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li>
               <Link
