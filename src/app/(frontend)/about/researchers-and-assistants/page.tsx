@@ -13,10 +13,6 @@ const Researchers = [
     name: 'Dr. Dao Thanh Chung',
   },
   {
-    name: 'Dr. Do Ba Lam',
-    title: 'SoICT, HUST',
-  },
-  {
     name: 'Dr. Tran Van Dang',
     title: 'SoICT, HUST',
   },

@@ -11,6 +11,11 @@ const list = [
     title: 'Vice-Dean',
     image: '/assets/img/member/hoantx.jpg',
   },
+  {
+    name: 'Dr. Do Ba Lam',
+    title: 'Vice-Dean',
+    image: '/assets/img/member/lamdb.png',
+  },
 ]
 
 export default function BoardOfDeans() {
@@ -20,12 +25,11 @@ export default function BoardOfDeans() {
         <section className="blog__details-area">
           <div className="container">
             <div
-              className="member-flex-container"
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: '100px',
                 justifyContent: 'center',
+                gap: '50px',
               }}
             >
               {list.map((item) => (
@@ -59,7 +63,7 @@ export default function BoardOfDeans() {
                       }}
                     />
                   </div>
-                  <div style={{ width: '400px', textAlign: 'center' }}>
+                  <div style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
                     <h5 style={{ margin: '0', textAlign: 'center' }}>{item.name}</h5>
                     <p style={{ margin: '5px 0 0', textAlign: 'center' }}>{item.title}</p>
                   </div>
