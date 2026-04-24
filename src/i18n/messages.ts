@@ -9,7 +9,7 @@ export const en = {
     software_engineering: 'Software Engineering and Decentralized Systems',
     operational_efficiency: 'Operational Efficiency in Finance',
     smart_finance: 'Smart Finance and Digital Banking',
-    hackathon: 'BKFintech Hakathon',
+    hackathon: 'BKFintech Hackathon',
     hackday: 'BKFintech Hackday',
     club: 'BKFintech Student Club',
     application: 'Application',
