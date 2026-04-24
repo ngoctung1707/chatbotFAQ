@@ -243,7 +243,7 @@ export const vi: typeof en = {
     advisory: 'Ban cố vấn',
     council: 'Hội đồng Viện',
     deans: 'Ban lãnh đạo',
-    researchers: 'Nghiên cứu sinh và Trợ lý',
+    researchers: 'Đội ngũ nghiên cứu và Trợ lý',
     office: 'Văn phòng',
     vietnam_digital_economy_review: 'Chuyên san Khoa học Thường thức Kinh tế số',
     workshop_series: 'BKFintech Workshop Series',
