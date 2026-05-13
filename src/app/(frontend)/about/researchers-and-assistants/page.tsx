@@ -80,6 +80,10 @@ const Assistants = [
     name: 'Nguyen Dac Viet Ha',
     title: 'Business Administration',
   },
+  {
+    name: 'Pham Quynh Phuong',
+    title: 'Marketing',
+  },
 ]
 
 export default function ResearchersAndAssistants() {

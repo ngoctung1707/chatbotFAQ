@@ -1,0 +1,17 @@
+/*
+   Cyber Clinic – cyber-clinic.css (index)
+   Entry point: import tất cả các partial CSS theo thứ tự cascade
+
+   Cấu trúc thư mục:
+     cyber-clinic/
+       cyber-clinic.css   <- file này (index)
+       tokens.css         <- design tokens / CSS variables
+       typography.css     <- h1-h6, p, a, lists, inline elements
+       responsive.css     <- @media breakpoints overrides
+*/
+
+@import './tokens.css';
+@import './typography.css';
+@import './header.css';
+@import './responsive.css';
+@import './animation.css';

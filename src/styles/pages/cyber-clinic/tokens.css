@@ -1,0 +1,144 @@
+/*
+   Cyber Clinic – tokens.css
+   Design tokens scoped to .cyber-clinic-layout
+   Prefix --cc-* để tránh conflict với --tg-* của global theme
+
+   Breakpoints:
+     mobile  -> @media (max-width: 639px)
+     tablet  -> @media (min-width: 640px) and (max-width: 1024px)
+     desktop -> @media (min-width: 1025px)
+*/
+.cyber-clinic-layout {
+  /* --- Font families --- */
+  --cc-font-body: var(--cc-font-family, 'Saira', sans-serif);
+  --cc-font-heading: var(--cc-font-family, 'Saira', sans-serif);
+
+  /* --- Font sizes --- */
+  --cc-text-xs: 0.75rem;
+  /* 12px */
+  --cc-text-sm: 0.875rem;
+  /* 14px */
+  --cc-text-base: 1rem;
+  /* 16px */
+  --cc-text-lg: 1.125rem;
+  /* 18px */
+  --cc-text-xl: 1.25rem;
+  /* 20px */
+  --cc-text-2xl: 1.5rem;
+  /* 24px */
+  --cc-text-3xl: 1.875rem;
+  /* 30px */
+  --cc-text-4xl: 2.25rem;
+  /* 36px */
+  --cc-text-5xl: 3rem;
+  /* 48px */
+  --cc-text-6xl: 3.5rem;
+  /* 56px */
+  --cc-text-7xl: 4rem;
+  /* 64px */
+  --cc-text-hero: clamp(2rem, 5vw, 3.5rem);
+  --cc-text-section: clamp(1.5rem, 3vw, 2.25rem);
+  --cc-text-cta: clamp(1.5rem, 3vw, 2rem);
+
+  /* --- Font weights --- */
+  --cc-fw-light: 300;
+  --cc-fw-regular: 400;
+  --cc-fw-medium: 500;
+  --cc-fw-semibold: 600;
+  --cc-fw-bold: 700;
+  --cc-fw-extrabold: 800;
+  --cc-fw-black: 900;
+
+  /* --- Line heights --- */
+  --cc-leading-tight: 1.15;
+  --cc-leading-snug: 1.25;
+  --cc-leading-normal: 1.5;
+  --cc-leading-relaxed: 1.7;
+  --cc-leading-loose: 1.75;
+
+  /* --- Letter spacings --- */
+  --cc-tracking-tight: -0.02em;
+  --cc-tracking-wide: 0.05em;
+  --cc-tracking-wider: 0.1em;
+  --cc-tracking-widest: 0.12em;
+
+  /* --- Color: Background --- */
+  --cc-bg-page: #F6EAEA;
+  --cc-bg-card: #fff8f7;
+  --cc-bg-light: #FDF6F9;
+
+  /* --- Color: Foreground / Text --- */
+  --cc-fg-primary: #231919;
+  --cc-fg-secondary: #595959;
+  --cc-fg-white: #ffffff;
+  --cc-fg-heading: #14176c;
+
+  /* --- Color: Brand / Primary --- */
+  --cc-primary: #bc1323;
+  --cc-primary-light: #e8e6ff;
+  --cc-primary-rgb: 188, 19, 35;
+
+  /* --- Color: Accent / Secondary --- */
+  --cc-secondary: #ffdad7;
+  --cc-secondary-light: #d0f0ff;
+  --cc-secondary-rgb: 255, 218, 215;
+
+  /* --- Color: Gradient --- */
+  --cc-gradient-btn: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
+  --cc-gradient-bg: linear-gradient(180deg, #ffffff 0%, #f6eaea 100%);
+
+  /* --- Color: Border --- */
+  --cc-border-light: #f6e4e2;
+  --cc-border-medium: #d8c2c0;
+  --cc-border-dark: rgba(64, 64, 64, 0.05);
+
+  /* --- Spacing scale (4px base) --- */
+  --cc-space-1: 0.25rem;
+  /* 4px  */
+  --cc-space-2: 0.5rem;
+  /* 8px  */
+  --cc-space-3: 0.75rem;
+  /* 12px */
+  --cc-space-4: 1rem;
+  /* 16px */
+  --cc-space-5: 1.25rem;
+  /* 20px */
+  --cc-space-6: 1.5rem;
+  /* 24px */
+  --cc-space-8: 2rem;
+  /* 32px */
+  --cc-space-10: 2.5rem;
+  /* 40px */
+  --cc-space-12: 3rem;
+  /* 48px */
+  --cc-space-16: 4rem;
+  /* 64px */
+  --cc-space-20: 5rem;
+  /* 80px */
+  --cc-space-24: 6rem;
+  /* 96px */
+  --cc-space-28: 7rem;
+  /* 112px */
+  --cc-space-30: 7.5rem;
+  /* 120px */
+
+  /* --- Border radius --- */
+  --cc-radius-sm: 8px;
+  --cc-radius-md: 12px;
+  --cc-radius-lg: 16px;
+  --cc-radius-xl: 24px;
+  --cc-radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --cc-shadow-card: 0 16px 40px rgba(var(--cc-primary-rgb), 0.12);
+  --cc-shadow-btn: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  /* --- Transitions --- */
+  --cc-transition-fast: 0.2s ease;
+  --cc-transition-base: 0.25s ease;
+  --cc-transition-slow: 0.3s ease;
+
+  /* --- Layout --- */
+  isolation: isolate;
+  --cc-container-width: 1312px;
+}

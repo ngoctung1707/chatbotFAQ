@@ -53,11 +53,32 @@ export const fundingProjectsLinks = [
     path: '/research/r&d-funding-projects/cyber-clinic',
     target: '_self',
   },
+]
+
+export const solutionsLinks = [
+  {
+    id: 1,
+    nameEn: 'BKOffice',
+    nameVi: 'Hệ thống quản lý văn bản trực tuyến (BKOffice)',
+    path: 'https://bkoffice.hust.edu.vn/',
+  },
   {
     id: 2,
-    label: 'AiPad',
-    path: '/aipad',
-    target: '_blank',
+    nameEn: 'eDiploma',
+    nameVi: 'Hệ thống tạo và xác thực văn bằng, chứng chỉ, chứng nhận số (eDiploma)',
+    path: 'https://ediploma.vn/vi',
+  },
+  {
+    id: 3,
+    nameEn: 'BKSign',
+    nameVi: 'Hệ thống ký số (BKSign)',
+    path: 'https://bksign.hust.edu.vn/',
+  },
+  {
+    id: 4,
+    nameEn: 'AiPad',
+    nameVi: 'Nền tảng hỗ trợ khởi nghiệp (AiPad)',
+    path: 'https://aipad.vn/',
   },
 ]
 
@@ -253,8 +274,17 @@ export default function Menu() {
             </li>
           </ul>
         </li>
-        <li>
-          <Link href="/#solutions">{t('application')}</Link>
+        <li className="menu-item-has-children">
+          <Link href="#">{t('application')}</Link>
+          <ul className="sub-menu" style={{ width: '100px' }}>
+            {solutionsLinks.map((link) => (
+              <li key={link.id}>
+                <Link href={link.path} target="_blank">
+                  {locale === 'vi' ? link.nameVi : link.nameEn}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </li>
         <li>
           <Link href="/academic">{t('education')}</Link>

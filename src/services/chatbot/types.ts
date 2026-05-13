@@ -1,0 +1,156 @@
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export interface Token {
+  access_token: string
+  token_type: 'bearer'
+}
+
+export interface LoginPayload {
+  username: string
+  password: string
+  grant_type?: 'password'
+  scope?: string
+  client_id?: string | null
+  client_secret?: string | null
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+export interface ChatRequest {
+  query: string
+}
+
+export interface Suggestion {
+  answer_id: number
+  question: string
+  score: number
+}
+
+export type ChatDecision = 'answered' | 'ambiguous' | 'fallback' | string
+
+export interface ChatResponse {
+  decision: ChatDecision
+  answer?: string | null
+  answer_id?: number | null
+  suggestions?: Suggestion[] | null
+  fallback_message?: string | null
+  contact?: string | null
+}
+
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
+
+export interface FAQVariantOut {
+  variant_id: number
+  answer_id: number
+  variant_text: string
+  is_active: boolean
+}
+
+export interface FAQVariantCreate {
+  variant_text: string
+  is_active?: boolean
+}
+
+export interface FAQOut {
+  answer_id: number
+  question: string
+  answer: string
+  category?: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  variants: FAQVariantOut[]
+}
+
+export interface FAQCreate {
+  question: string
+  answer: string
+  category?: string | null
+  is_active?: boolean
+  variants?: string[]
+}
+
+export interface FAQUpdate {
+  question?: string | null
+  answer?: string | null
+  category?: string | null
+  is_active?: boolean | null
+}
+
+export interface FAQCsvRow {
+  answer_id: number
+  category?: string | null
+  type: string
+  content: string
+  answer?: string | null
+}
+
+// ─── Rewrite ──────────────────────────────────────────────────────────────────
+
+export interface RewriteOut {
+  id: number
+  raw_text: string
+  normalized_text: string
+  is_active: boolean
+}
+
+export interface RewriteCreate {
+  raw_text: string
+  normalized_text: string
+  is_active?: boolean
+}
+
+export interface RewriteUpdate {
+  raw_text?: string | null
+  normalized_text?: string | null
+  is_active?: boolean | null
+}
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+export interface ConfigOut {
+  similarity_threshold: number
+  margin_threshold: number
+  log_retention_days: number
+}
+
+export interface ConfigUpdate {
+  similarity_threshold?: number | null
+  margin_threshold?: number | null
+  /** 1 – 3650 */
+  log_retention_days?: number | null
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+export interface UserOut {
+  id: number
+  username: string
+  full_name: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface UserCreate {
+  username: string
+  password: string
+  full_name?: string | null
+}
+
+export interface UserUpdate {
+  full_name?: string | null
+  is_active?: boolean | null
+  password?: string | null
+}
+
+// ─── Errors ───────────────────────────────────────────────────────────────────
+
+export interface ValidationError {
+  loc: (string | number)[]
+  msg: string
+  type: string
+}
+
+export interface HTTPValidationError {
+  detail: ValidationError[]
+}

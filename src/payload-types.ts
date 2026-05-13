@@ -189,6 +189,7 @@ export interface News {
   id: string;
   title: string;
   slug: string;
+  description?: string | null;
   lang: 'en' | 'vi';
   tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech' | 'hackday';
   publishedAt: string;
@@ -586,6 +587,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface NewsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  description?: T;
   lang?: T;
   tag?: T;
   publishedAt?: T;

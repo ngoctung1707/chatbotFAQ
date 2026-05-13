@@ -1,0 +1,228 @@
+/*
+   Cyber Clinic – typography.css
+   Base element styles + responsive overrides cho các thẻ text
+   Scoped to .cyber-clinic-layout, dùng --cc-* tokens từ tokens.css
+*/
+
+/* ============================================================
+   01. Headings base
+   ============================================================ */
+.cyber-clinic-layout h1,
+.cyber-clinic-layout h2,
+.cyber-clinic-layout h3,
+.cyber-clinic-layout h4,
+.cyber-clinic-layout h5,
+.cyber-clinic-layout h6 {
+  font-family: var(--cc-font-heading);
+  font-weight: var(--cc-fw-semibold);
+  color: var(--cc-fg-heading);
+  line-height: var(--cc-leading-snug);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* mobile */
+@media (max-width: 639px) {
+  .cyber-clinic-layout h1 {
+    font-size: var(--cc-text-4xl);
+  }
+
+  .cyber-clinic-layout h2 {
+    font-size: var(--cc-text-3xl);
+  }
+
+  .cyber-clinic-layout h3 {
+    font-size: var(--cc-text-2xl);
+  }
+
+  .cyber-clinic-layout h4 {
+    font-size: var(--cc-text-xl);
+  }
+
+  .cyber-clinic-layout h5 {
+    font-size: var(--cc-text-lg);
+  }
+
+  .cyber-clinic-layout h6 {
+    font-size: var(--cc-text-base);
+  }
+}
+
+/* tablet */
+@media (min-width: 640px) and (max-width: 1024px) {
+  .cyber-clinic-layout h1 {
+    font-size: var(--cc-text-5xl);
+  }
+
+  .cyber-clinic-layout h2 {
+    font-size: var(--cc-text-4xl);
+  }
+
+  .cyber-clinic-layout h3 {
+    font-size: var(--cc-text-3xl);
+  }
+
+  .cyber-clinic-layout h4 {
+    font-size: var(--cc-text-2xl);
+  }
+
+  .cyber-clinic-layout h5 {
+    font-size: var(--cc-text-xl);
+  }
+
+  .cyber-clinic-layout h6 {
+    font-size: var(--cc-text-lg);
+  }
+}
+
+/* desktop */
+@media (min-width: 1025px) {
+  .cyber-clinic-layout h1 {
+    font-size: var(--cc-text-7xl);
+  }
+
+  .cyber-clinic-layout h2 {
+    font-size: var(--cc-text-6xl);
+  }
+
+  .cyber-clinic-layout h3 {
+    font-size: var(--cc-text-5xl);
+  }
+
+  .cyber-clinic-layout h4 {
+    font-size: var(--cc-text-3xl);
+  }
+
+  .cyber-clinic-layout h5 {
+    font-size: var(--cc-text-2xl);
+  }
+
+  .cyber-clinic-layout h6 {
+    font-size: var(--cc-text-xl);
+  }
+}
+
+/* ============================================================
+   02. Paragraph
+   ============================================================ */
+.cyber-clinic-layout p {
+  font-family: var(--cc-font-body);
+  font-size: var(--cc-text-lg);
+  font-weight: var(--cc-fw-regular);
+  color: var(--cc-fg-secondary);
+  line-height: var(--cc-leading-loose);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.cyber-clinic-layout p:last-child {
+  margin-bottom: 0;
+}
+
+/* p.lead – đoạn dẫn lớn hơn */
+.cyber-clinic-layout p.lead {
+  font-size: var(--cc-text-lg);
+  color: var(--cc-fg-secondary);
+  line-height: var(--cc-leading-relaxed);
+}
+
+/* Responsive paragraph – mobile */
+@media (max-width: 639px) {
+  .cyber-clinic-layout p {
+    font-size: var(--cc-text-sm);
+    line-height: var(--cc-leading-relaxed);
+  }
+
+  .cyber-clinic-layout p.lead {
+    font-size: var(--cc-text-base);
+  }
+}
+
+/* Responsive paragraph – tablet */
+@media (min-width: 640px) and (max-width: 1024px) {
+  .cyber-clinic-layout p {
+    font-size: var(--cc-text-base);
+  }
+}
+
+/* Responsive paragraph – desktop */
+@media (min-width: 1025px) {
+  .cyber-clinic-layout p {
+    font-size: var(--cc-text-base);
+    line-height: var(--cc-leading-loose);
+  }
+}
+
+/* ============================================================
+   03. Inline elements
+   ============================================================ */
+
+/* Anchor */
+.cyber-clinic-layout a {
+  color: var(--cc-primary);
+  text-decoration: none;
+  transition: color var(--cc-transition-fast), opacity var(--cc-transition-fast);
+}
+
+.cyber-clinic-layout a:hover {
+  color: var(--cc-secondary);
+  opacity: 0.9;
+}
+
+/* Strong / Bold */
+.cyber-clinic-layout strong,
+.cyber-clinic-layout b {
+  font-weight: var(--cc-fw-bold);
+  color: var(--cc-fg-heading);
+}
+
+/* Em / Italic */
+.cyber-clinic-layout em,
+.cyber-clinic-layout i {
+  font-style: italic;
+  color: var(--cc-fg-secondary);
+}
+
+/* Small */
+.cyber-clinic-layout small {
+  font-size: var(--cc-text-xs);
+  color: var(--cc-fg-secondary);
+  line-height: var(--cc-leading-normal);
+}
+
+/* Inline code */
+.cyber-clinic-layout code {
+  font-family: var(--cc-font-mono);
+  font-size: 0.875em;
+  background: var(--cc-primary-light);
+  color: var(--cc-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   04. Lists
+   ============================================================ */
+.cyber-clinic-layout ul,
+.cyber-clinic-layout ol {
+  font-family: var(--cc-font-body);
+  font-size: var(--cc-text-base);
+  color: var(--cc-fg-primary);
+  line-height: var(--cc-leading-loose);
+  padding-left: var(--cc-space-5);
+  margin-top: 0;
+  margin-bottom: var(--cc-space-4);
+}
+
+.cyber-clinic-layout li {
+  margin-bottom: var(--cc-space-2);
+}
+
+/* ============================================================
+   05. Divider
+   ============================================================ */
+.cyber-clinic-layout hr {
+  border: none;
+  border-top: 1px solid var(--cc-border-light);
+  margin: var(--cc-space-8) 0;
+}

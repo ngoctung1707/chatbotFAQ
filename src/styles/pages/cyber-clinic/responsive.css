@@ -1,0 +1,322 @@
+/*
+   Cyber Clinic – responsive.css
+   Responsive overrides cho các COMPONENT (layout, cards, sections...)
+   Responsive cho typography (h1-h6, p) đã được đặt trong typography.css
+
+   Breakpoints:
+     mobile  -> @media (max-width: 639px)
+     tablet  -> @media (min-width: 640px) and (max-width: 1024px)
+     desktop -> @media (min-width: 1025px)
+*/
+
+/* Thêm component responsive vào đây khi cần */
+
+.cyber-clinic-layout .container {
+  max-width: var(--cc-container-width);
+  padding-left: var(--cc-space-4);
+  padding-right: var(--cc-space-4);
+}
+
+.cc-layout-gradient {
+  height: 300px;
+}
+
+.cc-hero-bg {
+  background-size: auto 100%;
+}
+
+.cc-context-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.cc-context-header__label {
+  width: 35%;
+}
+
+.cc-context-header__title {
+  width: 65%;
+}
+
+.cc-context-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.cc-program-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.cc-program-features__item:not(:last-child) {
+  border-right: 1px solid var(--cc-border-light);
+}
+
+.cc-program-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.cc-roadmap-layout {
+  display: flex;
+  align-items: flex-start
+}
+
+.cc-roadmap-left {
+  width: 50%;
+  position: sticky;
+  top: 100px;
+}
+
+.cc-roadmap-right {
+  width: 50%;
+}
+
+.cc-news-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  border: 2px solid #F6E4E2;
+  border-radius: 24px;
+  padding: 16px;
+  background-color: #FFFFFF;
+}
+
+.cc-news-main__image {
+  height: 350px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.cc-news-main_desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cc-footer {
+  max-width: 1392px;
+  padding: 0 16px;
+  margin: 0 auto;
+}
+
+.cc-footer-inner {
+  background: var(--cc-bg-card);
+  padding: 80px;
+  border-radius: 24px;
+}
+
+.cc-footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.cc-footer-col1 {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.cc-footer-col1-divider {
+  width: 1px;
+  height: 60px;
+  background-color: #C5C5D8;
+}
+
+.cc-footer-col1-logo {
+  width: auto;
+  height: 60px;
+}
+
+.cc-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.cc-footer-bottom-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.cc-footer-mobile-divider {
+  display: none;
+  border-top: 1px dashed var(--cc-border-medium);
+  margin: 24px 0;
+}
+
+@media (min-width: 640px) and (max-width: 1024px) {
+  .cc-layout-gradient {
+    height: 200px;
+  }
+
+  .cc-hero-bg {
+    background-size: 100% auto !important;
+  }
+
+  .cc-hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cc-context-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .cc-context-header__label,
+  .cc-context-header__title {
+    width: 100%;
+  }
+
+  .cc-context-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cc-program-pillars {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cc-roadmap-layout {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .cc-roadmap-left {
+    width: 100%;
+    position: unset;
+  }
+
+  .cc-roadmap-right {
+    width: 100%;
+  }
+
+  .cc-news-main__image {
+    height: 250px;
+  }
+
+  .cc-news-main_desc {
+    -webkit-line-clamp: 2;
+  }
+
+  .cc-footer {
+    background-color: var(--cc-bg-page);
+  }
+}
+
+@media (max-width: 639px) {
+  .cc-layout-gradient {
+    height: 100px;
+  }
+
+  .cc-hero-bg {
+    background-size: 100% auto !important;
+  }
+
+  .cc-hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cc-context-header {
+    flex-direction: column;
+    gap: 16px
+  }
+
+  .cc-context-header__label,
+  .cc-context-header__title {
+    width: 100%;
+  }
+
+  .cc-context-items {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .cc-program-features {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .cc-program-features__item:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid var(--cc-border-light);
+    padding-bottom: 24px
+  }
+
+  .cc-program-pillars {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .cc-roadmap-layout {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .cc-roadmap-left {
+    width: 100%;
+    position: unset;
+  }
+
+  .cc-roadmap-right {
+    width: 100%;
+  }
+
+  .cc-news-main {
+    display: none;
+  }
+
+  .cc-footer {
+    background-color: var(--cc-bg-page);
+  }
+
+  .cc-footer-inner {
+    padding: 32px 24px;
+  }
+
+  .cc-footer-top {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .cc-footer-col1 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .cc-footer-col1-divider {
+    display: none;
+  }
+
+  .cc-footer-mobile-divider {
+    display: block;
+  }
+
+  .cc-footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cc-footer-bottom-right {
+    align-items: flex-start;
+  }
+}

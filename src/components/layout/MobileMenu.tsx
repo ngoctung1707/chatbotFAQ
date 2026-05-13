@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useEffect, useState } from 'react'
-import { aboutLinks, fundingProjectsLinks, getInvolvedLinks, researchLinks } from './Menu'
+import { aboutLinks, fundingProjectsLinks, getInvolvedLinks, researchLinks, solutionsLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -32,6 +32,7 @@ export default function MobileMenu({
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
   const [isSubmenuFundingProjectsOpen, setIsSubmenuFundingProjectsOpen] = useState(false)
   const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
+  const [isSubmenuSolutionsOpen, setIsSubmenuSolutionsOpen] = useState(false)
   const [isSubmenuVietnamDigitalEconomyReviewOpen, setIsSubmenuVietnamDigitalEconomyReviewOpen] =
     useState(false)
 
@@ -69,6 +70,10 @@ export default function MobileMenu({
 
   const toggleSubmenuGetInvolved = () => {
     setIsSubmenuGetInvolvedOpen(!isSubmenuGetInvolvedOpen)
+  }
+
+  const toggleSubmenuSolutions = () => {
+    setIsSubmenuSolutionsOpen(!isSubmenuSolutionsOpen)
   }
 
   const toggleSubmenuVietnamDigitalEconomyReview = () => {
@@ -196,8 +201,26 @@ export default function MobileMenu({
                 <span className="plus-line" />
               </div>
             </li>
-            <li>
-              <Link href="/#solutions">{t('application')}</Link>
+            <li className="menu-item-has-children">
+              <Link href="#">{t('application')}</Link>
+              <ul
+                className="sub-menu"
+                style={{ display: `${isSubmenuSolutionsOpen ? 'block' : 'none'}` }}
+              >
+                {solutionsLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.path} target="_blank">
+                      {locale === 'vi' ? link.nameVi : link.nameEn}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div
+                className={isSubmenuSolutionsOpen ? 'dropdown-btn open' : 'dropdown-btn'}
+                onClick={toggleSubmenuSolutions}
+              >
+                <span className="plus-line" />
+              </div>
             </li>
             <li>
               <Link href="/academic">{t('education')}</Link>

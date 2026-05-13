@@ -55,6 +55,12 @@ export const News: CollectionConfig = {
       },
     },
     {
+      name: 'description',
+      type: 'textarea',
+      label: 'Mô tả',
+      required: false,
+    },
+    {
       name: 'lang',
       type: 'select',
       options: ['en', 'vi'],
