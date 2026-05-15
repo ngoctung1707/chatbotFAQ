@@ -7,8 +7,6 @@ import Header from './layout/Header'
 import Footer from './layout/Footer'
 import footerBg from './imgs/banners/footer.png'
 import Image from 'next/image'
-// @ts-expect-error -- Global CSS side-effect import is resolved by Next.js at build time
-import './styles/cyber-clinic.css'
 
 export const metadata: Metadata = {
   title: 'Vườn ươm Nhân lực An toàn thông tin trong nền kinh tế số - ĐH Bách khoa Hà Nội',
