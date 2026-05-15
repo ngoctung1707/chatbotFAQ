@@ -84,6 +84,7 @@ export default function FaqManager({ token }: { token: string }) {
   const [newVariantText, setNewVariantText] = useState('')
   const [editVariants, setEditVariants] = useState<FAQOut['variants']>([])
 
+  const [isPreviewSubmitting, setIsPreviewSubmitting] = useState(false)
   const [previewData, setPreviewData] = useState<FAQCsvRow[] | null>(null)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,6 +172,7 @@ export default function FaqManager({ token }: { token: string }) {
 
   const handlePreviewSubmit = async () => {
     if (!previewData || previewData.length === 0) return
+    setIsPreviewSubmitting(true)
     try {
       await faqService.addRows(previewData, token)
       setPreviewData(null)
@@ -178,6 +180,8 @@ export default function FaqManager({ token }: { token: string }) {
       toast.success('Nhập dữ liệu thành công!')
     } catch (e) {
       toast.error(getChatbotErrorDetail(e) || 'Lỗi khi import FAQ qua tệp')
+    } finally {
+      setIsPreviewSubmitting(false)
     }
   }
 
@@ -718,8 +722,12 @@ export default function FaqManager({ token }: { token: string }) {
                             >
                               Hủy
                             </button>
-                            <button className={styles.btnPrimary} onClick={handlePreviewSubmit}>
-                              Thêm dữ liệu
+                            <button
+                              className={styles.btnPrimary}
+                              onClick={handlePreviewSubmit}
+                              disabled={isPreviewSubmitting}
+                            >
+                              {isPreviewSubmitting ? 'Đang thêm...' : 'Thêm dữ liệu'}
                             </button>
                           </div>
                         </div>
