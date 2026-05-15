@@ -1,4 +1,5 @@
 import React from 'react'
+import SplitText from '../components/SplitText'
 
 const ROADMAP_ITEMS = [
   {
@@ -55,9 +56,12 @@ export default function Roadmap() {
           </div>
 
           {/* Heading */}
-          <h3>
-            Hành trình của bạn <br /> sẽ bắt đầu như thế nào?
-          </h3>
+          <SplitText
+            tag="h3"
+            text="Hành trình của bạn sẽ bắt đầu như thế nào?"
+            textAlign="left"
+            style={{ maxWidth: '500px' }}
+          />
         </div>
         <div className="cc-roadmap-right">
           <div

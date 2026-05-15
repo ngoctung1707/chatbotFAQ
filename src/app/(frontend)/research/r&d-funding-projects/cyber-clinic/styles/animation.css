@@ -1,0 +1,12 @@
+.hover-underline:hover {
+    text-decoration: underline !important;
+}
+
+.split-line {
+    display: block;
+}
+
+.split-word,
+.split-char {
+    display: inline-block;
+}

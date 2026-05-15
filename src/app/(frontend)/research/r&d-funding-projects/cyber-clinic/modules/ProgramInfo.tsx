@@ -6,6 +6,7 @@ import AutoIcon from '../icons/AutoIcon'
 import TrendingIcon from '../icons/TrendingIcon'
 import Card from '../components/Card'
 import Icon from '../components/Icon'
+import SplitText from '../components/SplitText'
 
 const PROGRAM_FEATURES = [
   { icon: <BookIcon />, text: 'Sinh viên được đào tạo bài bản' },
@@ -74,10 +75,14 @@ export default function ProgramInfo() {
         </div>
 
         {/* Heading */}
-        <h3 style={{ marginBottom: '40px' }}>
-          Chương trình xây dựng mô hình Cyber Clinic <br /> Vườn ươm an toàn thông tin tại Đại học
-          Bách khoa Hà Nội
-        </h3>
+        <SplitText
+          tag="h3"
+          text={
+            'Chương trình xây dựng mô hình Cyber Clinic\nVườn ươm an toàn thông tin tại Đại học Bách khoa Hà Nội'
+          }
+          textAlign="left"
+          style={{ marginBottom: '40px' }}
+        />
 
         {/* Feature overview card */}
         <Card>
@@ -101,9 +106,7 @@ export default function ProgramInfo() {
           {PILLARS.map((pillar, index) => (
             <Card key={index} style={{ height: '100%' }}>
               <Icon>{pillar.icon}</Icon>
-              <h5
-                style={{ marginTop: '24px', marginBottom: '8px', color: 'var(--cc-fg-primary)' }}
-              >
+              <h5 style={{ marginTop: '24px', marginBottom: '8px', color: 'var(--cc-fg-primary)' }}>
                 {pillar.title}
               </h5>
               <ul style={{ paddingLeft: '20px', margin: 0 }}>

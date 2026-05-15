@@ -12,6 +12,7 @@ import '../../../public/assets/css/main.css'
 import React from 'react'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale } from 'next-intl/server'
+import { ToastContainer } from 'react-toastify'
 
 const interBody = Inter({
   weight: ['300', '400', '500', '600', '700'],
@@ -41,6 +42,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={`${interBody.variable} ${montserratHeading.variable}`}>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <ToastContainer />
       </body>
     </html>
   )

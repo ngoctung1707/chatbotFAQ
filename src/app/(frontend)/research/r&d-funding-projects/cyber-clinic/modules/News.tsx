@@ -3,6 +3,7 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import ButtonGradient from '../components/ButtonGradient'
+import SplitText from '../components/SplitText'
 import Link from 'next/link'
 import type { Media, News as NewsType } from '@/payload-types'
 
@@ -48,7 +49,7 @@ export default async function News() {
             marginBottom: '40px',
           }}
         >
-          <h3>Tin tức</h3>
+          <SplitText tag="h3" text="Tin tức" textAlign="left" />
           <ButtonGradient variant="primary" text="Xem tất cả" linkTo={`/news`} />
         </div>
 

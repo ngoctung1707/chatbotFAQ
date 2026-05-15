@@ -1,13 +1,14 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { getUserLocale } from '@/i18n/localeService'
-import '@/styles/pages/cyber-clinic/cyber-clinic.css'
 import { Metadata } from 'next'
 import { Saira } from 'next/font/google'
 import Header from './layout/Header'
 import Footer from './layout/Footer'
 import footerBg from './imgs/banners/footer.png'
 import Image from 'next/image'
+// @ts-expect-error -- Global CSS side-effect import is resolved by Next.js at build time
+import './styles/cyber-clinic.css'
 
 export const metadata: Metadata = {
   title: 'Vườn ươm Nhân lực An toàn thông tin trong nền kinh tế số - ĐH Bách khoa Hà Nội',
@@ -39,11 +40,11 @@ export default async function CyberClinicLayout({
   const lang = await getUserLocale()
   if (lang === 'vi') {
     redirect(
-      '/news/le-khoi-dong-chuong-trinh-vuon-uom-nhan-luc-an-toan-thong-tin-trong-nen-kinh-te-so-o-viet-nam'
+      '/news/le-khoi-dong-chuong-trinh-vuon-uom-nhan-luc-an-toan-thong-tin-trong-nen-kinh-te-so-o-viet-nam',
     )
   } else {
     redirect(
-      '/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy'
+      '/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy',
     )
   }
 

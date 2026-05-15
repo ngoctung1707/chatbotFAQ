@@ -1,4 +1,5 @@
 import type {
+  BulkUpdateResultWithDetails,
   ChatRequest,
   ChatResponse,
   ConfigOut,
@@ -7,12 +8,15 @@ import type {
   FAQCsvRow,
   FAQOut,
   FAQUpdate,
+  FAQVariantBulkUpdateItem,
   FAQVariantCreate,
   FAQVariantOut,
   LoginPayload,
+  PaginatedFAQOut,
   RewriteCreate,
   RewriteOut,
   RewriteUpdate,
+  SupportEmailOut,
   Token,
   UserCreate,
   UserOut,
@@ -41,11 +45,31 @@ class ChatbotAPIError extends Error {
   }
 }
 
+type ChatbotErrorDetailPayload = { detail?: unknown }
+
+const getDetailFromPayload = (payload: unknown): string | undefined => {
+  if (!payload || typeof payload !== 'object') return undefined
+  if (!('detail' in payload)) return undefined
+  const detail = (payload as ChatbotErrorDetailPayload).detail
+  return typeof detail === 'string' ? detail : undefined
+}
+
+export const getChatbotErrorDetail = (err: unknown): string | undefined => {
+  if (err instanceof ChatbotAPIError) {
+    if (typeof err.detail === 'string') return err.detail
+    const nested = getDetailFromPayload(err.detail)
+    if (nested) return nested
+  }
+
+  return getDetailFromPayload(err)
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, token, headers: extraHeaders, ...rest } = options
 
-  const isNativeObject = (typeof FormData !== 'undefined' && body instanceof FormData) || 
-                         (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams)
+  const isNativeObject =
+    (typeof FormData !== 'undefined' && body instanceof FormData) ||
+    (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams)
 
   const headers: HeadersInit = {
     ...(body !== undefined && !isNativeObject ? { 'Content-Type': 'application/json' } : {}),
@@ -56,7 +80,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const res = await fetch(`${BASE_URL}${path}`, {
     ...rest,
     headers,
-    body: (body !== undefined && !isNativeObject) ? JSON.stringify(body) : (body as BodyInit | undefined),
+    body:
+      body !== undefined && !isNativeObject ? JSON.stringify(body) : (body as BodyInit | undefined),
   })
 
   if (res.status === 204) return undefined as T
@@ -64,9 +89,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = await res.json().catch(() => null)
 
   if (!res.ok) {
+    const detailMessage = getDetailFromPayload(data)
     throw new ChatbotAPIError(
       res.status,
-      `Chatbot API error ${res.status}: ${res.statusText}`,
+      detailMessage || `Chatbot API error ${res.status}: ${res.statusText}`,
       data,
     )
   }
@@ -126,13 +152,17 @@ export const faqService = {
   /**
    * Lấy danh sách FAQ (public).
    */
-  list(params?: { skip?: number; limit?: number; category?: string }): Promise<FAQOut[]> {
+  list(params?: {
+    page?: number
+    page_size?: number
+    category?: string
+  }): Promise<PaginatedFAQOut> {
     const query = new URLSearchParams()
-    if (params?.skip !== undefined) query.set('skip', String(params.skip))
-    if (params?.limit !== undefined) query.set('limit', String(params.limit))
+    if (params?.page !== undefined) query.set('page', String(params.page))
+    if (params?.page_size !== undefined) query.set('page_size', String(params.page_size))
     if (params?.category) query.set('category', params.category)
     const qs = query.toString()
-    return request<FAQOut[]>(`/faq/${qs ? `?${qs}` : ''}`)
+    return request<PaginatedFAQOut>(`/faq/${qs ? `?${qs}` : ''}`)
   },
 
   /**
@@ -241,6 +271,20 @@ export const faqService = {
       token,
     })
   },
+
+  /**
+   * Cập nhật hàng loạt biến thể (yêu cầu xác thực).
+   */
+  bulkUpdateVariants(
+    payload: FAQVariantBulkUpdateItem[],
+    token: string,
+  ): Promise<BulkUpdateResultWithDetails> {
+    return request<BulkUpdateResultWithDetails>('/faq/variants/bulk', {
+      method: 'PUT',
+      body: payload,
+      token,
+    })
+  },
 }
 
 // ─── Rewrite ──────────────────────────────────────────────────────────────────
@@ -294,6 +338,13 @@ export const configService = {
    */
   get(): Promise<ConfigOut> {
     return request<ConfigOut>('/config/')
+  },
+
+  /**
+   * Lấy email hỗ trợ (public).
+   */
+  getSupportEmail(): Promise<SupportEmailOut> {
+    return request<SupportEmailOut>('/config/support-email')
   },
 
   /**

@@ -6,6 +6,7 @@ import StudentIcon from '../icons/StudentIcon'
 import TeacherIcon from '../icons/TeacherIcon'
 import Girl from '../imgs/decors/girl.png'
 import Avatar from '../components/Avatar'
+import SplitText from '../components/SplitText'
 
 const AUDIENCE_CARDS = [
   {
@@ -80,9 +81,12 @@ export default function Users() {
         </div>
 
         {/* Heading */}
-        <h3 style={{ marginBottom: '40px', maxWidth: '700px' }}>
-          Chương trình được triển khai nhằm mang lại lợi ích cho
-        </h3>
+        <SplitText
+          tag="h3"
+          text="Chương trình được triển khai nhằm mang lại lợi ích cho"
+          textAlign="left"
+          style={{ marginBottom: '40px', maxWidth: '700px' }}
+        />
 
         <div className="cc-context-items">
           {AUDIENCE_CARDS.map((card, index) => (

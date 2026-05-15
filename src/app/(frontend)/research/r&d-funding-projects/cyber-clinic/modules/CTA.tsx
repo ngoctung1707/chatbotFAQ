@@ -1,5 +1,6 @@
 import React from 'react'
 import ButtonGradient from '../components/ButtonGradient'
+import SplitText from '../components/SplitText'
 
 export default function CTA() {
   return (
@@ -24,9 +25,12 @@ export default function CTA() {
             zIndex: 2,
           }}
         >
-          <h2 style={{ maxWidth: '750px', textAlign: 'center', marginBottom: '40px' }}>
-            Bắt đầu hành trình của bạn trong lĩnh vực An toàn Thông tin ngay hôm nay!
-          </h2>
+          <SplitText
+            tag="h2"
+            text="Bắt đầu hành trình của bạn trong lĩnh vực An toàn Thông tin ngay hôm nay!"
+            textAlign="center"
+            style={{ maxWidth: '750px', marginBottom: '40px' }}
+          />
           <ButtonGradient variant="gradient" text="Đăng ký ngay" />
         </div>
       </div>

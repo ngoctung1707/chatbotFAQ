@@ -4,6 +4,7 @@
   font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   color: #1d1d1f;
   -webkit-font-smoothing: antialiased;
+  scrollbar-gutter: stable;
 }
 
 /* Global Nav */
@@ -100,6 +101,94 @@
   letter-spacing: -0.374px;
 }
 
+.cardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.searchField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #7a7a7a;
+  pointer-events: none;
+}
+
+.headerInput {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  padding: 8px 14px 8px 36px;
+  font-size: 13px;
+  color: #1d1d1f;
+  outline: none;
+  font-family: inherit;
+  min-width: 220px;
+}
+
+.headerInput:focus {
+  border-color: #0071e3;
+}
+
+.headerInput::placeholder {
+  font-size: 14px;
+}
+
+.headerSelect {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  padding: 8px 34px 8px 14px;
+  font-size: 13px;
+  color: #1d1d1f;
+  outline: none;
+  font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%237a7a7a'%20stroke-width%3D'1.5'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpath%20d%3D'M6%209l6%206%206-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+
+.headerSelect:focus {
+  border-color: #0071e3;
+}
+
+.headerSelect {
+  font-size: 14px;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  flex: 1;
+}
+
 /* Form Groups */
 .formGroup {
   margin-bottom: 16px;
@@ -129,6 +218,26 @@
   border-color: #0071e3;
 }
 
+.input::placeholder {
+  font-size: 14px;
+}
+
+.select {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #1d1d1f;
+  outline: none;
+  font-family: inherit;
+  appearance: none;
+}
+
+.select:focus {
+  border-color: #0071e3;
+}
+
 .textarea {
   background-color: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -144,6 +253,10 @@
 
 .textarea:focus {
   border-color: #0071e3;
+}
+
+.textarea::placeholder {
+  font-size: 14px;
 }
 
 /* Buttons */
@@ -219,6 +332,200 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.statusToggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  padding: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.statusKnob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.statusToggleActive {
+  background-color: #1ecb4f;
+}
+
+.statusToggleActive .statusKnob {
+  transform: translateX(20px);
+}
+
+.statusToggleInactive {
+  background-color: #d9d9d9;
+}
+
+.statusToggleButton {
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.passwordField {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 220px;
+}
+
+.inputWithIcons {
+  width: 100%;
+  padding-right: 76px;
+}
+
+.iconButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #7a7a7a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.iconButtonLeft {
+  right: 8px;
+}
+
+.iconButtonRight {
+  border: none;
+  background: transparent;
+  color: #0066cc;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.iconButtonRight:hover {
+  text-decoration: underline;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 24px;
+}
+
+.modalContent {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+  max-width: 1280px;
+  max-height: 90vh;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalContentFaq {
+  height: 720px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 8px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #1d1d1f;
+}
+
+.modalBody {
+  padding: 8px 24px 24px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalTabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modalTab {
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  color: #1d1d1f;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.modalTabActive {
+  border: 1px solid #0066cc;
+  background: #e6f0ff;
+  color: #004c99;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.modalTabPanel {
+  flex: 1;
+  min-height: 0;
+}
+
+.modalImport {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.previewTableWrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  max-height: 410px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 /* Login specific */

@@ -7,12 +7,6 @@ import type { Suggestion, ChatDecision } from '@/services/chatbot/types'
 import RobotIcon from '../icons/RobotIcon'
 import { Saira } from 'next/font/google'
 
-const saira = Saira({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-})
-
 type Message = {
   id: string
   sender: 'user' | 'bot'
@@ -117,7 +111,7 @@ export default function ChatWindow() {
   const toggleOpen = () => setIsOpen((prev) => !prev)
 
   return (
-    <div className={`${styles.container} ${saira.className}`}>
+    <div className={`${styles.container}`}>
       {!isOpen && (
         <button className={styles.triggerBtn} onClick={toggleOpen} aria-label="Open Chatbot">
           <RobotIcon style={{ transform: 'scale(1.2)' }} />
@@ -129,7 +123,7 @@ export default function ChatWindow() {
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               <RobotIcon />
-              <h3 className={`${styles.headerTitle} ${saira.className}`}>Chatbot</h3>
+              <h3 className={`${styles.headerTitle}`}>Chatbot</h3>
             </div>
             <button className={styles.closeBtn} onClick={toggleOpen} aria-label="Close Chatbot">
               ✕

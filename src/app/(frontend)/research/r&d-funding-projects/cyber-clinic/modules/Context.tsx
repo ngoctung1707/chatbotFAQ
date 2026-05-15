@@ -1,4 +1,5 @@
 import React from 'react'
+import SplitText from '../components/SplitText'
 import ShieldIcon from '../icons/ShieldIcon'
 import BagIcon from '../icons/BagIcon'
 import GraduatedIcon from '../icons/GraduatedIcon'
@@ -53,11 +54,14 @@ export default function Context() {
               THỊ TRƯỜNG ĐANG DẦN THAY ĐỔI...
             </span>
           </div>
-          <h3 className="cc-context-header__title">
-            Chuyển đổi số đang tăng tốc.
-            <br /> Doanh nghiệp phụ thuộc nhiều hơn vào dữ liệu và công nghệ và cùng với đó là những
-            rủi ro an ninh mạng ngày một gia tăng.
-          </h3>
+          <SplitText
+            tag="h3"
+            className="cc-context-header__title"
+            text={
+              'Chuyển đổi số đang tăng tốc.\nDoanh nghiệp phụ thuộc nhiều hơn vào dữ liệu và công nghệ và cùng với đó là những rủi ro an ninh mạng ngày một gia tăng.'
+            }
+            textAlign="left"
+          />
         </div>
         <p style={{ fontSize: '18px', color: 'var(--cc-fg-primary)' }}>Trong khi đó:</p>
         <div className="cc-context-items">

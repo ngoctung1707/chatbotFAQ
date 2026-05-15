@@ -5,6 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import ArrowIconWhite from '../icons/ArrowIconWhite'
+import ACFLogo from '../imgs/logos/ACF.png'
+import HUSTLogo from '../imgs/logos/HUST.png'
+import BKFintechLogo from '../imgs/logos/BKFintech.png'
 
 const BASE_PATH = '/research/r&d-funding-projects/cyber-clinic'
 
@@ -25,7 +28,7 @@ export default function Header() {
         {/* Left – ACF logo */}
         <Link href={BASE_PATH} className="cc-header__logo">
           <Image
-            src="/assets/img/cyber-clinic/logos/ACF.png"
+            src={ACFLogo.src}
             alt="APAC Cybersecurity Fund – The Asia Foundation"
             width={145}
             height={28}
@@ -53,7 +56,7 @@ export default function Header() {
         {/* Right – Partner logos */}
         <div className="cc-header__partners" aria-label="Đối tác thực hiện">
           <Image
-            src="/assets/img/cyber-clinic/logos/HUST.png"
+            src={HUSTLogo.src}
             alt="Đại học Bách khoa Hà Nội – HUST"
             width={93}
             height={28}
@@ -61,7 +64,7 @@ export default function Header() {
           />
           <span className="cc-header__partner-divider" aria-hidden="true" />
           <Image
-            src="/assets/img/cyber-clinic/logos/BKFintech.png"
+            src={BKFintechLogo.src}
             alt="BK Fintech – Viện Kinh tế và Kinh tế số"
             width={110}
             height={28}

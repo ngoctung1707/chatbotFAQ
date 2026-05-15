@@ -85,6 +85,33 @@ export interface FAQCsvRow {
   answer?: string | null
 }
 
+export interface PaginatedFAQOut {
+  total: number
+  page: number
+  total_pages: number
+  page_size: number
+  items: FAQOut[]
+}
+
+export interface FAQVariantBulkUpdateItem {
+  variant_id: number
+  answer_id?: number | null
+  variant_text?: string | null
+  is_active?: boolean | null
+}
+
+export interface FailedVariantDetail {
+  variant_id: number
+  error: string
+}
+
+export interface BulkUpdateResultWithDetails {
+  success_count: number
+  failure_count: number
+  failed_ids?: number[]
+  failed_details?: FailedVariantDetail[]
+}
+
 // ─── Rewrite ──────────────────────────────────────────────────────────────────
 
 export interface RewriteOut {
@@ -112,6 +139,7 @@ export interface ConfigOut {
   similarity_threshold: number
   margin_threshold: number
   log_retention_days: number
+  support_email?: string | null
 }
 
 export interface ConfigUpdate {
@@ -119,6 +147,11 @@ export interface ConfigUpdate {
   margin_threshold?: number | null
   /** 1 – 3650 */
   log_retention_days?: number | null
+  support_email?: string | null
+}
+
+export interface SupportEmailOut {
+  support_email?: string | null
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────
