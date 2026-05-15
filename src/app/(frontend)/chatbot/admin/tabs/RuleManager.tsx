@@ -84,7 +84,7 @@ export default function RuleManager({ token }: { token: string }) {
       <h2 className={styles.sectionTitle}>Quản lý quy tắc (Chuẩn hóa)</h2>
 
       <div className={styles.card}>
-        <div className={styles.cardHeaderRow}>
+        <div className={`${styles.cardHeaderRow} ${styles.cardHeaderSticky}`}>
           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
             Danh sách quy tắc
           </h3>

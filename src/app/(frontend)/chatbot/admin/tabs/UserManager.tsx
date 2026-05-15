@@ -131,7 +131,7 @@ export default function UserManager({ token }: { token: string }) {
     <div>
       <h2 className={styles.sectionTitle}>Quản lý quản trị viên</h2>
       <div className={styles.card}>
-        <div className={styles.cardHeaderRow}>
+        <div className={`${styles.cardHeaderRow} ${styles.cardHeaderSticky}`}>
           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
             Danh sách Quản trị viên
           </h3>

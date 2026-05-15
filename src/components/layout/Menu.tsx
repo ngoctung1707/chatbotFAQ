@@ -36,13 +36,13 @@ export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
 const vietnamDigitalEconomyReviewLinks = [
   {
     id: 1,
-    label: '2024',
-    path: '/get-involved/vietnam-digital-economy-review/2024',
+    label: '2025',
+    path: '/get-involved/vietnam-digital-economy-review/2025',
   },
   {
     id: 2,
-    label: '2025',
-    path: '/get-involved/vietnam-digital-economy-review/2025',
+    label: '2024',
+    path: '/get-involved/vietnam-digital-economy-review/2024',
   },
 ]
 

@@ -47,7 +47,6 @@ export default function ConfigManager({ token }: { token: string }) {
     <div>
       <h2 className={styles.sectionTitle}>Cấu hình hệ thống</h2>
       <div className={styles.card}>
-        <h3 className={styles.cardTitle}>Tham số AI cho Chatbot</h3>
         <form onSubmit={handleUpdate}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Ngưỡng tương đồng</label>
