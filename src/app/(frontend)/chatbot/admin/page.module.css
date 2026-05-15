@@ -103,7 +103,6 @@
   display: flex;
   justify-content: space-between;
   align-items: start;
-  margin-bottom: 16px;
   gap: 16px;
 }
 
