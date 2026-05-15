@@ -329,17 +329,22 @@ export default function UserManager({ token }: { token: string }) {
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Trạng thái</label>
-                  <button
-                    type="button"
-                    className={`${styles.statusToggle} ${styles.statusToggleButton} ${
-                      editIsActive ? styles.statusToggleActive : styles.statusToggleInactive
-                    }`}
-                    onClick={() => setEditIsActive((prev) => !prev)}
-                    role="switch"
-                    aria-checked={editIsActive}
-                  >
-                    <span className={styles.statusKnob} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                      type="button"
+                      className={`${styles.statusToggle} ${styles.statusToggleButton} ${
+                        editIsActive ? styles.statusToggleActive : styles.statusToggleInactive
+                      }`}
+                      onClick={() => setEditIsActive((prev) => !prev)}
+                      role="switch"
+                      aria-checked={editIsActive}
+                    >
+                      <span className={styles.statusKnob} />
+                    </button>
+                    <span style={{ fontSize: '14px' }}>
+                      {editIsActive ? 'Kích hoạt' : 'Vô hiệu hóa'}
+                    </span>
+                  </div>
                 </div>
                 <div className={styles.modalActions}>
                   <button type="button" className={styles.btnSecondary} onClick={closeEdit}>
