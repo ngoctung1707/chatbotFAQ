@@ -2,6 +2,8 @@ import type {
   BulkUpdateResultWithDetails,
   ChatRequest,
   ChatResponse,
+  ChatLogDecision,
+  ChatLogSort,
   ConfigOut,
   ConfigUpdate,
   FAQCreate,
@@ -12,6 +14,8 @@ import type {
   FAQVariantCreate,
   FAQVariantOut,
   LoginPayload,
+  MeResponse,
+  PaginatedChatLogOut,
   PaginatedFAQOut,
   RewriteCreate,
   RewriteOut,
@@ -120,6 +124,13 @@ export const authService = {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form as unknown, // FormData-encoded, bypass JSON stringify
     })
+  },
+
+  /**
+   * Lấy thông tin người dùng hiện tại (yêu cầu xác thực).
+   */
+  me(token: string): Promise<MeResponse> {
+    return request<MeResponse>('/auth/me', { token })
   },
 }
 
@@ -399,6 +410,34 @@ export const userService = {
       method: 'DELETE',
       token,
     })
+  },
+}
+
+// ─── Chat Log ───────────────────────────────────────────────────────────────
+
+export const chatLogService = {
+  /**
+   * Lấy lịch sử hội thoại (yêu cầu xác thực).
+   */
+  list(
+    token: string,
+    params?: {
+      page?: number
+      page_size?: number
+      key_word?: string
+      decistion_type?: ChatLogDecision
+      sort_timestamp?: ChatLogSort
+    },
+  ): Promise<PaginatedChatLogOut> {
+    const query = new URLSearchParams()
+    if (params?.page !== undefined) query.set('page', String(params.page))
+    if (params?.page_size !== undefined) query.set('page_size', String(params.page_size))
+    if (params?.key_word) query.set('key_word', params.key_word)
+    if (params?.decistion_type) query.set('decistion_type', params.decistion_type)
+    if (params?.sort_timestamp) query.set('sort_timestamp', params.sort_timestamp)
+    const qs = query.toString()
+
+    return request<PaginatedChatLogOut>(`/chat-log/${qs ? `?${qs}` : ''}`, { token })
   },
 }
 

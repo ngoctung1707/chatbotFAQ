@@ -61,7 +61,7 @@
   border: none;
   font-size: 17px;
   font-weight: 600;
-  color: #1d1d1f;
+  color: #14176c;
   cursor: pointer;
   padding: 4px 8px;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
@@ -90,6 +90,11 @@
   border-radius: 18px;
   padding: 24px;
   margin-bottom: 24px;
+}
+
+.tableScrollWrap {
+  max-height: calc(100vh - 360px);
+  overflow: auto;
 }
 
 .cardTitle {
@@ -347,6 +352,13 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.tableFooterSticky {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  z-index: 10;
 }
 
 .statusToggle {

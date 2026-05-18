@@ -14,6 +14,13 @@ export interface LoginPayload {
   client_secret?: string | null
 }
 
+export interface MeResponse {
+  username: string
+  role: string
+  full_name: string
+  is_active: boolean
+}
+
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -26,7 +33,7 @@ export interface Suggestion {
   score: number
 }
 
-export type ChatDecision = 'answered' | 'ambiguous' | 'fallback' | string
+export type ChatDecision = 'answer' | 'ambiguity' | 'fallback' | string
 
 export interface ChatResponse {
   decision: ChatDecision
@@ -162,6 +169,7 @@ export interface UserOut {
   full_name: string | null
   is_active: boolean
   created_at: string
+  role: string
 }
 
 export interface UserCreate {
@@ -174,6 +182,27 @@ export interface UserUpdate {
   full_name?: string | null
   is_active?: boolean | null
   password?: string | null
+}
+
+// ─── Chat Log ───────────────────────────────────────────────────────────────
+
+export type ChatLogDecision = 'answer' | 'ambiguity' | 'fallback' | string
+
+export type ChatLogSort = 'asc' | 'desc'
+
+export interface ChatLogResponse {
+  ask: string
+  decistion_type: ChatLogDecision
+  answer: string | null
+  timestamp: string
+}
+
+export interface PaginatedChatLogOut {
+  total: number
+  page: number
+  total_pages: number
+  page_size: number
+  items: ChatLogResponse[]
 }
 
 // ─── Errors ───────────────────────────────────────────────────────────────────

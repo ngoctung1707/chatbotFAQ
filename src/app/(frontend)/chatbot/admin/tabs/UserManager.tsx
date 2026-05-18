@@ -1,23 +1,34 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { getChatbotErrorDetail, userService } from '@/services/chatbot'
 import type { UserOut } from '@/services/chatbot/types'
 import styles from '../page.module.css'
 import { toast } from 'react-toastify'
 
-export default function UserManager({ token }: { token: string }) {
+type UserManagerProps = {
+  token: string
+  currentUser?: { username: string; role: string } | null
+  isAdmin?: boolean
+}
+
+export default function UserManager({ token, currentUser, isAdmin = false }: UserManagerProps) {
   const [users, setUsers] = useState<UserOut[]>([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingUser, setEditingUser] = useState<UserOut | null>(null)
   const [editFullName, setEditFullName] = useState('')
   const [editPassword, setEditPassword] = useState('')
+  const [editConfirmPassword, setEditConfirmPassword] = useState('')
   const [editIsActive, setEditIsActive] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
+  const [showCreatePassword, setShowCreatePassword] = useState(false)
+  const [showCreateConfirmPassword, setShowCreateConfirmPassword] = useState(false)
+  const [showEditConfirmPassword, setShowEditConfirmPassword] = useState(false)
 
   const fetchUsers = async () => {
     try {
@@ -34,11 +45,22 @@ export default function UserManager({ token }: { token: string }) {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isAdmin) {
+      toast.error('Bạn không có quyền tạo người dùng')
+      return
+    }
+    if (password !== confirmPassword) {
+      toast.error('Mật khẩu không khớp. Vui lòng nhập lại.')
+      return
+    }
     try {
       await userService.create({ username, password, full_name: fullName || null }, token)
       setUsername('')
       setPassword('')
+      setConfirmPassword('')
       setFullName('')
+      setShowCreatePassword(false)
+      setShowCreateConfirmPassword(false)
       setShowCreateModal(false)
       fetchUsers()
       toast.success('Đã tạo người dùng')
@@ -50,6 +72,10 @@ export default function UserManager({ token }: { token: string }) {
   }
 
   const handleDelete = async (id: number) => {
+    if (!isAdmin) {
+      toast.error('Bạn không có quyền xóa người dùng')
+      return
+    }
     if (!confirm('Bạn có chắc chắn muốn xóa người dùng này?')) return
     try {
       await userService.delete(id, token)
@@ -91,12 +117,32 @@ export default function UserManager({ token }: { token: string }) {
     return result.join('')
   }
 
+  const canEditUser = useMemo(() => {
+    return (user: UserOut) => {
+      if (isAdmin) return true
+      if (!currentUser?.username) return false
+      return user.username === currentUser.username
+    }
+  }, [currentUser?.username, isAdmin])
+
+  const visibleUsers = useMemo(() => {
+    if (isAdmin) return users
+    if (!currentUser?.username) return []
+    return users.filter((user) => user.username === currentUser.username)
+  }, [currentUser?.username, isAdmin, users])
+
   const openEdit = (user: UserOut) => {
+    if (!canEditUser(user)) {
+      toast.error('Bạn chỉ có thể chỉnh sửa tài khoản của mình')
+      return
+    }
     setEditingUser(user)
     setEditFullName(user.full_name || '')
     setEditPassword('')
+    setEditConfirmPassword('')
     setEditIsActive(user.is_active)
     setShowPassword(false)
+    setShowEditConfirmPassword(false)
     setShowEditModal(true)
   }
 
@@ -104,17 +150,26 @@ export default function UserManager({ token }: { token: string }) {
     setShowEditModal(false)
     setEditingUser(null)
     setEditPassword('')
+    setEditConfirmPassword('')
   }
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingUser) return
+    if (!isAdmin && editingUser.username !== currentUser?.username) {
+      toast.error('Bạn chỉ có thể chỉnh sửa tài khoản của mình')
+      return
+    }
+    if (editPassword && editPassword !== editConfirmPassword) {
+      toast.error('Mật khẩu không khớp. Vui lòng nhập lại.')
+      return
+    }
     try {
       await userService.update(
         editingUser.id,
         {
           full_name: editFullName || null,
-          is_active: editIsActive,
+          is_active: isAdmin ? editIsActive : undefined,
           password: editPassword ? editPassword : null,
         },
         token,
@@ -135,9 +190,11 @@ export default function UserManager({ token }: { token: string }) {
           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
             Danh sách Quản trị viên
           </h3>
-          <button className={styles.btnPrimary} onClick={() => setShowCreateModal(true)}>
-            Thêm mới
-          </button>
+          {isAdmin && (
+            <button className={styles.btnPrimary} onClick={() => setShowCreateModal(true)}>
+              Thêm mới
+            </button>
+          )}
         </div>
         <table className={styles.table}>
           <thead>
@@ -145,19 +202,21 @@ export default function UserManager({ token }: { token: string }) {
               <th>ID</th>
               <th>Tên đăng nhập</th>
               <th>Mật khẩu</th>
-              <th>Họ tên</th>
+              <th>Họ và tên</th>
+              <th>Vai trò</th>
               <th>Trạng thái</th>
               <th>Ngày tạo</th>
               <th style={{ width: '15%' }}>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
+            {visibleUsers.map((u) => (
               <tr key={u.id}>
                 <td>{u.id}</td>
                 <td>{u.username}</td>
                 <td>******</td>
                 <td>{u.full_name || '-'}</td>
+                <td>{u.role || '-'}</td>
                 <td>
                   <span
                     className={`${styles.statusToggle} ${
@@ -170,18 +229,28 @@ export default function UserManager({ token }: { token: string }) {
                     <span className={styles.statusKnob} />
                   </span>
                 </td>
-                <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                <td>
+                  {new Date(u.created_at).toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  })}
+                </td>
                 <td className={styles.actionCell}>
-                  <button className={styles.btnSecondary} onClick={() => openEdit(u)}>
-                    Sửa
-                  </button>
-                  <button className={styles.btnDanger} onClick={() => handleDelete(u.id)}>
-                    Xóa
-                  </button>
+                  {canEditUser(u) && (
+                    <button className={styles.btnSecondary} onClick={() => openEdit(u)}>
+                      Sửa
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button className={styles.btnDanger} onClick={() => handleDelete(u.id)}>
+                      Xóa
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {visibleUsers.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '32px' }}>
                   Không có dữ liệu người dùng
@@ -192,7 +261,7 @@ export default function UserManager({ token }: { token: string }) {
         </table>
       </div>
 
-      {showCreateModal && (
+      {showCreateModal && isAdmin && (
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
             <div className={styles.modalHeader}>
@@ -209,6 +278,15 @@ export default function UserManager({ token }: { token: string }) {
               <form onSubmit={handleAdd} autoComplete="off">
                 <div className={styles.row}>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label className={styles.label}>Họ và tên</label>
+                    <input
+                      className={styles.input}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
                     <label className={styles.label}>Tên đăng nhập</label>
                     <input
                       className={styles.input}
@@ -220,23 +298,79 @@ export default function UserManager({ token }: { token: string }) {
                   </div>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
                     <label className={styles.label}>Mật khẩu</label>
-                    <input
-                      className={styles.input}
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="new-password"
-                      required
-                    />
+                    <div className={styles.passwordField} aria-label="Nhap mat khau">
+                      <input
+                        className={`${styles.input} ${styles.inputWithIcons}`}
+                        type={showCreatePassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className={`${styles.iconButton} ${styles.iconButtonLeft}`}
+                        onClick={() => setShowCreatePassword((prev) => !prev)}
+                        aria-label={showCreatePassword ? 'An mat khau' : 'Hien mat khau'}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label className={styles.label}>Họ tên</label>
-                    <input
-                      className={styles.input}
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      autoComplete="off"
-                    />
+                    <label className={styles.label}>Nhập lại mật khẩu</label>
+                    <div className={styles.passwordField} aria-label="Nhập lại mật khẩu">
+                      <input
+                        className={`${styles.input} ${styles.inputWithIcons}`}
+                        type={showCreateConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className={`${styles.iconButton} ${styles.iconButtonLeft}`}
+                        onClick={() => setShowCreateConfirmPassword((prev) => !prev)}
+                        aria-label={showCreateConfirmPassword ? 'An mat khau' : 'Hien mat khau'}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className={styles.modalActions}>
@@ -269,7 +403,7 @@ export default function UserManager({ token }: { token: string }) {
             <div className={styles.modalBody}>
               <form onSubmit={handleUpdate}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Họ tên</label>
+                  <label className={styles.label}>Họ và tên</label>
                   <input
                     className={styles.input}
                     value={editFullName}
@@ -277,7 +411,28 @@ export default function UserManager({ token }: { token: string }) {
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Mật khẩu</label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <label className={styles.label}>Mật khẩu</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = generateStrongPassword(12)
+                        setEditPassword(next)
+                        setEditConfirmPassword('')
+                        setShowPassword(true)
+                      }}
+                      aria-label="Tạo mật khẩu mạnh"
+                      className={`${styles.iconButtonRight}`}
+                    >
+                      Reset
+                    </button>
+                  </div>
                   <div style={{ display: 'flex' }}>
                     <div className={styles.passwordField} aria-label="Chỉnh sửa mật khẩu">
                       <input
@@ -313,39 +468,66 @@ export default function UserManager({ token }: { token: string }) {
                         </svg>
                       </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = generateStrongPassword(12)
-                        setEditPassword(next)
-                        setShowPassword(true)
-                      }}
-                      aria-label="Tạo mật khẩu mạnh"
-                      className={`${styles.iconButtonRight}`}
-                    >
-                      Reset
-                    </button>
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Trạng thái</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <label className={styles.label}>Nhập lại mật khẩu</label>
+                  <div className={styles.passwordField} aria-label="Nhập lại mật khẩu">
+                    <input
+                      className={`${styles.input} ${styles.inputWithIcons}`}
+                      type={showEditConfirmPassword ? 'text' : 'password'}
+                      value={editConfirmPassword}
+                      onChange={(e) => setEditConfirmPassword(e.target.value)}
+                      placeholder="Để trống nếu không đổi"
+                    />
                     <button
                       type="button"
-                      className={`${styles.statusToggle} ${styles.statusToggleButton} ${
-                        editIsActive ? styles.statusToggleActive : styles.statusToggleInactive
-                      }`}
-                      onClick={() => setEditIsActive((prev) => !prev)}
-                      role="switch"
-                      aria-checked={editIsActive}
+                      className={`${styles.iconButton} ${styles.iconButtonLeft}`}
+                      onClick={() => setShowEditConfirmPassword((prev) => !prev)}
+                      aria-label={showEditConfirmPassword ? 'An mat khau' : 'Hien mat khau'}
                     >
-                      <span className={styles.statusKnob} />
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
                     </button>
-                    <span style={{ fontSize: '14px' }}>
-                      {editIsActive ? 'Kích hoạt' : 'Vô hiệu hóa'}
-                    </span>
                   </div>
                 </div>
+                {isAdmin && (
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Trạng thái</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button
+                        type="button"
+                        className={`${styles.statusToggle} ${styles.statusToggleButton} ${
+                          editIsActive ? styles.statusToggleActive : styles.statusToggleInactive
+                        }`}
+                        onClick={() => setEditIsActive((prev) => !prev)}
+                        role="switch"
+                        aria-checked={editIsActive}
+                      >
+                        <span className={styles.statusKnob} />
+                      </button>
+                      <span style={{ fontSize: '14px' }}>
+                        {editIsActive ? 'Kích hoạt' : 'Vô hiệu hóa'}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className={styles.modalActions}>
                   <button type="button" className={styles.btnSecondary} onClick={closeEdit}>
                     Hủy

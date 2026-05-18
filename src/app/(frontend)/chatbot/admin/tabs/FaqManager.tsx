@@ -398,18 +398,6 @@ export default function FaqManager({ token }: { token: string }) {
                 </option>
               ))}
             </select>
-            <select
-              className={styles.headerSelect}
-              value={String(pageSize)}
-              onChange={(e) => handlePageSizeChange(e.target.value)}
-              aria-label="Số dòng mỗi trang"
-            >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}/trang
-                </option>
-              ))}
-            </select>
             <button className={styles.btnPrimary} onClick={() => setShowCreateModal(true)}>
               Thêm mới
             </button>
@@ -418,188 +406,238 @@ export default function FaqManager({ token }: { token: string }) {
         {loading ? (
           <p>Đang tải dữ liệu...</p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Danh mục</th>
-                  <th style={{ width: '30%' }}>Câu hỏi</th>
-                  <th style={{ width: '40%' }}>Câu trả lời</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredFaqs.map((f) => (
-                  <React.Fragment key={f.answer_id}>
-                    <tr>
-                      <td>{f.answer_id}</td>
-                      <td>
-                        {editingId === f.answer_id ? (
-                          <input
-                            className={styles.input}
-                            style={{ padding: '8px', width: '100%' }}
-                            value={editForm.category}
-                            onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                          />
-                        ) : (
-                          f.category || '-'
-                        )}
-                      </td>
-                      <td style={{ paddingRight: '16px' }}>
-                        {editingId === f.answer_id ? (
-                          <textarea
-                            className={styles.textarea}
-                            style={{ padding: '8px', minHeight: '60px', width: '100%' }}
-                            value={editForm.question}
-                            onChange={(e) => setEditForm({ ...editForm, question: e.target.value })}
-                          />
-                        ) : (
-                          f.question
-                        )}
-                      </td>
-                      <td style={{ paddingRight: '16px' }}>
-                        {editingId === f.answer_id ? (
-                          <textarea
-                            className={styles.textarea}
-                            style={{ padding: '8px', minHeight: '110px', width: '100%' }}
-                            value={editForm.answer}
-                            onChange={(e) => setEditForm({ ...editForm, answer: e.target.value })}
-                          />
-                        ) : (
-                          f.answer
-                        )}
-                      </td>
-                      <td style={{ verticalAlign: 'middle' }}>
-                        <div className={styles.actionCell}>
+          <div>
+            <div style={{ overflowX: 'auto' }}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Danh mục</th>
+                    <th style={{ width: '30%' }}>Câu hỏi</th>
+                    <th style={{ width: '40%' }}>Câu trả lời</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFaqs.map((f) => (
+                    <React.Fragment key={f.answer_id}>
+                      <tr>
+                        <td>{f.answer_id}</td>
+                        <td>
                           {editingId === f.answer_id ? (
-                            <>
-                              <button className={styles.btnPrimary} onClick={saveEdit}>
-                                Lưu
-                              </button>
-                              <button className={styles.btnSecondary} onClick={cancelEdit}>
-                                Hủy
-                              </button>
-                            </>
+                            <input
+                              className={styles.input}
+                              style={{ padding: '8px', width: '100%' }}
+                              value={editForm.category}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, category: e.target.value })
+                              }
+                            />
                           ) : (
-                            <>
-                              <button className={styles.btnSecondary} onClick={() => startEdit(f)}>
-                                Sửa
-                              </button>
-                              <button
-                                className={styles.btnDanger}
-                                onClick={() => handleDelete(f.answer_id)}
-                              >
-                                Xóa
-                              </button>
-                            </>
+                            f.category || '-'
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                    {f.variants?.length > 0 &&
-                      f.variants.map((v) => (
-                        <tr key={`var-${v.variant_id}`} style={{ backgroundColor: '#fafafc' }}>
-                          <td></td>
-                          <td></td>
-                          <td style={{ paddingRight: '16px', color: '#7a7a7a', fontSize: '14px' }}>
+                        </td>
+                        <td style={{ paddingRight: '16px' }}>
+                          {editingId === f.answer_id ? (
+                            <textarea
+                              className={styles.textarea}
+                              style={{ padding: '8px', minHeight: '60px', width: '100%' }}
+                              value={editForm.question}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, question: e.target.value })
+                              }
+                            />
+                          ) : (
+                            f.question
+                          )}
+                        </td>
+                        <td style={{ paddingRight: '16px' }}>
+                          {editingId === f.answer_id ? (
+                            <textarea
+                              className={styles.textarea}
+                              style={{ padding: '8px', minHeight: '110px', width: '100%' }}
+                              value={editForm.answer}
+                              onChange={(e) => setEditForm({ ...editForm, answer: e.target.value })}
+                            />
+                          ) : (
+                            f.answer
+                          )}
+                        </td>
+                        <td style={{ verticalAlign: 'middle' }}>
+                          <div className={styles.actionCell}>
                             {editingId === f.answer_id ? (
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <span style={{ color: '#7a7a7a' }}>↳</span>
-                                <input
-                                  className={styles.input}
-                                  style={{ width: '100%', padding: '8px' }}
-                                  value={
-                                    editVariants.find((item) => item.variant_id === v.variant_id)
-                                      ?.variant_text || ''
-                                  }
-                                  onChange={(e) =>
-                                    handleVariantTextChange(v.variant_id, e.target.value)
-                                  }
-                                />
-                              </div>
+                              <>
+                                <button className={styles.btnPrimary} onClick={saveEdit}>
+                                  Lưu
+                                </button>
+                                <button className={styles.btnSecondary} onClick={cancelEdit}>
+                                  Hủy
+                                </button>
+                              </>
                             ) : (
-                              <>↳ {v.variant_text}</>
+                              <>
+                                <button
+                                  className={styles.btnSecondary}
+                                  onClick={() => startEdit(f)}
+                                >
+                                  Sửa
+                                </button>
+                                <button
+                                  className={styles.btnDanger}
+                                  onClick={() => handleDelete(f.answer_id)}
+                                >
+                                  Xóa
+                                </button>
+                              </>
                             )}
+                          </div>
+                        </td>
+                      </tr>
+                      {f.variants?.length > 0 &&
+                        f.variants.map((v) => (
+                          <tr key={`var-${v.variant_id}`} style={{ backgroundColor: '#fafafc' }}>
+                            <td></td>
+                            <td></td>
+                            <td
+                              style={{ paddingRight: '16px', color: '#7a7a7a', fontSize: '14px' }}
+                            >
+                              {editingId === f.answer_id ? (
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                  <span style={{ color: '#7a7a7a' }}>↳</span>
+                                  <input
+                                    className={styles.input}
+                                    style={{ width: '100%', padding: '8px' }}
+                                    value={
+                                      editVariants.find((item) => item.variant_id === v.variant_id)
+                                        ?.variant_text || ''
+                                    }
+                                    onChange={(e) =>
+                                      handleVariantTextChange(v.variant_id, e.target.value)
+                                    }
+                                  />
+                                </div>
+                              ) : (
+                                <>↳ {v.variant_text}</>
+                              )}
+                            </td>
+                            <td></td>
+                            <td style={{ verticalAlign: 'middle' }}>
+                              {editingId === f.answer_id && (
+                                <button
+                                  className={styles.btnDanger}
+                                  style={{ padding: '4px 8px', fontSize: '12px' }}
+                                  onClick={() => handleDeleteVariantAPI(f.answer_id, v.variant_id)}
+                                >
+                                  Xóa
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      {editingId === f.answer_id && (
+                        <tr style={{ backgroundColor: '#fafafc' }}>
+                          <td></td>
+                          <td></td>
+                          <td style={{ paddingRight: '16px' }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ color: '#7a7a7a' }}>↳</span>
+                              <input
+                                className={styles.input}
+                                style={{ width: '100%', padding: '8px' }}
+                                placeholder="Thêm biến thể"
+                                value={newVariantText}
+                                onChange={(e) => setNewVariantText(e.target.value)}
+                              />
+                            </div>
                           </td>
                           <td></td>
                           <td style={{ verticalAlign: 'middle' }}>
-                            {editingId === f.answer_id && (
-                              <button
-                                className={styles.btnDanger}
-                                style={{ padding: '4px 8px', fontSize: '12px' }}
-                                onClick={() => handleDeleteVariantAPI(f.answer_id, v.variant_id)}
-                              >
-                                Xóa
-                              </button>
-                            )}
+                            <button
+                              className={styles.btnPrimary}
+                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                              onClick={() => handleAddVariantAPI(f.answer_id)}
+                            >
+                              + Thêm
+                            </button>
                           </td>
                         </tr>
-                      ))}
-                    {editingId === f.answer_id && (
-                      <tr style={{ backgroundColor: '#fafafc' }}>
-                        <td></td>
-                        <td></td>
-                        <td style={{ paddingRight: '16px' }}>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <span style={{ color: '#7a7a7a' }}>↳</span>
-                            <input
-                              className={styles.input}
-                              style={{ width: '100%', padding: '8px' }}
-                              placeholder="Thêm biến thể"
-                              value={newVariantText}
-                              onChange={(e) => setNewVariantText(e.target.value)}
-                            />
-                          </div>
-                        </td>
-                        <td></td>
-                        <td style={{ verticalAlign: 'middle' }}>
-                          <button
-                            className={styles.btnPrimary}
-                            style={{ padding: '4px 8px', fontSize: '12px' }}
-                            onClick={() => handleAddVariantAPI(f.answer_id)}
-                          >
-                            + Thêm
-                          </button>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-                {filteredFaqs.length === 0 && (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '32px' }}>
-                      {faqs.length === 0 ? 'Không có câu hỏi nào' : 'Không có kết quả phù hợp'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      )}
+                    </React.Fragment>
+                  ))}
+                  {filteredFaqs.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '32px' }}>
+                        {faqs.length === 0 ? 'Không có câu hỏi nào' : 'Không có kết quả phù hợp'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
             <div
+              className={styles.tableFooterSticky}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '16px 8px 0',
+                padding: '8px',
               }}
             >
-              <div style={{ color: '#666' }}>
-                Tổng: {totalItems} | Trang {page}/{totalPages}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <select
+                  className={styles.headerSelect}
+                  value={String(pageSize)}
+                  onChange={(e) => handlePageSizeChange(e.target.value)}
+                  aria-label="Số dòng mỗi trang"
+                >
+                  {pageSizeOptions.map((size) => (
+                    <option key={size} value={size}>
+                      {size}/trang
+                    </option>
+                  ))}
+                </select>
+                <div style={{ color: '#666', fontSize: '14px' }}>Tổng: {totalItems} bản ghi</div>
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
-                  className={styles.btnSecondary}
+                  style={{
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent',
+                    transform: 'rotate(180deg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
                 >
-                  Trang trước
+                  <svg width="14px" height="14px" viewBox="0 0 1024 1024">
+                    <path
+                      fill="#0066CC"
+                      d="M338.752 104.704a64 64 0 000 90.496l316.8 316.8-316.8 316.8a64 64 0 0090.496 90.496l362.048-362.048a64 64 0 000-90.496L429.248 104.704a64 64 0 00-90.496 0z"
+                    />
+                  </svg>
                 </button>
+                <div style={{ color: '#666', fontSize: '14px' }}>
+                  Trang {page} / {totalPages}
+                </div>
                 <button
-                  className={styles.btnSecondary}
+                  style={{
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                 >
-                  Trang sau
+                  <svg width="14px" height="14px" viewBox="0 0 1024 1024">
+                    <path
+                      fill="#0066CC"
+                      d="M338.752 104.704a64 64 0 000 90.496l316.8 316.8-316.8 316.8a64 64 0 0090.496 90.496l362.048-362.048a64 64 0 000-90.496L429.248 104.704a64 64 0 00-90.496 0z"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
