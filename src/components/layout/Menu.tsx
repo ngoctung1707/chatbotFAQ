@@ -33,6 +33,19 @@ export const getInvolvedLinks: { id: number; name: string; path: string }[] = [
   path: path,
 }))
 
+export const ecotechLinks = [
+  {
+    id: 1,
+    label: '2026',
+    path: 'https://ecotech.bkfin.tech/',
+  },
+  {
+    id: 2,
+    label: '2025',
+    path: 'https://ecotech.bkfin.tech/ecotech2025/index.html',
+  },
+]
+
 const vietnamDigitalEconomyReviewLinks = [
   {
     id: 1,
@@ -86,8 +99,10 @@ export default function Menu() {
   const pathname = usePathname()
   const locale = useLocale()
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
+  const [courses, setCourses] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
+  const isEducationLinkActive = () => pathname === '/academic' || pathname.startsWith('/courses/')
   const isGetInvolvedLinkActive = () =>
     getInvolvedLinks.some((link) => link.path === pathname) ||
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
@@ -114,6 +129,23 @@ export default function Menu() {
       .filter((lab): lab is { slug: string; title: string } => lab !== null)
   }
 
+  const normalizeCourses = (items: unknown): { slug: string; title: string }[] => {
+    if (!Array.isArray(items)) return []
+    return items
+      .map((course) => {
+        if (!course || typeof course !== 'object') return null
+        const slug =
+          typeof (course as { slug?: unknown }).slug === 'string'
+            ? (course as { slug: string }).slug.trim()
+            : ''
+        if (!slug) return null
+        const rawTitle = (course as { title?: unknown }).title
+        const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle : slug
+        return { slug, title }
+      })
+      .filter((course): course is { slug: string; title: string } => course !== null)
+  }
+
   useEffect(() => {
     let isMounted = true
     async function loadLabs() {
@@ -127,6 +159,24 @@ export default function Menu() {
       }
     }
     loadLabs()
+    return () => {
+      isMounted = false
+    }
+  }, [locale])
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadCourses() {
+      try {
+        const res = await fetch(`/api/courses?lang=${locale}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = (await res.json()) as { courses?: unknown }
+        if (isMounted) setCourses(normalizeCourses(data?.courses))
+      } catch {
+        // ignore
+      }
+    }
+    loadCourses()
     return () => {
       isMounted = false
     }
@@ -286,21 +336,53 @@ export default function Menu() {
             ))}
           </ul>
         </li>
-        <li>
-          <Link href="/academic">{t('education')}</Link>
+        <li className="menu-item-has-children">
+          <Link href="/academic" className={isEducationLinkActive() ? 'active' : ''}>
+            {t('education')}
+          </Link>
+          <ul className="sub-menu" style={{ width: '350px' }}>
+            {courses.map((course) => {
+              const path = `/courses/${course.slug}`
+              return (
+                <li key={course.slug}>
+                  <Link href={path} className={isActive(path) ? 'active' : ''}>
+                    {course.title}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         </li>
         <li className="menu-item-has-children">
           <Link href="#" className={isGetInvolvedLinkActive() ? 'active' : ''}>
             {t('get_involved')}
           </Link>
           <ul className="sub-menu" style={{ width: '350px' }}>
-            <li>
+            <li className="nested-parent">
               <Link
                 href="/get-involved/ecotech"
                 className={isActive('/get-involved/ecotech') ? 'active' : ''}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 {t('ecotech')}
+                <svg
+                  className="arrow-right"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlnsXlink="http://www.w3.org/1999/xlink"
+                  fill="#0E104B"
+                  viewBox="0 0 330 330"
+                  xmlSpace="preserve"
+                >
+                  <path d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606C255,161.018,253.42,157.202,250.606,154.389z" />
+                </svg>
               </Link>
+              <ul className="nested-submenu" style={{ width: '200px' }}>
+                {ecotechLinks.map((link) => (
+                  <li key={link.id}>
+                    <a href={link.path}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li className="nested-parent">
               <Link

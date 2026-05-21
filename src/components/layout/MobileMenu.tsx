@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useEffect, useState } from 'react'
-import { aboutLinks, fundingProjectsLinks, getInvolvedLinks, researchLinks, solutionsLinks } from './Menu'
+import {
+  aboutLinks,
+  ecotechLinks,
+  fundingProjectsLinks,
+  getInvolvedLinks,
+  researchLinks,
+  solutionsLinks,
+} from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -13,8 +20,10 @@ export default function MobileMenu({
   const pathname = usePathname()
   const locale = useLocale()
   const [rdLabs, setRdLabs] = useState<{ slug: string; title: string }[]>([])
+  const [courses, setCourses] = useState<{ slug: string; title: string }[]>([])
   const isActive = (path: string) => path === pathname
   const isAboutLinkActive = () => aboutLinks.some((link) => link.path === pathname)
+  const isEducationLinkActive = () => pathname === '/academic' || pathname.startsWith('/courses/')
   const isGetInvolvedLinkActive = () =>
     getInvolvedLinks.some((link) => link.path === pathname) ||
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
@@ -26,12 +35,15 @@ export default function MobileMenu({
   const isFundingProjectsLinkActive = () => pathname.startsWith('/research/r&d-funding-projects')
   const isVietnamDigitalEconomyReviewActive = () =>
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
+  const isEcotechActive = () => pathname === '/get-involved/ecotech'
   const t = useTranslations('Menu')
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
   const [isSubmenuFundingProjectsOpen, setIsSubmenuFundingProjectsOpen] = useState(false)
+  const [isSubmenuEducationOpen, setIsSubmenuEducationOpen] = useState(false)
   const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
+  const [isSubmenuEcotechOpen, setIsSubmenuEcotechOpen] = useState(false)
   const [isSubmenuSolutionsOpen, setIsSubmenuSolutionsOpen] = useState(false)
   const [isSubmenuVietnamDigitalEconomyReviewOpen, setIsSubmenuVietnamDigitalEconomyReviewOpen] =
     useState(false)
@@ -68,8 +80,16 @@ export default function MobileMenu({
     setIsSubmenuFundingProjectsOpen(!isSubmenuFundingProjectsOpen)
   }
 
+  const toggleSubmenuEducation = () => {
+    setIsSubmenuEducationOpen(!isSubmenuEducationOpen)
+  }
+
   const toggleSubmenuGetInvolved = () => {
     setIsSubmenuGetInvolvedOpen(!isSubmenuGetInvolvedOpen)
+  }
+
+  const toggleSubmenuEcotech = () => {
+    setIsSubmenuEcotechOpen(!isSubmenuEcotechOpen)
   }
 
   const toggleSubmenuSolutions = () => {
@@ -78,6 +98,23 @@ export default function MobileMenu({
 
   const toggleSubmenuVietnamDigitalEconomyReview = () => {
     setIsSubmenuVietnamDigitalEconomyReviewOpen(!isSubmenuVietnamDigitalEconomyReviewOpen)
+  }
+
+  const normalizeCourses = (items: unknown): { slug: string; title: string }[] => {
+    if (!Array.isArray(items)) return []
+    return items
+      .map((course) => {
+        if (!course || typeof course !== 'object') return null
+        const slug =
+          typeof (course as { slug?: unknown }).slug === 'string'
+            ? (course as { slug: string }).slug.trim()
+            : ''
+        if (!slug) return null
+        const rawTitle = (course as { title?: unknown }).title
+        const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle : slug
+        return { slug, title }
+      })
+      .filter((course): course is { slug: string; title: string } => course !== null)
   }
 
   useEffect(() => {
@@ -93,6 +130,24 @@ export default function MobileMenu({
       }
     }
     loadLabs()
+    return () => {
+      isMounted = false
+    }
+  }, [locale])
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadCourses() {
+      try {
+        const res = await fetch(`/api/courses?lang=${locale}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = (await res.json()) as { courses?: unknown }
+        if (isMounted) setCourses(normalizeCourses(data?.courses))
+      } catch {
+        // ignore
+      }
+    }
+    loadCourses()
     return () => {
       isMounted = false
     }
@@ -222,8 +277,31 @@ export default function MobileMenu({
                 <span className="plus-line" />
               </div>
             </li>
-            <li>
-              <Link href="/academic">{t('education')}</Link>
+            <li className="menu-item-has-children">
+              <Link href="/academic" className={isEducationLinkActive() ? 'active' : ''}>
+                {t('education')}
+              </Link>
+              <ul
+                className="sub-menu"
+                style={{ display: `${isSubmenuEducationOpen ? 'block' : 'none'}` }}
+              >
+                {courses.map((course) => {
+                  const path = `/courses/${course.slug}`
+                  return (
+                    <li key={course.slug}>
+                      <Link href={path} className={isActive(path) ? 'active' : ''}>
+                        {course.title}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div
+                className={isSubmenuEducationOpen ? 'dropdown-btn open' : 'dropdown-btn'}
+                onClick={toggleSubmenuEducation}
+              >
+                <span className="plus-line" />
+              </div>
             </li>
             <li className="menu-item-has-children">
               <Link href="#" className={isGetInvolvedLinkActive() ? 'active' : ''}>
@@ -233,13 +311,26 @@ export default function MobileMenu({
                 className="sub-menu"
                 style={{ display: `${isSubmenuGetInvolvedOpen ? 'block' : 'none'}` }}
               >
-                <li>
-                  <Link
-                    href="/get-involved/ecotech"
-                    className={isActive('/get-involved/ecotech') ? 'active' : ''}
-                  >
+                <li className="menu-item-has-children">
+                  <Link href="/get-involved/ecotech" className={isEcotechActive() ? 'active' : ''}>
                     {t('ecotech')}
                   </Link>
+                  <ul
+                    className="sub-menu"
+                    style={{ display: `${isSubmenuEcotechOpen ? 'block' : 'none'}` }}
+                  >
+                    {ecotechLinks.map((link) => (
+                      <li key={link.id}>
+                        <a href={link.path}>{link.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                  <div
+                    className={isSubmenuEcotechOpen ? 'dropdown-btn open' : 'dropdown-btn'}
+                    onClick={toggleSubmenuEcotech}
+                  >
+                    <span className="plus-line" />
+                  </div>
                 </li>
                 <li className="menu-item-has-children">
                   <Link href="#" className={isVietnamDigitalEconomyReviewActive() ? 'active' : ''}>
