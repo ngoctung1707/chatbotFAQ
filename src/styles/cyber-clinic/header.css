@@ -10,8 +10,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: #FFFFFF03;
-  border-bottom: 1px solid var(--cc-border-medium);
+  background-color: #FFFFFF66;
   backdrop-filter: blur(100px);
 }
 
@@ -66,7 +65,7 @@
 
 .cyber-clinic-layout .cc-header__nav-link {
   font-family: var(--cc-font-body);
-  font-size: var(--cc-text-sm);
+  font-size: var(--cc-text-base);
   font-weight: var(--cc-fw-medium);
   color: var(--cc-fg-primary);
   text-decoration: none;
@@ -170,8 +169,74 @@
 }
 
 /* ============================================================
-   06. Responsive – Mobile (max 639px)
+   06. Mobile menu toggle + dropdown
    ============================================================ */
+.cyber-clinic-layout .cc-header__menu-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.cyber-clinic-layout .cc-header__menu-bar {
+  width: 18px;
+  height: 2px;
+  background: var(--cc-fg-primary);
+  border-radius: 999px;
+  display: block;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 80px;
+  background: #FFFFFFF2;
+  backdrop-filter: blur(30px);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 250ms ease-out;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav.is-open {
+  max-height: 320px;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav-inner {
+  padding: 16px 24px 24px;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav-link {
+  font-family: var(--cc-font-body);
+  font-size: var(--cc-text-base);
+  font-weight: var(--cc-fw-medium);
+  color: var(--cc-fg-primary);
+  text-decoration: none;
+}
+
+.cyber-clinic-layout .cc-header__mobile-nav-link.active {
+  color: var(--cc-primary);
+}
+
+/* ============================================================
+  07. Responsive – Mobile (max 639px)
+  ============================================================ */
 @media (max-width: 639px) {
   .cyber-clinic-layout .cc-header__inner {
     padding: 0 var(--cc-space-4);
@@ -192,22 +257,44 @@
     display: flex;
   }
 
+  .cyber-clinic-layout .cc-header__menu-toggle {
+    display: flex;
+  }
+
+  .cyber-clinic-layout .cc-header__mobile-nav {
+    display: block;
+  }
+
   .cyber-clinic-layout .cc-header__logo-img {
     height: 36px;
   }
 }
 
 /* ============================================================
-   07. Responsive – Tablet (640px – 1023px)
+   08. Responsive – Tablet (640px – 1023px)
    ============================================================ */
 @media (min-width: 640px) and (max-width: 1024px) {
   .cyber-clinic-layout .cc-header__inner {
     padding: 0 var(--cc-space-5);
     gap: var(--cc-space-4);
+    display: flex;
+    justify-content: space-between;
   }
 
   .cyber-clinic-layout .cc-header__nav-list {
     display: none;
+  }
+
+  .cyber-clinic-layout .cc-header__partners {
+    display: none;
+  }
+
+  .cyber-clinic-layout .cc-header__menu-toggle {
+    display: flex;
+  }
+
+  .cyber-clinic-layout .cc-header__mobile-nav {
+    display: block;
   }
 
   .cyber-clinic-layout .cc-header__partner-img {

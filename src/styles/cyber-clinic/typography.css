@@ -148,7 +148,7 @@
 /* Responsive paragraph – desktop */
 @media (min-width: 1025px) {
   .cyber-clinic-layout p {
-    font-size: var(--cc-text-base);
+    font-size: var(--cc-text-lg);
     line-height: var(--cc-leading-loose);
   }
 }

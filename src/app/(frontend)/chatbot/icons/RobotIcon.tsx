@@ -1,4 +1,4 @@
-import { SvgIcon } from '../../research/r&d-funding-projects/cyber-clinic/icons'
+import { SvgIcon } from '../../../../modules/cyber-clinic/icons'
 
 const RobotIcon: SvgIcon = (props) => {
   return (

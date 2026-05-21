@@ -184,11 +184,11 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
 
   return (
     <div>
-      <h2 className={styles.sectionTitle}>Quản lý quản trị viên</h2>
+      <h2 className={styles.sectionTitle}>Quản lý tài khoản</h2>
       <div className={styles.card}>
         <div className={`${styles.cardHeaderRow} ${styles.cardHeaderSticky}`}>
           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
-            Danh sách Quản trị viên
+            Danh sách tài khoản
           </h3>
           {isAdmin && (
             <button className={styles.btnPrimary} onClick={() => setShowCreateModal(true)}>
@@ -242,7 +242,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
                       Sửa
                     </button>
                   )}
-                  {isAdmin && (
+                  {isAdmin && u.role !== 'admin' && (
                     <button className={styles.btnDanger} onClick={() => handleDelete(u.id)}>
                       Xóa
                     </button>
@@ -265,7 +265,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Thêm Quản trị viên</h3>
+              <h3 className={styles.modalTitle}>Thêm tài khoản</h3>
               <button
                 className={styles.modalCloseBtn}
                 onClick={() => setShowCreateModal(false)}
@@ -382,7 +382,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
                     Hủy
                   </button>
                   <button type="submit" className={styles.btnPrimary}>
-                    Tạo Quản trị viên
+                    Tạo tài khoản
                   </button>
                 </div>
               </form>
@@ -395,7 +395,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Cập nhật quản trị viên</h3>
+              <h3 className={styles.modalTitle}>Cập nhật tài khoản</h3>
               <button className={styles.modalCloseBtn} onClick={closeEdit} aria-label="Đóng">
                 ✕
               </button>
@@ -519,6 +519,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
                         onClick={() => setEditIsActive((prev) => !prev)}
                         role="switch"
                         aria-checked={editIsActive}
+                        disabled={editingUser?.role === 'admin'}
                       >
                         <span className={styles.statusKnob} />
                       </button>

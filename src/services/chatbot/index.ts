@@ -14,14 +14,17 @@ import type {
   FAQVariantCreate,
   FAQVariantOut,
   LoginPayload,
+  LogoutRequest,
+  MessageResponse,
   MeResponse,
   PaginatedChatLogOut,
   PaginatedFAQOut,
+  RefreshTokenRequest,
   RewriteCreate,
   RewriteOut,
   RewriteUpdate,
   SupportEmailOut,
-  Token,
+  TokenWithRefresh,
   UserCreate,
   UserOut,
   UserUpdate,
@@ -108,9 +111,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export const authService = {
   /**
-   * Đăng nhập, trả về access_token.
+   * Đăng nhập, trả về access_token + refresh_token.
    */
-  login(payload: LoginPayload): Promise<Token> {
+  login(payload: LoginPayload): Promise<TokenWithRefresh> {
     const form = new URLSearchParams()
     form.set('username', payload.username)
     form.set('password', payload.password)
@@ -119,10 +122,30 @@ export const authService = {
     if (payload.client_id) form.set('client_id', payload.client_id)
     if (payload.client_secret) form.set('client_secret', payload.client_secret)
 
-    return request<Token>('/auth/login', {
+    return request<TokenWithRefresh>('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form as unknown, // FormData-encoded, bypass JSON stringify
+    })
+  },
+
+  /**
+   * Làm mới access token + refresh token.
+   */
+  refresh(payload: RefreshTokenRequest): Promise<TokenWithRefresh> {
+    return request<TokenWithRefresh>('/auth/refresh', {
+      method: 'POST',
+      body: payload,
+    })
+  },
+
+  /**
+   * Đăng xuất, vô hiệu hóa refresh token.
+   */
+  logout(payload: LogoutRequest): Promise<MessageResponse> {
+    return request<MessageResponse>('/auth/logout', {
+      method: 'POST',
+      body: payload,
     })
   },
 

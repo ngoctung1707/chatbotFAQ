@@ -1,0 +1,199 @@
+.cc-role-card {
+  transition: box-shadow 300ms ease-out, transform 300ms ease-out,
+  backdrop-filter 300ms ease-out;
+  will-change: box-shadow, transform, backdrop-filter;
+}
+
+.cc-role-card:hover {
+  box-shadow: 0 239px 67px 0 rgba(0, 0, 0, 0),
+            0 153px 61px 0 rgba(0, 0, 0, 0.02), 0 86px 52px 0 rgba(0, 0, 0, 0.05),
+            0 38px 38px 0 rgba(0, 0, 0, 0.06), 0 10px 21px 0 rgba(0, 0, 0, 0.08),
+            0 -2px 40px 0 rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(6px);
+  transform: translateY(-2px);
+}
+
+.cc-tabs {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #cccccc;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: var(--cc-fg-primary);
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cc-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 8px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  white-space: nowrap;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
+}
+
+.cc-tab:hover {
+  background: #23191914;
+  color: inherit;
+}
+
+.cc-tab--active {
+  background: linear-gradient(180deg, #ffedeb 0%, #ffb3ae 100%);
+  color: var(--cc-primary);
+}
+
+.box-state {
+    background-color: var(--cc-bg-card);
+    backdrop-filter: blur(20px);
+}
+
+.box-state:hover {
+    background-color: #FFFFFFCC;
+}
+
+.button-gradient {
+  text-transform: uppercase;
+  border-radius: var(--cc-radius-lg);
+  width: fit-content;
+  font-weight: 600;
+  font-size: var(--cc-text-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 8px 8px 24px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease,
+    color 200ms ease;
+}
+
+/* Khung chứa icon */
+.button-gradient__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; 
+  position: relative;
+  z-index: 1;
+  transition: transform 200ms ease;
+}
+
+/* ─── SỬA ĐỔI TẠI ĐÂY: LỚP NỀN TRƯỢT CHÉO TO HƠN ─── */
+.button-gradient__icon::before {
+  content: '';
+  position: absolute;
+  /* Đẩy lùi góc ra ngoài 1px để làm điểm tựa */
+  top: -1px;
+  left: -1px;
+  /* Tăng kích thước thêm 2px (mỗi bên rộng ra 1px) */
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border-radius: inherit;
+  /* Dịch chuyển khuất hẳn ra ngoài, kết hợp phóng to nhẹ để triệt tiêu răng cưa */
+  transform: translate(-105%, 105%) scale(1.05); 
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+/* Khi hover: Ép viền trượt về đúng vị trí trung tâm */
+.button-gradient:hover .button-gradient__icon::before {
+  transform: translate(0, 0) scale(1.05); /* Giữ scale để phủ tràn viền */
+}
+
+/* Khung bọc 2 mũi tên */
+.button-gradient__icon-inner {
+  position: relative;
+  width: 32px;  
+  height: 32px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button-gradient__icon-inner svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transition: color 350ms ease;
+}
+
+/* Mũi tên thứ 2 đợi sẵn */
+.button-gradient__icon-inner svg:nth-child(2) {
+  transform: translate(-150%, 150%);
+}
+
+/* Kích hoạt trượt mũi tên */
+.button-gradient:hover .button-gradient__icon-inner {
+  transform: translate(150%, -150%);
+}
+
+
+/* ─── GIỮ NGUYÊN MÀU SẮC BIẾN THỂ PRIMARY ─── */
+.button-gradient--primary {
+  background: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
+  color: #ffffff;
+}
+
+.button-gradient--primary .button-gradient__icon {
+  background: #ffffff;
+  color: #e03338;
+}
+
+.button-gradient--primary .button-gradient__icon::before {
+  background: #231919; /* Nền đen trượt lên */
+}
+
+.button-gradient--primary .button-gradient__icon-inner svg:nth-child(2) {
+  color: #ffffff;
+}
+
+.button-gradient--primary:hover {
+  background: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
+}
+
+
+/* ─── GIỮ NGUYÊN MÀU SẮC BIẾN THỂ SECONDARY ─── */
+.button-gradient--secondary {
+  background: linear-gradient(180deg, #ffffff 0%, #ffedeb 100%);
+  color: #BC1323;
+}
+
+.button-gradient--secondary .button-gradient__icon {
+  background: #ffdad7;
+  color: #e03338;
+}
+
+.button-gradient--secondary .button-gradient__icon::before {
+  background: #bc1323; /* Nền đỏ trượt lên */
+}
+
+.button-gradient--secondary .button-gradient__icon-inner svg:nth-child(2) {
+  color: #ffffff;
+}
+
+.button-gradient--secondary:hover {
+  background: linear-gradient(180deg, #FFEDEB 0%, #FFB3AE 100%);
+}
+
+.button-gradient:active {
+  transform: scale(0.97);
+}

@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { authService, getChatbotErrorDetail } from '@/services/chatbot'
-import type { MeResponse } from '@/services/chatbot/types'
+import type { MeResponse, TokenWithRefresh } from '@/services/chatbot/types'
 import styles from './page.module.css'
 import ChatWindow from '../components/ChatWindow'
 import { toast } from 'react-toastify'
@@ -12,19 +12,66 @@ import ConfigManager from './tabs/ConfigManager'
 import UserManager from './tabs/UserManager'
 import ChatLogsManager from './tabs/ChatLogsManager'
 
+const ACCESS_TOKEN_KEY = 'chatbot_admin_token'
+const REFRESH_TOKEN_KEY = 'chatbot_admin_refresh_token'
+const USER_KEY = 'chatbot_admin_user'
+const ACCESS_TOKEN_TTL_MS = 2 * 60 * 60 * 1000
+const REFRESH_BUFFER_MS = 5 * 60 * 1000
+
 export default function ChatbotAdmin() {
-  const [token, setToken] = useState<string | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null)
   const [isUserLoading, setIsUserLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const isRefreshingRef = useRef(false)
 
-  const handleLogout = useCallback((showToast: boolean) => {
-    setToken(null)
-    setCurrentUser(null)
-    localStorage.removeItem('chatbot_admin_token')
-    localStorage.removeItem('chatbot_admin_user')
-    if (showToast) toast.info('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+  const applyTokens = useCallback((tokens: TokenWithRefresh) => {
+    setAccessToken(tokens.access_token)
+    setRefreshToken(tokens.refresh_token)
+    localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token)
+    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token)
   }, [])
+
+  const handleLogout = useCallback(
+    (showToast: boolean) => {
+      const storedRefresh = refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY) || undefined
+      if (storedRefresh) {
+        authService.logout({ refresh_token: storedRefresh }).catch(() => {})
+      }
+
+      setAccessToken(null)
+      setRefreshToken(null)
+      setCurrentUser(null)
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+      if (showToast) toast.info('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+    },
+    [refreshToken],
+  )
+
+  const attemptRefresh = useCallback(
+    async (explicitRefreshToken?: string, showToastOnFailure = true) => {
+      if (isRefreshingRef.current) return false
+      const tokenToUse =
+        explicitRefreshToken || refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY)
+      if (!tokenToUse) return false
+
+      isRefreshingRef.current = true
+      try {
+        const res = await authService.refresh({ refresh_token: tokenToUse })
+        applyTokens(res)
+        return true
+      } catch {
+        handleLogout(showToastOnFailure)
+        return false
+      } finally {
+        isRefreshingRef.current = false
+      }
+    },
+    [applyTokens, handleLogout, refreshToken],
+  )
 
   const isTokenExpired = useCallback((jwt: string): boolean => {
     const payload = parseJwtPayload(jwt)
@@ -35,42 +82,55 @@ export default function ChatbotAdmin() {
 
   useEffect(() => {
     setIsMounted(true)
-    const saved = localStorage.getItem('chatbot_admin_token')
-    const savedUser = localStorage.getItem('chatbot_admin_user')
+    const savedAccess = localStorage.getItem(ACCESS_TOKEN_KEY)
+    const savedRefresh = localStorage.getItem(REFRESH_TOKEN_KEY)
+    const savedUser = localStorage.getItem(USER_KEY)
     if (savedUser) {
       try {
         setCurrentUser(JSON.parse(savedUser) as MeResponse)
       } catch {
-        localStorage.removeItem('chatbot_admin_user')
+        localStorage.removeItem(USER_KEY)
       }
     }
-    if (!saved) return
-
-    if (isTokenExpired(saved)) {
-      handleLogout(true)
+    if (savedRefresh) {
+      setRefreshToken(savedRefresh)
+    }
+    if (!savedAccess) {
+      if (savedRefresh) {
+        void attemptRefresh(savedRefresh)
+      }
       return
     }
 
-    setToken(saved)
-  }, [handleLogout, isTokenExpired])
+    if (isTokenExpired(savedAccess)) {
+      if (savedRefresh) {
+        void attemptRefresh(savedRefresh)
+      } else {
+        handleLogout(true)
+      }
+      return
+    }
+
+    setAccessToken(savedAccess)
+  }, [attemptRefresh, handleLogout, isTokenExpired])
 
   useEffect(() => {
-    if (!token) return
+    if (!accessToken) return
 
     let isActive = true
     setIsUserLoading(true)
 
     authService
-      .me(token)
+      .me(accessToken)
       .then((me) => {
         if (!isActive) return
         setCurrentUser(me)
-        localStorage.setItem('chatbot_admin_user', JSON.stringify(me))
+        localStorage.setItem(USER_KEY, JSON.stringify(me))
       })
       .catch((err) => {
         const status = typeof err === 'object' && err && 'status' in err ? Number(err.status) : null
         if (status === 401) {
-          handleLogout(true)
+          void attemptRefresh(undefined, true)
           return
         }
         toast.error(getChatbotErrorDetail(err) || 'Không thể tải thông tin người dùng')
@@ -83,36 +143,37 @@ export default function ChatbotAdmin() {
     return () => {
       isActive = false
     }
-  }, [token, handleLogout])
+  }, [accessToken, attemptRefresh])
 
   useEffect(() => {
-    if (!token) return
+    if (!accessToken) return
 
-    const payload = parseJwtPayload(token)
-    if (!payload?.exp) return
+    const payload = parseJwtPayload(accessToken)
+    const expiresAt = payload?.exp ? payload.exp * 1000 : null
+    const refreshInMs = expiresAt
+      ? Math.max(0, expiresAt - Date.now() - REFRESH_BUFFER_MS)
+      : Math.max(0, ACCESS_TOKEN_TTL_MS - REFRESH_BUFFER_MS)
 
-    const expiresInMs = payload.exp * 1000 - Date.now()
-    if (expiresInMs <= 0) {
-      handleLogout(true)
+    if (refreshInMs <= 0) {
+      void attemptRefresh(undefined, true)
       return
     }
 
     const timeoutId = window.setTimeout(() => {
-      handleLogout(true)
-    }, expiresInMs)
+      void attemptRefresh(undefined, true)
+    }, refreshInMs)
 
     return () => window.clearTimeout(timeoutId)
-  }, [token, handleLogout])
+  }, [accessToken, attemptRefresh])
 
   if (!isMounted) return null
 
-  if (!token) {
+  if (!accessToken) {
     return (
       <>
         <LoginView
-          onLogin={(t) => {
-            setToken(t)
-            localStorage.setItem('chatbot_admin_token', t)
+          onLogin={(tokens) => {
+            applyTokens(tokens)
           }}
         />
         <ChatWindow />
@@ -131,7 +192,11 @@ export default function ChatbotAdmin() {
 
   return (
     <>
-      <DashboardView token={token} currentUser={currentUser} onLogout={() => handleLogout(false)} />
+      <DashboardView
+        token={accessToken}
+        currentUser={currentUser}
+        onLogout={() => handleLogout(false)}
+      />
       <ChatWindow />
     </>
   )
@@ -156,7 +221,7 @@ const parseJwtPayload = (jwt: string): JwtPayload | null => {
   }
 }
 
-function LoginView({ onLogin }: { onLogin: (t: string) => void }) {
+function LoginView({ onLogin }: { onLogin: (tokens: TokenWithRefresh) => void }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -166,11 +231,11 @@ function LoginView({ onLogin }: { onLogin: (t: string) => void }) {
     setError('')
     try {
       const res = await authService.login({ username, password })
-      if (res.access_token) {
-        onLogin(res.access_token)
+      if (res.access_token && res.refresh_token) {
+        onLogin(res)
         toast.success('Đăng nhập thành công!')
       } else {
-        setError('Đăng nhập thất bại: Không nhận được token truy cập')
+        setError('Đăng nhập thất bại: Không nhận được đầy đủ token')
       }
     } catch (err) {
       const detail = getChatbotErrorDetail(err)
@@ -288,7 +353,7 @@ function DashboardView({
           className={activeTab === 'users' ? styles.subNavTabActive : styles.subNavTab}
           onClick={() => setActiveTab('users')}
         >
-          Quản lý Người dùng
+          Quản lý tài khoản
         </button>
         <button
           className={activeTab === 'logs' ? styles.subNavTabActive : styles.subNavTab}

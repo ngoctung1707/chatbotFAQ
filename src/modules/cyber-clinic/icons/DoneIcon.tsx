@@ -1,0 +1,34 @@
+import type { SvgIcon } from './index'
+
+const DoneIcon: SvgIcon = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+      fill="none"
+      {...props}
+    >
+      <mask
+        id="mask0_358_1139"
+        style={{ maskType: 'alpha' }}
+        maskUnits="userSpaceOnUse"
+        x="0"
+        y="0"
+        width="40"
+        height="40"
+      >
+        <rect width="40" height="40" fill="#D9D9D9" />
+      </mask>
+      <g mask="url(#mask0_358_1139)">
+        <path
+          d="M11.1667 30.0002L1.75 20.5835L4.125 18.2502L13.5417 27.6668L11.1667 30.0002ZM20.5833 30.0002L11.1667 20.5835L13.5 18.2085L20.5833 25.2918L35.9167 9.9585L38.25 12.3335L20.5833 30.0002ZM20.5833 20.5835L18.2083 18.2502L26.4583 10.0002L28.8333 12.3335L20.5833 20.5835Z"
+          fill="#1C1B1F"
+        />
+      </g>
+    </svg>
+  )
+}
+
+export default DoneIcon

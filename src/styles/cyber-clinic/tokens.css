@@ -63,8 +63,8 @@
   --cc-tracking-widest: 0.12em;
 
   /* --- Color: Background --- */
-  --cc-bg-page: #F6EAEA;
-  --cc-bg-card: #fff8f7;
+  --cc-bg-page: #E6E6E6;
+  --cc-bg-card: #FFFFFF80;
   --cc-bg-light: #FDF6F9;
 
   /* --- Color: Foreground / Text --- */
@@ -89,7 +89,7 @@
 
   /* --- Color: Border --- */
   --cc-border-light: #f6e4e2;
-  --cc-border-medium: #d8c2c0;
+  --cc-border-medium: #CCCCCC;
   --cc-border-dark: rgba(64, 64, 64, 0.05);
 
   /* --- Spacing scale (4px base) --- */

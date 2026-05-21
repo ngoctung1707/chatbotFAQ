@@ -108,7 +108,8 @@
 }
 
 .cc-footer-inner {
-  background: var(--cc-bg-card);
+  background: #FFFFFFCC;
+  backdrop-filter: blur(50px);
   padding: 80px;
   border-radius: 24px;
 }
@@ -159,6 +160,22 @@
   margin: 24px 0;
 }
 
+.cc-hero-tabs {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.cc-teacher-hero {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.cc-teacher-image {
+  width: 610px;
+  height: auto;
+}
+
 @media (min-width: 640px) and (max-width: 1024px) {
   .cc-layout-gradient {
     height: 200px;
@@ -174,6 +191,10 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+  }
+
+  .cc-hero-tabs {
+    justify-content: center;
   }
 
   .cc-context-header {
@@ -216,8 +237,14 @@
     -webkit-line-clamp: 2;
   }
 
-  .cc-footer {
-    background-color: var(--cc-bg-page);
+  .cc-teacher-hero {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .cc-teacher-image {
+    width: 100%;
   }
 }
 
@@ -236,6 +263,10 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+  }
+
+  .cc-hero-tabs {
+    justify-content: center;
   }
 
   .cc-context-header {
@@ -284,10 +315,6 @@
     display: none;
   }
 
-  .cc-footer {
-    background-color: var(--cc-bg-page);
-  }
-
   .cc-footer-inner {
     padding: 32px 24px;
   }
@@ -318,5 +345,22 @@
 
   .cc-footer-bottom-right {
     align-items: flex-start;
+  }
+
+  .cc-tabs {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cc-teacher-hero {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .cc-teacher-image {
+    width: 100%;
   }
 }
