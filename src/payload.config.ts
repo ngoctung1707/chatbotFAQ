@@ -14,6 +14,7 @@ import { Publications } from '@/collections/Publications'
 import { UpcomingEvents } from '@/collections/UpcomingEvents'
 import { Courses } from '@/collections/Courses'
 import { Solutions } from '@/collections/Solutions'
+import { CyberClinicVideos } from '@/collections/CyberClinicVideos'
 import { ResearchLabs } from './collections/ResearchLabs'
 
 const filename = fileURLToPath(import.meta.url)
@@ -42,6 +43,7 @@ export default buildConfig({
     UpcomingEvents,
     Courses,
     Solutions,
+    CyberClinicVideos,
     ResearchLabs,
   ],
   editor: lexicalEditor({

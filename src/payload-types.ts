@@ -75,6 +75,7 @@ export interface Config {
     'upcoming-events': UpcomingEvent;
     courses: Course;
     solutions: Solution;
+    'cyber-clinic-videos': CyberClinicVideo;
     'research-labs': ResearchLab;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -92,6 +93,7 @@ export interface Config {
     'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
     solutions: SolutionsSelect<false> | SolutionsSelect<true>;
+    'cyber-clinic-videos': CyberClinicVideosSelect<false> | CyberClinicVideosSelect<true>;
     'research-labs': ResearchLabsSelect<false> | ResearchLabsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -317,6 +319,19 @@ export interface Solution {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cyber-clinic-videos".
+ */
+export interface CyberClinicVideo {
+  id: string;
+  title: string;
+  source: 'upload' | 'external';
+  videoFile?: (string | null) | Media;
+  externalUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "research-labs".
  */
 export interface ResearchLab {
@@ -495,6 +510,10 @@ export interface PayloadLockedDocument {
         value: string | Solution;
       } | null)
     | ({
+        relationTo: 'cyber-clinic-videos';
+        value: string | CyberClinicVideo;
+      } | null)
+    | ({
         relationTo: 'research-labs';
         value: string | ResearchLab;
       } | null);
@@ -665,6 +684,18 @@ export interface SolutionsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cyber-clinic-videos_select".
+ */
+export interface CyberClinicVideosSelect<T extends boolean = true> {
+  title?: T;
+  source?: T;
+  videoFile?: T;
+  externalUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
