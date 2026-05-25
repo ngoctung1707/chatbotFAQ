@@ -265,7 +265,7 @@ export default function MobileMenu({
                 {solutionsLinks.map((link) => (
                   <li key={link.id}>
                     <Link href={link.path} target="_blank">
-                      {locale === 'vi' ? link.nameVi : link.nameEn}
+                      {link.name}
                     </Link>
                   </li>
                 ))}
