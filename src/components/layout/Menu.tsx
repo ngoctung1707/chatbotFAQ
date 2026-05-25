@@ -71,26 +71,22 @@ export const fundingProjectsLinks = [
 export const solutionsLinks = [
   {
     id: 1,
-    nameEn: 'BKOffice',
-    nameVi: 'Hệ thống quản lý văn bản trực tuyến (BKOffice)',
+    name: 'BKOffice',
     path: 'https://bkoffice.hust.edu.vn/',
   },
   {
     id: 2,
-    nameEn: 'eDiploma',
-    nameVi: 'Hệ thống tạo và xác thực văn bằng, chứng chỉ, chứng nhận số (eDiploma)',
+    name: 'eDiploma',
     path: 'https://ediploma.vn/vi',
   },
   {
     id: 3,
-    nameEn: 'BKSign',
-    nameVi: 'Hệ thống ký số (BKSign)',
+    name: 'BKSign',
     path: 'https://bksign.hust.edu.vn/',
   },
   {
     id: 4,
-    nameEn: 'AiPad',
-    nameVi: 'Nền tảng hỗ trợ khởi nghiệp (AiPad)',
+    name: 'AiPad',
     path: 'https://aipad.vn/',
   },
 ]
@@ -330,7 +326,7 @@ export default function Menu() {
             {solutionsLinks.map((link) => (
               <li key={link.id}>
                 <Link href={link.path} target="_blank">
-                  {locale === 'vi' ? link.nameVi : link.nameEn}
+                  {link.name}
                 </Link>
               </li>
             ))}
