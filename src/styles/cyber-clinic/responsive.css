@@ -17,6 +17,72 @@
   padding-right: var(--cc-space-4);
 }
 
+.cyber-clinic-layout .cc-page-rails {
+  position: relative;
+}
+
+.cyber-clinic-layout .cc-page-rails::before,
+.cyber-clinic-layout .cc-page-rails::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--cc-border-medium);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-clinic-layout .cc-page-rails::before {
+  left: calc(50% - 696px);
+}
+
+.cyber-clinic-layout .cc-page-rails::after {
+  left: calc(50% + 696px);
+}
+
+.cyber-clinic-layout .cc-page-rails--about::before {
+  left: calc(50% - 640px);
+}
+
+.cyber-clinic-layout .cc-page-rails--about::after {
+  left: calc(50% + 640px);
+}
+
+.cyber-clinic-layout .cc-page-rails > * {
+  position: relative;
+  z-index: 2;
+}
+
+.cyber-clinic-layout .cc-about-hero-rails {
+  position: relative;
+}
+
+.cyber-clinic-layout .cc-about-hero-rails::before,
+.cyber-clinic-layout .cc-about-hero-rails::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--cc-border-medium);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-clinic-layout .cc-about-hero-rails::before {
+  left: calc(50% - 640px);
+}
+
+.cyber-clinic-layout .cc-about-hero-rails::after {
+  left: calc(50% + 640px);
+}
+
+.cyber-clinic-layout .cc-about-hero-rails > * {
+  position: relative;
+  z-index: 2;
+}
+
 .cc-layout-gradient {
   height: 300px;
 }
@@ -98,6 +164,7 @@
 
 .cc-news-main_desc {
   display: -webkit-box;
+  line-clamp: 3;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -245,8 +312,102 @@
   border-left: 1px solid var(--cc-border-medium)
 }
 
+.cc-about-hero-section {
+  min-height: clamp(460px, 62vw, 600px);
+  gap: clamp(24px, 5vw, 60px);
+}
+
+.cc-about-hero-content {
+  padding-bottom: var(--cc-space-20);
+}
+
+.cc-about-hero-textbox {
+  max-width: var(--cc-about-box-max);
+  min-height: clamp(280px, 44vw, 356px);
+  gap: clamp(24px, 4vw, 48px);
+  padding: clamp(32px, 7vw, 80px) clamp(20px, 12vw, 220px);
+}
+
+.cc-about-hero-image {
+  max-width: var(--cc-about-box-max);
+  height: clamp(240px, 38vw, 462px);
+}
+
+.cc-about-context-box {
+  max-width: var(--cc-about-box-max);
+}
+
+.cc-about-context-content {
+  min-height: clamp(360px, 52vw, 484px);
+  gap: clamp(16px, 2.2vw, 24px);
+  padding: clamp(32px, 6vw, 80px) clamp(20px, 12vw, 220px);
+}
+
+.cc-about-split-section {
+  padding-top: clamp(96px, 13vw, 160px);
+}
+
+.cc-about-split-panel {
+  padding: clamp(40px, 8vw, 80px) clamp(16px, 3vw, 40px) clamp(40px, 8vw, 80px) 0;
+}
+
+.cc-about-split-card {
+  min-height: clamp(240px, 32vw, 308px);
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.cc-about-split-gap {
+  height: var(--cc-about-split-gap);
+}
+
+.cc-about-center-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--cc-border-medium);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cc-about-section-rail-left,
+.cc-about-section-rail-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--cc-border-medium);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cc-about-section-rail-left {
+  left: max(calc(50% - var(--cc-about-rail-offset)), var(--cc-space-4));
+}
+
+.cc-about-section-rail-right {
+  left: min(calc(50% + var(--cc-about-rail-offset)), calc(100% - var(--cc-space-4)));
+}
+
+.cc-about-quote-card {
+  max-width: var(--cc-about-box-max);
+  min-height: clamp(300px, 40vw, 424px);
+  padding: clamp(40px, 8vw, 120px) clamp(20px, 6vw, 80px);
+}
+
 
 @media (min-width: 640px) and (max-width: 1024px) {
+  .cyber-clinic-layout .cc-page-rails::before,
+  .cyber-clinic-layout .cc-page-rails::after {
+    display: none;
+  }
+
+  .cyber-clinic-layout .cc-about-hero-rails::before,
+  .cyber-clinic-layout .cc-about-hero-rails::after {
+    display: none;
+  }
+
   .cc-layout-gradient {
     height: 200px;
   }
@@ -305,6 +466,7 @@
   }
 
   .cc-news-main_desc {
+    line-clamp: 2;
     -webkit-line-clamp: 2;
   }
 
@@ -342,9 +504,27 @@
    padding: 180px 0;
   }
 
+  .cc-about-split-section {
+    padding-top: var(--cc-space-20);
+  }
+
+  .cc-about-center-divider {
+    display: none;
+  }
+
 }
 
 @media (max-width: 639px) {
+  .cyber-clinic-layout .cc-page-rails::before,
+  .cyber-clinic-layout .cc-page-rails::after {
+    display: none;
+  }
+
+  .cyber-clinic-layout .cc-about-hero-rails::before,
+  .cyber-clinic-layout .cc-about-hero-rails::after {
+    display: none;
+  }
+
   .cc-layout-gradient {
     height: 100px;
   }
@@ -500,5 +680,22 @@
   padding: 40px 0 40px 0;
   height: 100%;
   border-left: none;
+  }
+
+  .cc-about-split-section {
+    padding-top: var(--cc-space-20);
+  }
+
+  .cc-about-split-gap {
+    height: var(--cc-space-10);
+  }
+
+  .cc-about-center-divider {
+    display: none;
+  }
+
+  .cc-about-section-rail-left,
+  .cc-about-section-rail-right {
+    display: none;
   }
 }

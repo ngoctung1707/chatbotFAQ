@@ -142,4 +142,7 @@
   /* --- Layout --- */
   isolation: isolate;
   --cc-container-width: 1312px;
+  --cc-about-rail-offset: 640px;
+  --cc-about-box-max: 1280px;
+  --cc-about-split-gap: var(--cc-space-20);
 }

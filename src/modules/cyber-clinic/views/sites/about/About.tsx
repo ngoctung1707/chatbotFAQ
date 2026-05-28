@@ -5,8 +5,7 @@ import News from '../../sections/News'
 import Header from '@/modules/cyber-clinic/layout/Header'
 import HeroAbout from './HeroAbout'
 import ContextAbout from './ContextAbout'
-import Challenge from './Challenge'
-import Target from './Target'
+import ChallengeTarget from './ChallengeTarget'
 import QuoteAbout from './Quote'
 
 export default function About() {
@@ -15,8 +14,7 @@ export default function About() {
       <Header />
       <HeroAbout />
       <ContextAbout />
-      <Challenge />
-      <Target />
+      <ChallengeTarget />
       <QuoteAbout />
       <News />
       <FooterWrap />
