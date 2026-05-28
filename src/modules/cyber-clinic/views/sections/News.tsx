@@ -6,9 +6,9 @@ import Link from 'next/link'
 import type { Media, News as NewsType } from '@/payload-types'
 import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
+import EmptyDiv from '../../components/EmptyDiv'
 
 export default async function News() {
-  const lang = await getUserLocale()
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'news',
@@ -17,7 +17,7 @@ export default async function News() {
     sort: ['-publishedAt'],
     where: {
       lang: {
-        equals: lang,
+        equals: 'vi',
       },
     },
   })
@@ -36,26 +36,42 @@ export default async function News() {
     <div
       style={{
         backgroundColor: 'var(--cc-bg-page)',
-        padding: '80px 0',
       }}
     >
-      <div className="container">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '40px',
-          }}
-        >
-          <SplitText tag="h3" text="Tin tức" textAlign="left" />
-          <ButtonGradient variant="secondary" text="Xem tất cả" linkTo={`/news`} />
+      <div
+        style={{
+          borderTop: '1px solid var(--cc-border-medium)',
+          borderBottom: '1px solid var(--cc-border-medium)',
+        }}
+      >
+        <div className="container cc-register-student-header">
+          <div
+            style={{
+              height: '100%',
+              padding: '80px 0 40px',
+              background: 'var(--cc-gradient-header)',
+              borderRight: '1px solid var(--cc-primary)',
+            }}
+          >
+            <SplitText tag="h3" text="Tin tức" textAlign="left" />
+          </div>
+          <div
+            className="cc-register-student-content"
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <ButtonGradient text="xem tất cả" variant="secondary" />
+          </div>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      </div>
+      <EmptyDiv />
+      <div className="container">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {mainDoc && (
             <div className="cc-news-main">
-              <div style={{ flex: '1 1 200px', borderRadius: '16px', overflow: 'hidden' }}>
+              <div style={{ flex: '1 1 200px', overflow: 'hidden' }}>
                 <Link
                   href={`/news/${mainDoc.slug}`}
                   style={{ display: 'block', width: '100%', height: '100%' }}
@@ -75,14 +91,12 @@ export default async function News() {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '16px',
-                  padding: '16px 0 16px 0',
                 }}
               >
                 <div
                   style={{
                     padding: '4px 12px',
-                    backgroundColor: '#2319190A',
-                    borderRadius: '100px',
+                    backgroundColor: '#23191914',
                     fontSize: '14px',
                     fontWeight: 400,
                     color: 'var(--cc-fg-primary)',
@@ -124,7 +138,7 @@ export default async function News() {
                   }}
                   target="blank"
                 >
-                  ĐỌC BÀI VIẾT
+                  XEM THÊM
                 </Link>
               </div>
             </div>
@@ -135,24 +149,23 @@ export default async function News() {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '16px',
               }}
             >
-              {subDocs.map((doc) => (
+              {subDocs.map((doc, index) => (
                 <div
                   key={doc.id}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    border: '2px solid #F6E4E2',
-                    borderRadius: '24px',
-                    padding: '16px',
-                    backgroundColor: '#FFF8F7',
+                    padding: '40px',
+                    backgroundColor: '#FFFFFF80',
+                    border: '1px solid var(--cc-border-medium)',
+                    borderTop: 'none',
+                    borderLeft: `${index == 0 ? '1px solid var(--cc-border-medium)' : 'none'}`,
                   }}
                 >
                   <div
                     style={{
-                      borderRadius: '16px',
                       overflow: 'hidden',
                       aspectRatio: '16/9',
                     }}
@@ -169,13 +182,11 @@ export default async function News() {
                       />
                     </Link>
                   </div>
-                  <div style={{ padding: '16px' }}>
+                  <div style={{ marginTop: '24px' }}>
                     <div
                       style={{
-                        display: 'inline-flex',
                         padding: '4px 12px',
-                        backgroundColor: '#2319190A',
-                        borderRadius: '100px',
+                        backgroundColor: '#23191914',
                         fontSize: '14px',
                         fontWeight: 400,
                         color: 'var(--cc-fg-primary)',
@@ -183,7 +194,7 @@ export default async function News() {
                         width: 'fit-content',
                       }}
                     >
-                      {formatDate(doc.publishedAt)}
+                      {formatDate(mainDoc.publishedAt)}
                     </div>
                     <h6
                       style={{
@@ -217,7 +228,7 @@ export default async function News() {
                       }}
                       target="blank"
                     >
-                      ĐỌC BÀI VIẾT
+                      XEM THÊM
                     </Link>
                   </div>
                 </div>
@@ -226,6 +237,7 @@ export default async function News() {
           )}
         </div>
       </div>
+      <EmptyDiv />
     </div>
   )
 }

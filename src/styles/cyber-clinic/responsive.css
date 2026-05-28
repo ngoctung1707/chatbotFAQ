@@ -43,7 +43,6 @@
 .cc-context-items {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
 }
 
 .cc-program-features {
@@ -71,7 +70,10 @@
 .cc-roadmap-left {
   width: 50%;
   position: sticky;
-  top: 100px;
+  top: 0px;
+  background: var(--cc-gradient-header);
+  padding: 80px 80px 40px 0;
+  margin-bottom: 80px;
 }
 
 .cc-roadmap-right {
@@ -82,10 +84,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 32px;
-  border: 2px solid #F6E4E2;
-  border-radius: 24px;
-  padding: 16px;
-  background-color: #FFFFFF;
+  border: 1px solid var(--cc-border-medium);
+  padding: 40px;
+  background-color: #FFFFFF80;
+;
 }
 
 .cc-news-main__image {
@@ -166,15 +168,83 @@
 }
 
 .cc-teacher-hero {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 60px;
 }
 
 .cc-teacher-image {
   width: 610px;
   height: auto;
 }
+
+.cc-slider-student {
+  max-width: 90%;
+  padding: 80px 80px 80px 0;
+  background: var(--cc-gradient-header);
+  border-right: 1px solid #DF3414;
+}
+
+.cc-faq-question-wrapper {
+  width: 100%;
+  padding: 40px
+}
+
+.cc-partner-item-1,
+.cc-partner-item-2 {
+  min-height: 150px;
+  background: #FFFFFF80;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--cc-border-medium);
+}
+
+.cc-partner-item-3 {
+  min-height: 150px;
+  background: #FFFFFF80;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--cc-border-medium);
+  border-right: 1px solid var(--cc-border-medium);
+}
+
+.cc-cta-content {
+   padding: 230px 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   z-index: 1;
+}
+
+.cc-register-student-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  align-items: center 
+}
+
+.cc-register-student-content {
+  padding: 80px 0 40px 40px;
+  border-left: 1px solid var(--cc-border-medium)
+}
+
+.cc-register-student-card-left {
+  padding: 40px 40px 40px 0;
+  height: 100%
+}
+
+.cc-register-student-card-right {
+  padding: 40px 0px 40px 40px;
+  height: 100%;
+  border-left: 1px solid var(--cc-border-medium)
+}
+
 
 @media (min-width: 640px) and (max-width: 1024px) {
   .cc-layout-gradient {
@@ -217,12 +287,13 @@
 
   .cc-roadmap-layout {
     flex-direction: column;
-    gap: 40px;
   }
 
   .cc-roadmap-left {
     width: 100%;
     position: unset;
+    padding: 40px 0 40px 0;
+    margin-bottom: 0px;
   }
 
   .cc-roadmap-right {
@@ -238,14 +309,39 @@
   }
 
   .cc-teacher-hero {
-    flex-direction: column-reverse;
+    grid-template-columns: 1fr 1fr;
     align-items: stretch;
-    gap: 24px;
   }
 
   .cc-teacher-image {
     width: 100%;
   }
+
+  .cc-slider-student {
+  max-width: 100%;
+  padding: 40px 40px 40px 0;
+  }
+
+  .cc-faq-question-wrapper {
+  padding: 20px
+  }
+  .cc-partner-item-1 {
+    border-bottom: 1px solid var(--cc-border-medium);
+  }
+
+  .cc-partner-item-2 {
+    border-right: 1px solid var(--cc-border-medium);
+    border-bottom: 1px solid var(--cc-border-medium);
+  }
+
+  .cc-partner-item-3 {
+    border-bottom: 1px solid var(--cc-border-medium);
+  }
+
+  .cc-cta-content {
+   padding: 180px 0;
+  }
+
 }
 
 @media (max-width: 639px) {
@@ -299,12 +395,13 @@
 
   .cc-roadmap-layout {
     flex-direction: column;
-    gap: 40px;
   }
 
   .cc-roadmap-left {
     width: 100%;
     position: unset;
+    padding: 40px 0 40px 0;
+    margin-bottom: 0px;
   }
 
   .cc-roadmap-right {
@@ -355,12 +452,53 @@
   }
 
   .cc-teacher-hero {
-    flex-direction: column-reverse;
+    grid-template-columns: 1fr 1fr;
     align-items: stretch;
-    gap: 24px;
   }
 
   .cc-teacher-image {
     width: 100%;
+  }
+
+  .cc-slider-student {
+  max-width: 100%;
+  padding: 40px 40px 40px 0;
+  }
+
+  .cc-faq-question-wrapper {
+  padding: 0px
+  }
+   .cc-partner-item-1 {
+    border-bottom: 1px solid var(--cc-border-medium);
+    border-right: 1px solid var(--cc-border-medium);
+  }
+
+  .cc-partner-item-2 {
+    border-right: 1px solid var(--cc-border-medium);
+    border-bottom: 1px solid var(--cc-border-medium);
+  }
+
+  .cc-cta-content {
+   padding: 150px 0;
+  }
+
+  .cc-register-student-header {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-register-student-content {
+  padding: 40px 0 40px 0;
+  border-left: none;
+  }
+
+  .cc-register-student-card-left {
+  padding: 40px 0 0 0;
+  height: 100%
+  }
+
+  .cc-register-student-card-right {
+  padding: 40px 0 40px 0;
+  height: 100%;
+  border-left: none;
   }
 }

@@ -66,12 +66,11 @@ export default function Hero({ userKey }: HeroProps) {
     <div
       className="cc-hero-bg"
       style={{
-        height: 'calc(100svh - 80px)',
-        display: 'flex',
-        alignItems: 'center',
+        // height: `${userKey != 'student' ? 'calc(100svh - 100px)' : 'calc(100svh + 200px)'}`,
+        height: 'calc(100svh - 100px)',
       }}
     >
-      <div className="container">
+      <div className="container" style={{ paddingTop: '80px' }}>
         <div className="cc-hero-tabs">
           <TabCustom
             tabs={[
@@ -83,32 +82,40 @@ export default function Hero({ userKey }: HeroProps) {
             onChange={handleTabChange}
           />
         </div>
-        <div className="cc-hero-content" style={{ marginTop: '40px' }}>
-          <SplitText
-            tag="h1"
-            text={'Dành cho ' + title}
-            textAlign="left"
-            style={{ maxWidth: '750px', marginBottom: '16px' }}
-          />
-          <h6
-            data-aos="fade-up"
-            style={{ color: 'var(--cc-fg-secondary)', fontWeight: 400, marginBottom: '24px' }}
-          >
-            {caption}
-          </h6>
-          <h6
-            data-aos="fade-up"
-            style={{
-              maxWidth: '700px',
-              color: 'var(--cc-fg-secondary)',
-              fontWeight: 400,
-              marginBottom: '40px',
-            }}
-          >
-            {description}
-          </h6>
-          <div data-aos="fade-up" data-aos-delay="200">
-            <ButtonGradient variant="primary" text="Đăng ký ngay" />
+        <div
+          className="cc-hero-content"
+          style={{
+            marginTop: '40px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '24px',
+          }}
+        >
+          <div>
+            <SplitText
+              tag="h1"
+              text={'Dành cho ' + title}
+              textAlign="left"
+              style={{ maxWidth: '750px', marginBottom: '16px', color: 'white' }}
+            />
+            <h6 data-aos="fade-up" style={{ color: 'white', fontWeight: 400 }}>
+              {caption}
+            </h6>
+            <h6
+              data-aos="fade-up"
+              style={{
+                marginTop: '24px',
+                maxWidth: '700px',
+                color: 'white',
+                fontWeight: 400,
+              }}
+            >
+              {description}
+            </h6>
+          </div>
+          <div data-aos="fade-up">
+            <ButtonGradient variant="secondary" text="Đăng ký ngay" />
           </div>
         </div>
       </div>

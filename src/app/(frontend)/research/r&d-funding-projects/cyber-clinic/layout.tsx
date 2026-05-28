@@ -5,6 +5,7 @@ import '../../../../../styles/cyber-clinic/index.css'
 import 'aos/dist/aos.css'
 import { getUserLocale } from '@/i18n/localeService'
 import { redirect } from 'next/navigation'
+import ChatWindow from '@/app/(frontend)/chatbot/components/ChatWindow'
 
 export const metadata: Metadata = {
   title: 'Vườn ươm Nhân lực An toàn thông tin trong nền kinh tế số - ĐH Bách khoa Hà Nội',
@@ -33,15 +34,20 @@ export default async function CyberClinicLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const lang = await getUserLocale()
-  if (lang === 'vi') {
-    redirect(
-      '/news/le-khoi-dong-chuong-trinh-vuon-uom-nhan-luc-an-toan-thong-tin-trong-nen-kinh-te-so-o-viet-nam',
-    )
-  } else {
-    redirect(
-      '/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy',
-    )
-  }
-  return <div className={`${saira.className} cyber-clinic-layout`}>{children}</div>
+  // const lang = await getUserLocale()
+  // if (lang === 'vi') {
+  //   redirect(
+  //     '/news/le-khoi-dong-chuong-trinh-vuon-uom-nhan-luc-an-toan-thong-tin-trong-nen-kinh-te-so-o-viet-nam',
+  //   )
+  // } else {
+  //   redirect(
+  //     '/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy',
+  //   )
+  // }
+  return (
+    <div className={`${saira.className} cyber-clinic-layout`}>
+      {children}
+      <ChatWindow />
+    </div>
+  )
 }

@@ -34,7 +34,7 @@ export default function Roadmap() {
     <div
       style={{
         backgroundColor: 'var(--cc-bg-page)',
-        padding: '80px 0',
+        borderTop: '1px solid var(--cc-border-medium)',
       }}
     >
       <div className="container cc-roadmap-layout">
@@ -64,26 +64,35 @@ export default function Roadmap() {
           </div>
 
           {/* Heading */}
-          <SplitText
-            tag="h3"
-            text="Lộ trình đồng hành và phát triển"
-            textAlign="left"
-            style={{ maxWidth: '500px' }}
-          />
+          <SplitText tag="h3" text="Lộ trình đồng hành và phát triển" textAlign="left" />
         </div>
         <div className="cc-roadmap-right">
           <div
-            style={{ paddingLeft: '80px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+            style={{
+              padding: '80px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid var(--cc-border-medium)',
+              borderRight: '1px solid var(--cc-border-medium)',
+            }}
           >
             {ROADMAP_ITEMS.map((item, index) => (
-              <div key={index} style={{ position: 'relative' }}>
+              <div
+                key={index}
+                style={{
+                  position: 'relative',
+                  borderTop: '1px solid var(--cc-border-medium)',
+                  borderBottom: `${index === ROADMAP_ITEMS.length - 1 ? '1px solid var(--cc-border-medium)' : 'none'}`,
+                  backgroundColor: '#FFFFFF80',
+                }}
+              >
                 {/* Timeline Line */}
                 <div
                   style={{
                     position: 'absolute',
-                    left: '-40px',
+                    left: '40px',
                     top: '0px',
-                    height: `${index < ROADMAP_ITEMS.length - 1 ? 'calc(100% + 16px)' : '100%'}`,
+                    height: '100%',
                     borderLeft: '1px dashed var(--cc-border-medium)',
                     zIndex: 1,
                   }}
@@ -92,32 +101,27 @@ export default function Roadmap() {
                 <div
                   style={{
                     position: 'absolute',
-                    left: '-40px',
-                    top: '100px',
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
+                    left: '40px',
+                    top: '120px',
+                    width: '16px',
+                    height: '16px',
                     backgroundColor: 'var(--cc-primary)',
                     transform: 'translate(-50%, 0%)',
                     zIndex: 2,
-                    border: '2px solid var(--cc-border-medium)',
                   }}
                 />
 
                 {/* Card */}
                 <div
-                  className="box-state"
                   style={{
-                    borderRadius: 'var(--cc-radius-xl)',
-                    padding: '32px',
+                    padding: '40px 40px 40px 80px',
                   }}
                 >
                   <div
                     style={{
+                      backgroundColor: '#23191914',
                       display: 'inline-block',
                       padding: '8px 16px',
-                      border: '2px solid var(--cc-border-medium)',
-                      borderRadius: 'var(--cc-radius-full)',
                       color: 'var(--cc-fg-primary)',
                       fontSize: 'var(--cc-text-base)',
                       marginBottom: '24px',
@@ -125,14 +129,14 @@ export default function Roadmap() {
                   >
                     {item.badge}
                   </div>
-                  <h5
+                  <h4
                     style={{
                       marginBottom: '8px',
                       color: 'var(--cc-fg-primary)',
                     }}
                   >
                     {item.title}
-                  </h5>
+                  </h4>
                   <p
                     style={{
                       color: 'var(--cc-fg-secondary)',

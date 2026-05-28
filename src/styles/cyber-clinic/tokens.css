@@ -74,7 +74,7 @@
   --cc-fg-heading: #14176c;
 
   /* --- Color: Brand / Primary --- */
-  --cc-primary: #bc1323;
+  --cc-primary: #DF3414;
   --cc-primary-light: #e8e6ff;
   --cc-primary-rgb: 188, 19, 35;
 
@@ -86,6 +86,7 @@
   /* --- Color: Gradient --- */
   --cc-gradient-btn: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
   --cc-gradient-bg: linear-gradient(180deg, #ffffff 0%, #f6eaea 100%);
+  --cc-gradient-header: linear-gradient(90deg, rgba(223, 52, 20, 0) 0%, rgba(223, 52, 20, 0.08) 100%);
 
   /* --- Color: Border --- */
   --cc-border-light: #f6e4e2;

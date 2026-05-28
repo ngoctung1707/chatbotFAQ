@@ -123,7 +123,9 @@ export default function ChatWindow() {
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               <RobotIcon />
-              <h3 className={`${styles.headerTitle}`}>Chatbot</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#231919', margin: 0 }}>
+                Chatbot
+              </h3>
             </div>
             <button className={styles.closeBtn} onClick={toggleOpen} aria-label="Close Chatbot">
               ✕

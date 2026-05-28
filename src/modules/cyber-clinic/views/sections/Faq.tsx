@@ -100,7 +100,8 @@ export default function Faq({ userKey }: { userKey: Role }) {
     <div
       style={{
         backgroundColor: 'var(--cc-bg-page)',
-        padding: '80px 0 160px',
+        borderTop: '1px solid var(--cc-border-medium)',
+        borderBottom: '1px solid var(--cc-border-medium)',
       }}
     >
       <div className="container cc-roadmap-layout">
@@ -134,7 +135,13 @@ export default function Faq({ userKey }: { userKey: Role }) {
         </div>
         <div
           className="cc-roadmap-right"
-          style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '16px' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: 'column',
+            borderLeft: '1px solid var(--cc-border-medium)',
+            borderRight: '1px solid var(--cc-border-medium)',
+          }}
         >
           {faq.map((item, index) => {
             const isOpen = openIndexes.includes(index)
@@ -143,67 +150,92 @@ export default function Faq({ userKey }: { userKey: Role }) {
             return (
               <div
                 key={`${item.question}-${index}`}
-                onClick={() => handleToggle(index)}
+                className="cc-faq-question-wrapper"
                 style={{
-                  width: '100%',
-                  padding: '32px',
-                  background: isOpen ? '#FFFFFFCC' : '#FFFFFF80',
-                  borderRadius: '24px',
-                  cursor: 'pointer',
-                  transition: 'background 250ms ease, box-shadow 250ms ease',
+                  borderBottom:
+                    index < faq.length - 1 ? '1px solid var(--cc-border-medium)' : 'none',
                 }}
-                role="button"
-                aria-expanded={isOpen}
               >
                 <div
+                  onClick={() => handleToggle(index)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '24px',
+                    width: '100%',
+                    padding: '32px',
+                    background: isOpen ? '#FFFFFFCC' : '#FFF0EF80',
+                    cursor: 'pointer',
+                    transition: 'background 250ms ease, box-shadow 250ms ease',
                   }}
+                  role="button"
+                  aria-expanded={isOpen}
                 >
-                  <h5
+                  <div
                     style={{
-                      color: 'var(--cc-fg-primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '24px',
+                      borderBottom: isOpen
+                        ? '1px solid var(--cc-border-medium)'
+                        : '1px solid transparent',
+                      paddingBottom: isOpen ? '24px' : '0',
                     }}
                   >
-                    {item.question}
-                  </h5>
-                  <div style={{ width: '60px' }}>
-                    {isOpen ? (
-                      <Icon>
-                        <RemoveIcon />
-                      </Icon>
-                    ) : (
-                      <IconPrimary>
-                        <AddIcon />
-                      </IconPrimary>
-                    )}
+                    <h5
+                      style={{
+                        color: 'var(--cc-fg-primary)',
+                      }}
+                    >
+                      {item.question}
+                    </h5>
+                    <div style={{ width: '60px' }}>
+                      {isOpen ? (
+                        <Icon
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '0px',
+                            border: '2.73px solid #1C1B1F0D',
+                          }}
+                        >
+                          <RemoveIcon />
+                        </Icon>
+                      ) : (
+                        <IconPrimary
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '0px',
+                            border: '2.73px solid #BC13230D',
+                          }}
+                        >
+                          <AddIcon />
+                        </IconPrimary>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  ref={(el) => {
-                    answerRefs.current[index] = el
-                  }}
-                  style={{
-                    maxHeight: isOpen ? `${contentHeight}px` : '0px',
-                    opacity: isOpen ? 1 : 0,
-                    transform: isOpen ? 'translateY(0)' : 'translateY(-6px)',
-                    overflow: 'hidden',
-                    transition: 'max-height 320ms ease, opacity 240ms ease, transform 240ms ease',
-                  }}
-                >
-                  <p
+                  <div
+                    ref={(el) => {
+                      answerRefs.current[index] = el
+                    }}
                     style={{
-                      marginTop: '16px',
-                      lineHeight: '1.5',
-                      color: 'var(--cc-fg-secondary)',
+                      maxHeight: isOpen ? `${contentHeight}px` : '0px',
+                      opacity: isOpen ? 1 : 0,
+                      transform: isOpen ? 'translateY(0)' : 'translateY(-6px)',
+                      overflow: 'hidden',
+                      transition: 'max-height 320ms ease, opacity 240ms ease, transform 240ms ease',
                     }}
                   >
-                    {item.answer}
-                  </p>
+                    <p
+                      style={{
+                        marginTop: '16px',
+                        lineHeight: '1.5',
+                        color: 'var(--cc-fg-secondary)',
+                      }}
+                    >
+                      {item.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
             )

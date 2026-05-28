@@ -18,6 +18,11 @@ const ROADMAP_ITEMS = [
     badge: 'Tháng 8 - Tháng 10',
     title: 'Tham gia thực hành và làm việc trực tiếp với doanh nghiệp',
   },
+  {
+    badge: 'Đặc biệt',
+    title:
+      'Một nhóm sinh viên xuất sắc sẽ được lựa chọn để tham gia các buổi thảo luận chuyên đề và huấn luyện nâng cao cùng chuyên gia',
+  },
 ]
 
 export default function Roadmap() {
@@ -25,7 +30,8 @@ export default function Roadmap() {
     <div
       style={{
         backgroundColor: 'var(--cc-bg-page)',
-        padding: '80px 0',
+        borderTop: '1px solid var(--cc-border-medium)',
+        borderBottom: '1px solid var(--cc-border-medium)',
       }}
     >
       <div className="container cc-roadmap-layout">
@@ -55,26 +61,34 @@ export default function Roadmap() {
           </div>
 
           {/* Heading */}
-          <SplitText
-            tag="h3"
-            text="Hành trình của bạn sẽ bắt đầu như thế nào?"
-            textAlign="left"
-            style={{ maxWidth: '500px' }}
-          />
+          <SplitText tag="h3" text="Hành trình của bạn sẽ bắt đầu như thế nào?" textAlign="left" />
         </div>
         <div className="cc-roadmap-right">
           <div
-            style={{ paddingLeft: '80px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+            style={{
+              padding: '80px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid var(--cc-border-medium)',
+              borderRight: '1px solid var(--cc-border-medium)',
+            }}
           >
             {ROADMAP_ITEMS.map((item, index) => (
-              <div key={index} style={{ position: 'relative' }}>
+              <div
+                key={index}
+                style={{
+                  position: 'relative',
+                  borderTop: '1px solid var(--cc-border-medium)',
+                  borderBottom: `${index === ROADMAP_ITEMS.length - 1 ? '1px solid var(--cc-border-medium)' : 'none'}`,
+                }}
+              >
                 {/* Timeline Line */}
                 <div
                   style={{
                     position: 'absolute',
-                    left: '-40px',
+                    left: '40px',
                     top: '0px',
-                    height: 'calc(100% + 16px)',
+                    height: '100%',
                     borderLeft: '1px dashed var(--cc-border-medium)',
                     zIndex: 1,
                   }}
@@ -83,83 +97,47 @@ export default function Roadmap() {
                 <div
                   style={{
                     position: 'absolute',
-                    left: '-40px',
+                    left: '40px',
                     top: '80px',
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
+                    width: '16px',
+                    height: '16px',
                     backgroundColor: 'var(--cc-primary)',
                     transform: 'translate(-50%, 0%)',
                     zIndex: 2,
-                    border: '2px solid var(--cc-border-medium)',
                   }}
                 />
 
                 {/* Card */}
                 <div
-                  data-aos="fade-up"
-                  className="box-state"
                   style={{
-                    borderRadius: 'var(--cc-radius-xl)',
-                    padding: '32px',
+                    padding: '40px 40px 40px 80px',
+                    borderLeft: `${index === ROADMAP_ITEMS.length - 1 ? '2px solid #DF3414' : 'none'}`,
+                    background: `${index === ROADMAP_ITEMS.length - 1 ? 'linear-gradient(270deg, #FFE6E6 0%, #FFFFFF 100%)' : 'none'}`,
                   }}
                 >
                   <div
                     style={{
+                      backgroundColor: '#23191914',
                       display: 'inline-block',
                       padding: '8px 16px',
-                      border: '2px solid var(--cc-border-medium)',
-                      borderRadius: 'var(--cc-radius-full)',
                       color: 'var(--cc-fg-primary)',
                       fontSize: 'var(--cc-text-base)',
-                      marginBottom: '16px',
+                      marginBottom: '24px',
                     }}
                   >
                     {item.badge}
                   </div>
-                  <h5
+                  <h4
                     style={{
                       margin: 0,
-                      color: 'var(--cc-fg-primary)',
+                      color: `${index === ROADMAP_ITEMS.length - 1 ? 'var(--cc-fg-heading)' : 'var(--cc-fg-primary)'}`,
                     }}
                   >
                     {item.title}
-                  </h5>
+                  </h4>
                 </div>
               </div>
             ))}
-          </div>
-          <div
-            data-aos="fade-up"
-            style={{
-              marginTop: '16px',
-              backgroundColor: '#FFFFFFCC',
-              borderRadius: 'var(--cc-radius-xl)',
-              padding: '32px',
-            }}
-          >
-            <div
-              style={{
-                display: 'inline-block',
-                padding: '8px 16px',
-                border: '2px solid var(--cc-border-medium)',
-                borderRadius: 'var(--cc-radius-full)',
-                color: 'var(--cc-fg-primary)',
-                fontSize: 'var(--cc-text-base)',
-                marginBottom: '16px',
-              }}
-            >
-              Đặc biệt
-            </div>
-            <h5
-              style={{
-                margin: 0,
-                color: 'var(--cc-fg-primary)',
-              }}
-            >
-              Một nhóm sinh viên xuất sắc sẽ được lựa chọn để tham gia các buổi thảo luận chuyên đề
-              và huấn luyện nâng cao cùng chuyên gia
-            </h5>
           </div>
         </div>
       </div>

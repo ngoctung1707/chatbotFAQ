@@ -7,10 +7,11 @@ import { Pagination, Navigation } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import Icon from './Icon'
 import CardCustom from './CardCustom'
+import IconPrimary from './IconPrimary'
 
 type SliderItem = {
   key: string
-  icon: React.ReactNode
+  icon: React.ElementType
   title: string
   description: string
   label: string
@@ -47,12 +48,45 @@ export default function Slider({ items, activeKey, initialKey, onChange }: Slide
 
   return (
     <div className="cc-slider">
-      <div className="cc-slider-tabs">
+      {/* <div className="cc-slider-tabs">
         <TabCustom
           tabs={items.map((item) => ({ key: item.key, label: item.label }))}
           activeKey={currentKey}
           onChange={handleChange}
         />
+      </div> */}
+      <div
+        className="container"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+        }}
+      >
+        {items.map((item, index) => (
+          <div
+            key={index}
+            style={{
+              padding: '12px 24px',
+              border: '1px solid var(--cc-border-medium)',
+              cursor: 'pointer',
+              backgroundColor: item.key === currentKey ? 'var(--cc-primary)' : 'transparent',
+            }}
+            onClick={() => handleChange(item.key)}
+          >
+            <p
+              style={{
+                fontSize: '16px',
+                fontWeight: 500,
+                color: item.key === currentKey ? 'white' : 'var(--cc-fg-primary)',
+              }}
+            >
+              {item.label}
+            </p>
+          </div>
+        ))}
       </div>
 
       <div className="cc-slider-viewport-wrap">
@@ -97,10 +131,29 @@ export default function Slider({ items, activeKey, initialKey, onChange }: Slide
               return (
                 <SwiperSlide key={item.key}>
                   <div className={`cc-slider-card${isActive ? ' is-active' : ' is-side'}`}>
-                    <Icon>{item.icon}</Icon>
-                    <h5 className="cc-slider-title">{item.title}</h5>
-                    <div className="cc-slider-divider" />
-                    <p className="cc-slider-desc">{item.description}</p>
+                    {isActive ? (
+                      <IconPrimary>
+                        <item.icon
+                          style={{ fill: 'var(--cc-primary)', width: '48px', height: '48px' }}
+                        />
+                      </IconPrimary>
+                    ) : (
+                      <Icon style={{ width: '80px', height: '80px', borderRadius: '21px' }}>
+                        <item.icon style={{ width: '48px', height: '48px' }} />
+                      </Icon>
+                    )}
+                    <h5 style={{ margin: '40px 0 16px', color: 'var(--cc-fg-primary)' }}>
+                      {item.title}
+                    </h5>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: 'var(--cc-fg-secondary)',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {item.description}
+                    </p>
                   </div>
                 </SwiperSlide>
               )
@@ -111,152 +164,6 @@ export default function Slider({ items, activeKey, initialKey, onChange }: Slide
 
       <button className="cc-swiper-button-prev" aria-label="Previous slide" />
       <button className="cc-swiper-button-next" aria-label="Next slide" />
-
-      <style jsx>{`
-        .cc-slider {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 40px;
-          position: relative;
-        }
-
-        .cc-slider-tabs {
-          display: flex;
-          justify-content: center;
-          width: 100%;
-        }
-
-        .cc-slider-viewport-wrap {
-          width: 100%;
-          position: relative;
-        }
-
-        .cc-slider-viewport {
-          width: 100%;
-          overflow: hidden;
-          padding: 0 120px;
-        }
-
-        .cc-slider-viewport-overlay {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 2;
-          background: linear-gradient(
-            90deg,
-            #e6e6e6 0%,
-            rgba(230, 230, 230, 0) 29.81%,
-            rgba(230, 230, 230, 0) 70%,
-            #e6e6e6 100%
-          );
-        }
-
-        :global(.cc-slider-swiper) {
-          overflow: visible;
-        }
-
-        :global(.cc-slider-swiper .swiper-slide) {
-          display: flex;
-          justify-content: center;
-        }
-
-        .cc-slider-card {
-          background: #ffffff;
-          border-radius: 24px;
-          padding: 32px;
-          transition:
-            transform 300ms ease-out,
-            opacity 300ms ease-out;
-          width: 100%;
-          min-height: 350px;
-        }
-
-        .cc-slider-card.is-active {
-          opacity: 0.8;
-        }
-
-        .cc-slider-card.is-side {
-          opacity: 0.5;
-          backdrop-filter: blur(20px);
-        }
-
-        .cc-slider-title {
-          margin: 16px 0 24px;
-          color: var(--cc-fg-primary);
-        }
-
-        .cc-slider-divider {
-          width: 100%;
-          height: 1px;
-          background: repeating-linear-gradient(to right, #d0d0d0 0 6px, transparent 6px 12px);
-          margin-bottom: 40px;
-        }
-
-        .cc-slider-desc {
-          margin: 0;
-          color: var(--cc-fg-secondary);
-          line-height: 1.6;
-        }
-
-        :global(.cc-slider .swiper-pagination) {
-          position: static;
-          margin-top: 40px;
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        :global(.cc-slider .swiper-pagination-bullet) {
-          width: 80px;
-          height: 8px;
-          border-radius: 100px;
-          background: #ffffff66;
-          opacity: 1;
-          transition:
-            opacity 300ms ease-out,
-            background 300ms ease-out;
-        }
-
-        :global(.cc-slider .swiper-pagination-bullet-active) {
-          background: #cccccc;
-        }
-
-        .cc-swiper-button-prev,
-        .cc-swiper-button-next {
-          position: absolute;
-          top: 50%;
-          width: 40px;
-          height: 40px;
-          transform: translateY(-50%);
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .cc-swiper-button-prev {
-          left: 8px;
-        }
-
-        .cc-swiper-button-next {
-          right: 8px;
-        }
-
-        @media (max-width: 1024px) {
-          .cc-slider-viewport {
-            padding: 0 48px;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .cc-slider-viewport {
-            padding: 0 24px;
-          }
-
-          .cc-slider-viewport-overlay {
-            display: none;
-          }
-        }
-      `}</style>
     </div>
   )
 }

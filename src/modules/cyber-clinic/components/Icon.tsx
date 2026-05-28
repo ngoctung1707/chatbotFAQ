@@ -1,6 +1,12 @@
 import React from 'react'
 
-export default function Icon({ children }: { children: React.ReactNode }) {
+export default function Icon({
+  children,
+  style,
+}: {
+  children: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
     <div
       style={{
@@ -15,6 +21,7 @@ export default function Icon({ children }: { children: React.ReactNode }) {
         backdropFilter: 'blur(25px)',
         position: 'relative',
         overflow: 'hidden',
+        ...style,
       }}
     >
       <div
