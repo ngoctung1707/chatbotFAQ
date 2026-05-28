@@ -75,6 +75,7 @@ export default function Roadmap() {
           >
             {ROADMAP_ITEMS.map((item, index) => (
               <div
+                data-aos="fade-up"
                 key={index}
                 style={{
                   position: 'relative',
@@ -98,7 +99,7 @@ export default function Roadmap() {
                   style={{
                     position: 'absolute',
                     left: '40px',
-                    top: '80px',
+                    top: '50%',
                     width: '16px',
                     height: '16px',
                     backgroundColor: 'var(--cc-primary)',

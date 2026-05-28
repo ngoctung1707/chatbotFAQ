@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     news: News;
+    'learning-materials': LearningMaterial;
     members: Member;
     publications: Publication;
     'upcoming-events': UpcomingEvent;
@@ -88,6 +89,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
+    'learning-materials': LearningMaterialsSelect<false> | LearningMaterialsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     publications: PublicationsSelect<false> | PublicationsSelect<true>;
     'upcoming-events': UpcomingEventsSelect<false> | UpcomingEventsSelect<true>;
@@ -194,6 +196,37 @@ export interface News {
   description?: string | null;
   lang: 'en' | 'vi';
   tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech' | 'hackday';
+  publishedAt: string;
+  heroImage: string | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-materials".
+ */
+export interface LearningMaterial {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  lang: 'en' | 'vi';
   publishedAt: string;
   heroImage: string | Media;
   content: {
@@ -490,6 +523,10 @@ export interface PayloadLockedDocument {
         value: string | News;
       } | null)
     | ({
+        relationTo: 'learning-materials';
+        value: string | LearningMaterial;
+      } | null)
+    | ({
         relationTo: 'members';
         value: string | Member;
       } | null)
@@ -609,6 +646,22 @@ export interface NewsSelect<T extends boolean = true> {
   description?: T;
   lang?: T;
   tag?: T;
+  publishedAt?: T;
+  heroImage?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-materials_select".
+ */
+export interface LearningMaterialsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  lang?: T;
   publishedAt?: T;
   heroImage?: T;
   content?: T;
@@ -796,6 +849,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'news';
           value: string | News;
+        } | null)
+      | ({
+          relationTo: 'learning-materials';
+          value: string | LearningMaterial;
         } | null)
       | ({
           relationTo: 'courses';

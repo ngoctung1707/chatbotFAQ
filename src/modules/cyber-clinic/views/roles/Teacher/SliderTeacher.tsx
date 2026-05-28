@@ -22,17 +22,7 @@ export default function SliderTeacher() {
       <div style={{ borderBottom: '1px solid var(--cc-border-medium)' }}>
         <div className="container">
           <div className="cc-teacher-hero">
-            <div
-              style={{
-                background: 'var(--cc-gradient-header)',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                padding: '0 80px 0 0',
-                borderRight: '1px solid #DF3414',
-              }}
-            >
+            <div className="cc-teacher-hero-content">
               <SplitText tag="h3" text="Train-the-Trainer (ToT)" textAlign="left" />
               <h6
                 style={{ color: 'var(--cc-fg-secondary)', fontWeight: 400, marginTop: '16px' }}

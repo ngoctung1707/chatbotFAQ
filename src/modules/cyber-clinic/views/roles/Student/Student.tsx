@@ -9,6 +9,7 @@ import FooterWrap from '@/modules/cyber-clinic/layout/FooterWrap'
 import RegisterStudent from './RegisterStudent'
 import Partners from '../../sections/Partners'
 import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
+import LearningMaterials from '../../sections/LearningMaterials'
 
 export default function Student() {
   return (
@@ -18,7 +19,7 @@ export default function Student() {
       <Roadmap />
       <RegisterStudent />
       <EmptyDiv />
-      <News />
+      <LearningMaterials />
       <Faq userKey="student" />
       <Partners />
       <FooterWrap />

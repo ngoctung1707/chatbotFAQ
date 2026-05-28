@@ -52,34 +52,33 @@ export default function RegisterBusiness() {
             />
             <ButtonGradient text="Đăng ký ngay" variant="primary" />
           </div>
-          <div
-            className="cc-roadmap-right"
-            style={{ padding: '40px 0 40px 40px', borderLeft: '1px solid var(--cc-border-medium)' }}
-          >
-            <CardCustom
-              style={{ width: '100%', height: '100%' }}
-              icon={items[0].icon}
-              title={items[0].title}
-              description={
-                <>
-                  <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                    {items[0].description.map((desc, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontSize: '18px',
-                          color: 'var(--cc-fg-secondary)',
-                          lineHeight: '1.5',
-                          marginBottom: '0px',
-                        }}
-                      >
-                        {desc}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              }
-            />
+          <div className="cc-register-business-right">
+            <div data-aos="fade-left">
+              <CardCustom
+                style={{ width: '100%', height: '100%' }}
+                icon={items[0].icon}
+                title={items[0].title}
+                description={
+                  <>
+                    <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                      {items[0].description.map((desc, i) => (
+                        <li
+                          key={i}
+                          style={{
+                            fontSize: '18px',
+                            color: 'var(--cc-fg-secondary)',
+                            lineHeight: '1.5',
+                            marginBottom: '0px',
+                          }}
+                        >
+                          {desc}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

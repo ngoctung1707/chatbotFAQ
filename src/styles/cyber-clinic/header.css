@@ -7,6 +7,7 @@
    01. Header wrapper
    ============================================================ */
 .cyber-clinic-layout .cc-header {
+  position: relative;
   z-index: 100;
   background-color: #FFFFFF;
   backdrop-filter: blur(100px);
@@ -202,6 +203,7 @@
   left: 0;
   right: 0;
   top: 80px;
+  z-index: 110;
   background: #FFFFFFF2;
   backdrop-filter: blur(30px);
   overflow: hidden;

@@ -18,7 +18,7 @@ export default function SliderStudent() {
     >
       <div style={{ borderBottom: '1px solid var(--cc-border-medium)' }}>
         <div className="container">
-          <div className="cc-slider-student" style={{}}>
+          <div className="cc-slider-student">
             <SplitText
               tag="h3"
               text={

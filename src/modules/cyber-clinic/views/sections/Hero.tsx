@@ -97,7 +97,12 @@ export default function Hero({ userKey }: HeroProps) {
               tag="h1"
               text={'Dành cho ' + title}
               textAlign="left"
-              style={{ maxWidth: '750px', marginBottom: '16px', color: 'white' }}
+              style={{
+                maxWidth: '750px',
+                marginBottom: '16px',
+                color: 'white',
+                textAlign: 'center',
+              }}
             />
             <h6 data-aos="fade-up" style={{ color: 'white', fontWeight: 400 }}>
               {caption}

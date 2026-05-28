@@ -6,6 +6,7 @@ import 'aos/dist/aos.css'
 import { getUserLocale } from '@/i18n/localeService'
 import { redirect } from 'next/navigation'
 import ChatWindow from '@/app/(frontend)/chatbot/components/ChatWindow'
+import BodyScrollUnlock from '@/modules/cyber-clinic/components/BodyScrollUnlock'
 
 export const metadata: Metadata = {
   title: 'Vườn ươm Nhân lực An toàn thông tin trong nền kinh tế số - ĐH Bách khoa Hà Nội',
@@ -46,6 +47,7 @@ export default async function CyberClinicLayout({
   // }
   return (
     <div className={`${saira.className} cyber-clinic-layout`}>
+      <BodyScrollUnlock />
       {children}
       <ChatWindow />
     </div>

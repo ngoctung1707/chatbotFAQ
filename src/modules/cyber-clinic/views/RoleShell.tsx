@@ -37,11 +37,12 @@ export default function RoleShell({
           top: 0,
           left: 0,
           width: '100%',
-          height: '830px',
+          height: '700px',
           alignSelf: 'stretch',
           background: 'linear-gradient(0deg, rgba(251, 57, 21, 0.00) 0%, #DD2604 100%)',
           backgroundSize: 'contain',
           backgroundPosition: 'center top',
+          backdropFilter: 'blur(2px)',
           zIndex: 1,
         }}
       />

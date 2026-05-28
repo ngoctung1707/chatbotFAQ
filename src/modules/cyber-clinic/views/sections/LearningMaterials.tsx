@@ -6,19 +6,19 @@ import type { Media, News as NewsType } from '@/payload-types'
 import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
 import EmptyDiv from '../../components/EmptyDiv'
+import { BASE_PATH } from '../../layout/Header'
 
-export default async function News() {
+export default async function LearningMaterials() {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
-    collection: 'news',
+    collection: 'learning-materials',
     limit: 4,
-    draft: false,
-    sort: ['-publishedAt'],
     where: {
-      lang: {
-        equals: 'vi',
+      _status: {
+        equals: 'published',
       },
     },
+    sort: ['-publishedAt'],
   })
   const totalDocs = docs.length
   let mainDoc: NewsType | undefined
@@ -62,7 +62,28 @@ export default async function News() {
               borderRight: '1px solid var(--cc-primary)',
             }}
           >
-            <SplitText tag="h3" text="Tin tức" textAlign="left" />
+            <div style={{ marginBottom: '16px' }}>
+              <span
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  background: 'var(--cc-border-medium)',
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  marginRight: '8px',
+                }}
+              />
+              <span
+                style={{
+                  fontWeight: 400,
+                  fontSize: '18px',
+                  color: 'var(--cc-fg-primary)',
+                }}
+              >
+                Tài liệu
+              </span>
+            </div>
+            <SplitText tag="h3" text="Tài liệu học tập" textAlign="left" />
           </div>
           <div
             className="cc-register-student-content"
@@ -71,7 +92,7 @@ export default async function News() {
               justifyContent: 'flex-end',
             }}
           >
-            <ButtonGradient text="xem tất cả" variant="secondary" linkTo="/news" />
+            <ButtonGradient text="xem tất cả" variant="secondary" />
           </div>
         </div>
       </div>
@@ -82,7 +103,7 @@ export default async function News() {
             <div className="cc-news-main">
               <div style={{ flex: '1 1 200px', overflow: 'hidden' }}>
                 <Link
-                  href={`/news/${mainDoc.slug}`}
+                  href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${mainDoc.slug}`}
                   style={{ display: 'block', width: '100%', height: '100%' }}
                   target="blank"
                 >
@@ -122,7 +143,7 @@ export default async function News() {
                     className="hover-underline"
                   >
                     <Link
-                      href={`/news/${mainDoc.slug}`}
+                      href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${mainDoc.slug}`}
                       style={{
                         color: 'var(--cc-fg-primary)',
                         textDecoration: 'none',
@@ -137,7 +158,7 @@ export default async function News() {
                   )}
                 </div>
                 <Link
-                  href={`/news/${mainDoc.slug}`}
+                  href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${mainDoc.slug}`}
                   style={{
                     color: 'var(--cc-primary)',
                     fontWeight: 500,
@@ -178,7 +199,7 @@ export default async function News() {
                     }}
                   >
                     <Link
-                      href={`/news/${doc.slug}`}
+                      href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                       target="blank"
                     >
@@ -217,7 +238,7 @@ export default async function News() {
                       className="hover-underline"
                     >
                       <Link
-                        href={`/news/${doc.slug}`}
+                        href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                         style={{ color: 'inherit', textDecoration: 'none' }}
                         target="blank"
                       >
@@ -225,7 +246,7 @@ export default async function News() {
                       </Link>
                     </h6>
                     <Link
-                      href={`/news/${doc.slug}`}
+                      href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                       style={{
                         color: '#D41F3D',
                         fontWeight: 600,

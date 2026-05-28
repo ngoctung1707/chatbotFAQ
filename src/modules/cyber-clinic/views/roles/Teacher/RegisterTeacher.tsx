@@ -35,10 +35,7 @@ export default function RegisterTeacher() {
           borderBottom: '1px solid var(--cc-border-medium)',
         }}
       >
-        <div
-          className="container"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'center' }}
-        >
+        <div className="container cc-register-student-header">
           <div
             style={{
               height: '100%',
@@ -52,17 +49,10 @@ export default function RegisterTeacher() {
               tag="h3"
               text="10 - 15 giảng viên được đào tạo"
               textAlign="left"
-              style={{ maxWidth: '500px' }}
+              style={{ maxWidth: '500px', padding: '40px 0' }}
             />
           </div>
-          <div
-            style={{
-              padding: '80px 0 40px',
-              borderLeft: '1px solid var(--cc-border-medium)',
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}
-          >
+          <div className="cc-register-teacher-content">
             <ButtonGradient text="Đăng ký ngay" variant="primary" />
           </div>
         </div>
@@ -72,32 +62,34 @@ export default function RegisterTeacher() {
           borderBottom: '1px solid var(--cc-border-medium)',
         }}
       >
-        <div className="container" style={{ padding: '40px 0' }}>
-          <CardCustom
-            style={{ width: '100%', height: '100%' }}
-            icon={items[0].icon}
-            title={items[0].title}
-            description={
-              <>
-                <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                  {items[0].description.map((desc, i) => (
-                    <li
-                      key={i}
-                      style={{
-                        fontSize: '18px',
-                        color: 'var(--cc-fg-secondary)',
-                        lineHeight: '1.5',
-                        marginBottom: '0px',
-                      }}
-                    >
-                      {desc}
-                    </li>
-                  ))}
-                </ul>
-                <p style={{ lineHeight: '1.5', marginTop: '16px' }}>{items[0].subDescription}</p>
-              </>
-            }
-          />
+        <div className="container">
+          <div style={{ padding: '40px 0' }} data-aos="fade-up">
+            <CardCustom
+              style={{ width: '100%', height: '100%' }}
+              icon={items[0].icon}
+              title={items[0].title}
+              description={
+                <>
+                  <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                    {items[0].description.map((desc, i) => (
+                      <li
+                        key={i}
+                        style={{
+                          fontSize: '18px',
+                          color: 'var(--cc-fg-secondary)',
+                          lineHeight: '1.5',
+                          marginBottom: '0px',
+                        }}
+                      >
+                        {desc}
+                      </li>
+                    ))}
+                  </ul>
+                  <p style={{ lineHeight: '1.5', marginTop: '16px' }}>{items[0].subDescription}</p>
+                </>
+              }
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -19,20 +19,14 @@ export default function SliderBusiness() {
     >
       <div style={{ borderBottom: '1px solid var(--cc-border-medium)' }}>
         <div className="container">
-          <div
-            style={{
-              width: '50%',
-              padding: '80px 80px 80px 0',
-              background: 'var(--cc-gradient-header)',
-              borderRight: '1px solid #DF3414',
-            }}
-          >
+          <div className="cc-slider-business-header" style={{}}>
             <SplitText
               tag="h3"
               text="Vườn ươm Nhân lực An toàn Thông tin hướng tới"
               textAlign="left"
             />
             <h6
+              data-aos="fade-up"
               style={{
                 marginTop: '16px',
                 fontWeight: 400,

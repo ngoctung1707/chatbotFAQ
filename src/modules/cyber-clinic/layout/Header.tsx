@@ -9,7 +9,7 @@ import ACFLogo from '../imgs/logos/ACF.png'
 import HUSTLogo from '../imgs/logos/HUST.png'
 import BKFintechLogo from '../imgs/logos/BKFintech.png'
 
-const BASE_PATH = '/research/r&d-funding-projects/cyber-clinic'
+export const BASE_PATH = '/research/r&d-funding-projects/cyber-clinic'
 
 const NAV_ITEMS = [
   { label: 'BK Fintech', href: '/' },

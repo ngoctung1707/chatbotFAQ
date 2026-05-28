@@ -56,16 +56,18 @@ export default function RegisterStudent() {
               tag="h3"
               text="80 - 100 học viên được đào tạo"
               textAlign="left"
-              style={{ maxWidth: '500px', padding: '40px 40px 40px 0' }}
+              style={{ maxWidth: '500px', padding: '40px 0 40px 0' }}
             />
           </div>
           <div className="cc-register-student-content">
-            <h6 style={{ fontWeight: 400, color: 'var(--cc-fg-primary)', marginBottom: '24px' }}>
-              Sinh viên, học viên đang theo học tại các trường đại học, học viện và cơ sở đào tạo
-              thuộc phạm vi dự án; ưu tiên các ngành Công nghệ thông tin, An toàn thông tin, Phân
-              tích dữ liệu, Khoa học – Kỹ thuật – Công nghệ và các ngành liên quan.
-            </h6>
-            <ButtonGradient text="Đăng ký ngay" variant="primary" />
+            <div data-aos="fade-left">
+              <h6 style={{ fontWeight: 400, color: 'var(--cc-fg-primary)', marginBottom: '24px' }}>
+                Sinh viên, học viên đang theo học tại các trường đại học, học viện và cơ sở đào tạo
+                thuộc phạm vi dự án; ưu tiên các ngành Công nghệ thông tin, An toàn thông tin, Phân
+                tích dữ liệu, Khoa học – Kỹ thuật – Công nghệ và các ngành liên quan.
+              </h6>
+              <ButtonGradient text="Đăng ký ngay" variant="primary" />
+            </div>
           </div>
         </div>
       </div>
@@ -75,7 +77,7 @@ export default function RegisterStudent() {
         }}
       >
         <div className="container cc-register-student-header">
-          <div className="cc-register-student-card-left">
+          <div className="cc-register-student-card-left" data-aos="fade-right">
             <CardCustom
               style={{ width: '100%', height: '100%' }}
               icon={items[0].icon}
@@ -102,30 +104,32 @@ export default function RegisterStudent() {
             />
           </div>
           <div className="cc-register-student-card-right">
-            <CardCustom
-              style={{ width: '100%', height: '100%' }}
-              icon={items[1].icon}
-              title={items[1].title}
-              description={
-                <>
-                  <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                    {items[1].description.map((desc, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontSize: '18px',
-                          color: 'var(--cc-fg-secondary)',
-                          lineHeight: '1.5',
-                          marginBottom: '0px',
-                        }}
-                      >
-                        {desc}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              }
-            />
+            <div data-aos="fade-left">
+              <CardCustom
+                style={{ width: '100%', height: '100%' }}
+                icon={items[1].icon}
+                title={items[1].title}
+                description={
+                  <>
+                    <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                      {items[1].description.map((desc, i) => (
+                        <li
+                          key={i}
+                          style={{
+                            fontSize: '18px',
+                            color: 'var(--cc-fg-secondary)',
+                            lineHeight: '1.5',
+                            marginBottom: '0px',
+                          }}
+                        >
+                          {desc}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

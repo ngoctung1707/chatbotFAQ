@@ -105,7 +105,7 @@ export default function Faq({ userKey }: { userKey: Role }) {
       }}
     >
       <div className="container cc-roadmap-layout">
-        <div className="cc-roadmap-left">
+        <div className="cc-roadmap-left" style={{ borderRight: '1px solid var(--cc-primary)' }}>
           {/* Section label */}
           <div style={{ marginBottom: '16px' }}>
             <span
@@ -123,7 +123,6 @@ export default function Faq({ userKey }: { userKey: Role }) {
                 fontWeight: 400,
                 fontSize: '18px',
                 color: 'var(--cc-fg-primary)',
-                textTransform: 'uppercase',
               }}
             >
               FAQs

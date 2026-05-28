@@ -9,6 +9,7 @@ import sharp from 'sharp'
 import { Users } from '@/collections/Users'
 import { Media } from '@/collections/Media'
 import { News } from '@/collections/News'
+import { LearningMaterials } from '@/collections/LearningMaterials'
 import { Members } from '@/collections/Members'
 import { Publications } from '@/collections/Publications'
 import { UpcomingEvents } from '@/collections/UpcomingEvents'
@@ -38,6 +39,7 @@ export default buildConfig({
     Users,
     Media,
     News,
+    LearningMaterials,
     Members,
     Publications,
     UpcomingEvents,
