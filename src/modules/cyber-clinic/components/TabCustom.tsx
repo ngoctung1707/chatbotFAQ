@@ -49,8 +49,8 @@ export default function TabCustom({ tabs, activeKey, initialKey, onChange }: Tab
                 style={{
                   width: '1px',
                   alignSelf: 'stretch',
-                  backgroundColor: '#cccccc',
-                  margin: '6px 0',
+                  backgroundColor: '#CCCCCC33',
+                  margin: '0',
                 }}
               />
             )}

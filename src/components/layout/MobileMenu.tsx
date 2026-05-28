@@ -3,14 +3,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useEffect, useState } from 'react'
-import {
-  aboutLinks,
-  ecotechLinks,
-  fundingProjectsLinks,
-  getInvolvedLinks,
-  researchLinks,
-  solutionsLinks,
-} from './Menu'
+import { aboutLinks, ecotechLinks, getInvolvedLinks, researchLinks, solutionsLinks } from './Menu'
 
 export default function MobileMenu({
   handleMobileMenu,
@@ -29,10 +22,8 @@ export default function MobileMenu({
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
-    pathname.startsWith('/research/r&d-labs') ||
-    pathname.startsWith('/research/r&d-funding-projects')
+    pathname.startsWith('/research/r&d-labs')
   const isRdLabsLinkActive = () => pathname.startsWith('/research/r&d-labs')
-  const isFundingProjectsLinkActive = () => pathname.startsWith('/research/r&d-funding-projects')
   const isVietnamDigitalEconomyReviewActive = () =>
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isEcotechActive = () => pathname === '/get-involved/ecotech'
@@ -40,7 +31,6 @@ export default function MobileMenu({
   const [isSubmenuAboutOpen, setIsSubmenuAboutOpen] = useState(false)
   const [isSubmenuResearchOpen, setIsSubmenuResearchOpen] = useState(false)
   const [isSubmenuRdLabsOpen, setIsSubmenuRdLabsOpen] = useState(false)
-  const [isSubmenuFundingProjectsOpen, setIsSubmenuFundingProjectsOpen] = useState(false)
   const [isSubmenuEducationOpen, setIsSubmenuEducationOpen] = useState(false)
   const [isSubmenuGetInvolvedOpen, setIsSubmenuGetInvolvedOpen] = useState(false)
   const [isSubmenuEcotechOpen, setIsSubmenuEcotechOpen] = useState(false)
@@ -74,10 +64,6 @@ export default function MobileMenu({
 
   const toggleSubmenuRdLabs = () => {
     setIsSubmenuRdLabsOpen(!isSubmenuRdLabsOpen)
-  }
-
-  const toggleSubmenuFundingProjects = () => {
-    setIsSubmenuFundingProjectsOpen(!isSubmenuFundingProjectsOpen)
   }
 
   const toggleSubmenuEducation = () => {
@@ -205,49 +191,13 @@ export default function MobileMenu({
                     <span className="plus-line" />
                   </div>
                 </li>
-                {researchLinks.map((link) => {
-                  if (link.path === '/research/r&d-funding-projects') {
-                    return (
-                      <li key={link.id} className="menu-item-has-children">
-                        <Link href="#" className={isFundingProjectsLinkActive() ? 'active' : ''}>
-                          {t('r&d-funding-projects')}
-                        </Link>
-                        <ul
-                          className="sub-menu"
-                          style={{ display: `${isSubmenuFundingProjectsOpen ? 'block' : 'none'}` }}
-                        >
-                          {fundingProjectsLinks.map((sub) => (
-                            <li key={sub.id}>
-                              <Link
-                                href={sub.path}
-                                className={isActive(sub.path) ? 'active' : ''}
-                                target={sub.target}
-                              >
-                                {sub.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                        <div
-                          className={
-                            isSubmenuFundingProjectsOpen ? 'dropdown-btn open' : 'dropdown-btn'
-                          }
-                          onClick={toggleSubmenuFundingProjects}
-                        >
-                          <span className="plus-line" />
-                        </div>
-                      </li>
-                    )
-                  }
-
-                  return (
-                    <li key={link.id}>
-                      <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
-                        {t(link.name)}
-                      </Link>
-                    </li>
-                  )
-                })}
+                {researchLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.path} className={isActive(link.path) ? 'active' : ''}>
+                      {t(link.name)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
               <div
                 className={isSubmenuResearchOpen ? 'dropdown-btn open' : 'dropdown-btn'}

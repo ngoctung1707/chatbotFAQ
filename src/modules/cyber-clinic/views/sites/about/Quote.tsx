@@ -1,63 +1,34 @@
+import SplitText from '@/modules/cyber-clinic/components/SplitText'
 import React from 'react'
 
-export default function QuoteAbout() {
+export default function Quote() {
   return (
-    <div
-      style={{
-        width: '100%',
-        padding: 'var(--cc-space-20) 0',
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: 'var(--cc-bg-page)',
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
+    <div style={{ backgroundColor: 'var(--cc-bg-page)' }}>
+      <div className="container">
         <div
+          className="cc-padding-card"
           style={{
-            width: '100%',
-            maxWidth: '1280px',
-            minHeight: '424px',
-            background: 'var(--cc-bg-card)',
+            textAlign: 'center',
+            backgroundColor: 'var(--cc-bg-card)',
+            borderLeft: '1px solid var(--cc-border-medium)',
+            borderRight: '1px solid var(--cc-border-medium)',
             backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: '32px',
-            padding: 'var(--cc-space-30) var(--cc-space-20)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 'var(--cc-space-6)',
-            boxSizing: 'border-box',
           }}
         >
-          <h3
-            style={{
-              color: 'var(--cc-fg-heading)',
-              fontStyle: 'italic',
-              textAlign: 'center',
-              margin: 0,
-              maxWidth: '1000px',
-            }}
-          >
-            “An ninh mạng – Hành trang quan trọng trên hành trình chuyển đổi số và phát triển doanh
-            nghiệp”.
-          </h3>
-
+          <SplitText
+            tag="h3"
+            text="“An ninh mạng – Hành trang quan trọng trên hành trình chuyển đổi số và phát triển doanh nghiệp”."
+            textAlign="center"
+            style={{ fontStyle: 'italic' }}
+          />
           <p
-            className="lead"
-            style={{
-              margin: 0,
-              textAlign: 'center',
-              maxWidth: '900px',
-            }}
+            style={{ paddingTop: '24px', maxWidth: '850px', margin: '0 auto' }}
+            data-aos="fade-up"
+            data-aos-delay="200"
           >
-            Sự chuẩn bị bài bản về năng lực an ninh mạng hôm nay chính là bước đệm cho sự tăng trưởng an toàn, bền vững và vươn xa của các doanh nghiệp do phụ nữ làm chủ trong tương lai.
+            Sự chuẩn bị bài bản về năng lực an ninh mạng hôm nay chính là bước đệm cho sự tăng
+            trưởng an toàn, bền vững và vươn xa của các doanh nghiệp do phụ nữ làm chủ trong tương
+            lai.
           </p>
         </div>
       </div>

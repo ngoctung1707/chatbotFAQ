@@ -6,6 +6,10 @@ import Register from '../../sections/Register'
 import News from '../../sections/News'
 import Faq from '../../sections/Faq'
 import FooterWrap from '@/modules/cyber-clinic/layout/FooterWrap'
+import RegisterStudent from './RegisterStudent'
+import Partners from '../../sections/Partners'
+import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
+import LearningMaterials from '../../sections/LearningMaterials'
 
 export default function Student() {
   return (
@@ -13,9 +17,11 @@ export default function Student() {
       <Hero userKey="student" />
       <SliderStudent />
       <Roadmap />
-      <Register userKey="student" />
-      <News />
+      <RegisterStudent />
+      <EmptyDiv />
+      <LearningMaterials />
       <Faq userKey="student" />
+      <Partners />
       <FooterWrap />
     </div>
   )

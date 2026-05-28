@@ -1,22 +1,23 @@
 'use client'
 import React, { useEffect } from 'react'
 import Header from '@/modules/cyber-clinic/layout/Header'
-import Footer from '@/modules/cyber-clinic/layout/Footer'
-import Image from 'next/image'
-import footerBg from '@/modules/cyber-clinic/imgs/banners/footer.png'
 import Aos from 'aos'
 
 type RoleShellProps = {
+  userKey: string
   children: React.ReactNode
   backgroundColor?: string
   backgroundImage?: string
   backgroundSize?: string
+  height?: string
 }
 
 export default function RoleShell({
+  userKey,
   children,
-  backgroundColor = '#F3F7F8',
   backgroundImage,
+  backgroundSize,
+  height,
 }: Readonly<RoleShellProps>) {
   useEffect(() => {
     Aos.init({ duration: 1000 })
@@ -25,6 +26,9 @@ export default function RoleShell({
     <div
       style={{
         position: 'relative',
+        backgroundColor: '#190301',
+        width: '100%',
+        height: height || 'calc(100svh + 300px)',
       }}
     >
       <div
@@ -32,12 +36,41 @@ export default function RoleShell({
           position: 'absolute',
           top: 0,
           left: 0,
-          backgroundColor,
           width: '100%',
-          height: 'calc(100svh + 80px)',
-          backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+          height: '700px',
+          alignSelf: 'stretch',
+          background: 'linear-gradient(0deg, rgba(251, 57, 21, 0.00) 0%, #DD2604 100%)',
           backgroundSize: 'contain',
-          backgroundPosition: 'right bottom',
+          backgroundPosition: 'center top',
+          backdropFilter: 'blur(2px)',
+          zIndex: 1,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '160px',
+          alignSelf: 'stretch',
+          background: 'linear-gradient(180deg, rgba(232, 113, 44, 0.00) 0%, #FB3915 100%)',
+          backgroundSize: 'contain',
+          backgroundPosition: 'center bottom',
+          backdropFilter: 'blur(1px)',
+          zIndex: 1,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+          backgroundSize: backgroundSize || 'contain',
+          backgroundPosition: 'center bottom',
           backgroundRepeat: 'no-repeat',
           zIndex: 0,
           pointerEvents: 'none',

@@ -272,7 +272,7 @@
   
   .chatWindow {
     width: calc(100vw - 32px);
-    height: calc(100dvh - 32px);
+    height: 500px;
   }
 
   .messageRow {

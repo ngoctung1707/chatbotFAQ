@@ -16,11 +16,10 @@
 .cc-tabs {
   display: inline-flex;
   padding: 4px;
-  border-radius: 12px;
   border: 1px solid #cccccc;
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   backdrop-filter: blur(10px);
-  color: var(--cc-fg-primary);
+  color: white;
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
@@ -31,7 +30,6 @@
   border: none;
   background: transparent;
   padding: 8px 24px;
-  border-radius: 8px;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -42,13 +40,13 @@
 }
 
 .cc-tab:hover {
-  background: #23191914;
+  background: #FFFFFF80;
   color: inherit;
 }
 
 .cc-tab--active {
-  background: linear-gradient(180deg, #ffedeb 0%, #ffb3ae 100%);
-  color: var(--cc-primary);
+  background: #FFFFFF;
+  color: var(--cc-fg-primary);
 }
 
 .box-state {
@@ -62,15 +60,14 @@
 
 .button-gradient {
   text-transform: uppercase;
-  border-radius: var(--cc-radius-lg);
   width: fit-content;
   font-weight: 600;
   font-size: var(--cc-text-lg);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 8px 8px 24px;
+  gap: 20px;
+  padding: 4px 4px 4px 24px;
   cursor: pointer;
   text-decoration: none;
   transition:
@@ -84,7 +81,6 @@
 .button-gradient__icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -149,13 +145,13 @@
 
 /* ─── GIỮ NGUYÊN MÀU SẮC BIẾN THỂ PRIMARY ─── */
 .button-gradient--primary {
-  background: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
+  background: #DF3414;
   color: #ffffff;
 }
 
 .button-gradient--primary .button-gradient__icon {
   background: #ffffff;
-  color: #e03338;
+  color: #DF3414;
 }
 
 .button-gradient--primary .button-gradient__icon::before {
@@ -167,23 +163,23 @@
 }
 
 .button-gradient--primary:hover {
-  background: linear-gradient(180deg, #ff5353 0%, #bc1323 100%);
+  background: #DF3414;
 }
 
 
 /* ─── GIỮ NGUYÊN MÀU SẮC BIẾN THỂ SECONDARY ─── */
 .button-gradient--secondary {
   background: linear-gradient(180deg, #ffffff 0%, #ffedeb 100%);
-  color: #BC1323;
+  color: #DF3414;
 }
 
 .button-gradient--secondary .button-gradient__icon {
   background: #ffdad7;
-  color: #e03338;
+  color: #DF3414;
 }
 
 .button-gradient--secondary .button-gradient__icon::before {
-  background: #bc1323; /* Nền đỏ trượt lên */
+  background: #DF3414; /* Nền đỏ trượt lên */
 }
 
 .button-gradient--secondary .button-gradient__icon-inner svg:nth-child(2) {
@@ -196,4 +192,142 @@
 
 .button-gradient:active {
   transform: scale(0.97);
+}
+
+.cc-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  padding-top: 80px;
+}
+
+.cc-slider-tabs {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.cc-slider-viewport-wrap {
+  width: 100%;
+  position: relative;
+}
+
+.cc-slider-viewport {
+  width: 100%;
+  overflow: hidden;
+  padding: 0 120px;
+}
+
+.cc-slider-viewport-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    #e6e6e6 0%,
+    rgba(230, 230, 230, 0) 29.81%,
+    rgba(230, 230, 230, 0) 70%,
+    #e6e6e6 100%
+  );
+}
+
+.cc-slider-swiper {
+  overflow: visible;
+}
+
+.cc-slider-swiper .swiper-slide {
+  display: flex;
+  justify-content: center;
+}
+
+.cc-slider-card {
+  background: #ffffff;
+  padding: 32px;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
+  width: 100%;
+  min-height: 350px;
+}
+
+.cc-slider-card.is-active {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFE6E6 100%);
+
+}
+
+.cc-slider-card.is-side {
+  opacity: 0.5;
+  backdrop-filter: blur(20px);
+}
+
+.cc-slider-divider {
+  width: 100%;
+  height: 1px;
+  background: repeating-linear-gradient(to right, #d0d0d0 0 6px, transparent 6px 12px);
+  margin-bottom: 40px;
+}
+
+.cc-slider-desc {
+  
+}
+
+.cc-slider .swiper-pagination {
+  position: static;
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cc-slider .swiper-pagination-bullet {
+  width: 80px;
+  height: 8px;
+  border-radius: 100px;
+  background: #ffffff80;
+  opacity: 1;
+  transition:
+    opacity 300ms ease-out,
+    background 300ms ease-out;
+}
+
+.cc-slider .swiper-pagination-bullet-active {
+  background: #df341480;
+}
+
+.cc-swiper-button-prev,
+.cc-swiper-button-next {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cc-swiper-button-prev {
+  left: 8px;
+}
+
+.cc-swiper-button-next {
+  right: 8px;
+}
+
+@media (max-width: 1024px) {
+  .cc-slider-viewport {
+    padding: 0 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cc-slider-viewport {
+    padding: 0 24px;
+  }
+
+  .cc-slider-viewport-overlay {
+    display: none;
+  }
 }

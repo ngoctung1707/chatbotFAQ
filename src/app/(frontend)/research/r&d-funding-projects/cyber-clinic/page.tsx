@@ -16,9 +16,24 @@ type PageProps = {
 
 const ROLE_KEYS = new Set(['student', 'teacher', 'business'])
 const ROLE_BG = {
-  student: { color: 'var(--cc-bg-light)', image: bgStudent.src },
-  teacher: { color: '#F2F7F8', image: bgTeacher.src },
-  business: { color: '#F2F7F8', image: bgBusiness.src },
+  student: {
+    color: 'var(--cc-bg-light)',
+    image: bgStudent.src,
+    height: 'calc(100svh)',
+    backgroundSize: 'contain',
+  },
+  teacher: {
+    color: '#F2F7F8',
+    image: bgTeacher.src,
+    height: 'calc(100svh)',
+    backgroundSize: 'cover',
+  },
+  business: {
+    color: '#F2F7F8',
+    image: bgBusiness.src,
+    height: 'calc(100svh)',
+    backgroundSize: 'cover',
+  },
 } as const
 
 export default async function CyberClinicPage({ searchParams }: PageProps) {
@@ -33,7 +48,13 @@ export default async function CyberClinicPage({ searchParams }: PageProps) {
   const roleBg = ROLE_BG[userKey as keyof typeof ROLE_BG] ?? ROLE_BG.student
 
   return (
-    <RoleShell backgroundColor={roleBg.color} backgroundImage={roleBg.image}>
+    <RoleShell
+      backgroundColor={roleBg.color}
+      backgroundImage={roleBg.image}
+      height={roleBg.height}
+      backgroundSize={roleBg.backgroundSize}
+      userKey={userKey}
+    >
       {userKey === 'student' && <Student />}
       {userKey === 'teacher' && <Teacher />}
       {userKey === 'business' && <Business />}

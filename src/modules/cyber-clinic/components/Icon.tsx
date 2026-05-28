@@ -1,6 +1,12 @@
 import React from 'react'
 
-export default function Icon({ children }: { children: React.ReactNode }) {
+export default function Icon({
+  children,
+  style,
+}: {
+  children: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
     <div
       style={{
@@ -8,6 +14,9 @@ export default function Icon({ children }: { children: React.ReactNode }) {
         border: '2.73px solid #1C1B1F0D',
         width: '60px',
         height: '60px',
+        minWidth: '60px',
+        minHeight: '60px',
+        flexShrink: 0,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -15,6 +24,7 @@ export default function Icon({ children }: { children: React.ReactNode }) {
         backdropFilter: 'blur(25px)',
         position: 'relative',
         overflow: 'hidden',
+        ...style,
       }}
     >
       <div

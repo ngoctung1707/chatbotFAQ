@@ -1,39 +1,28 @@
 import React from 'react'
 import SplitText from '../../../components/SplitText'
-
+import AboutHero from '@/modules/cyber-clinic/imgs/banners/about-hero.png'
 
 export default function HeroAbout() {
   return (
     <div
+      className="cc-about-hero-section"
       style={{
         width: '100%',
-        minHeight: '600px',
-        paddingTop: 'calc(var(--cc-space-20) * 2)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '60px',
+        backgroundColor: 'var(--cc-bg-page)',
+        position: 'relative',
       }}
     >
-      <div
-        className="container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '5px',
-          padding: '0 var(--cc-space-20) var(--cc-space-20) var(--cc-space-20)',
-        }}
-      >
-        {/* Khung chữ */}
+      <div className="container">
         <div
+          className="cc-about-hero-textbox"
           style={{
-            maxWidth: '1280px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
+            width: '100%',
             textAlign: 'center',
+            borderLeft: '1px solid var(--cc-border-medium)',
+            borderRight: '1px solid var(--cc-border-medium)',
           }}
         >
           <SplitText
@@ -41,33 +30,43 @@ export default function HeroAbout() {
             text="Về chương trình"
             textAlign="center"
             style={{
-              color: 'var(--cc-fg-heading)',
+              color: 'var(--cc-fg-primary)',
             }}
           />
           <p
-            className="lead"
+            data-aos="fade-up"
             style={{
-              maxWidth: '900px',
+              maxWidth: '100%',
             }}
           >
-            Kinh tế số phát triển nhanh chóng đã và đang mở ra nhiều cơ hội tăng trưởng, đổi mới
-            mô hình kinh doanh và mở rộng thị trường cho các doanh nghiệp, nhưng đồng thời các
-            doanh nghiệp phải đối mặt với không ít thách thức, đặc biệt là các rủi ro liên quan đến
-            an toàn, an ninh mạng.
+            Kinh tế số phát triển nhanh chóng đã và đang mở ra nhiều cơ hội tăng trưởng, đổi mới mô
+            hình kinh doanh và mở rộng thị trường cho các doanh nghiệp, nhưng đồng thời các doanh
+            nghiệp phải đối mặt với không ít thách thức, đặc biệt là các rủi ro liên quan đến an
+            toàn, an ninh mạng.
           </p>
         </div>
 
-        {/* Đường dọc nét đứt */}
         <div
-          data-aos="fade-in"
-          data-aos-delay="300"
+          className="cc-about-hero-image"
           style={{
-            width: '1px',
-            height: '126px',
-            borderLeft: '1.5px dashed var(--cc-border-medium)',
-            marginTop: 'var(--cc-space-10)',
+            width: '100%',
+            display: 'flex',
+            gap: '24px',
+            opacity: 1,
+            marginTop: '0',
           }}
-        />
+        >
+          <img
+            src={AboutHero.src}
+            alt="About hero"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        </div>
       </div>
     </div>
   )
