@@ -34,16 +34,8 @@ export default function RegisterBusiness() {
           borderBottom: '1px solid var(--cc-border-medium)',
         }}
       >
-        <div className="container cc-roadmap-layout">
-          <div
-            className="cc-roadmap-left"
-            style={{
-              height: 'fit-content',
-              background: 'var(--cc-gradient-header)',
-              borderRight: '1px solid var(--cc-primary)',
-              padding: '80px 40px 40px 0',
-            }}
-          >
+        <div className="container cc-register-business-layout">
+          <div className="cc-register-business-left">
             <SplitText
               tag="h3"
               text="Các hoạt động hỗ trợ doanh nghiệp"

@@ -146,6 +146,19 @@
   width: 50%;
 }
 
+.cc-register-business-layout {
+  display: flex;
+  align-items: flex-start
+}
+
+.cc-register-business-left {
+  height: fit-content;
+  background: var(--cc-gradient-header);
+  border-right: 1px solid var(--cc-primary);
+  padding: 80px 40px 40px 0;
+  width: 50%;
+}
+
 .cc-register-business-right {
   width: 50%;
   padding: 40px 0 40px 40px;
@@ -426,6 +439,10 @@
   padding: clamp(40px, 8vw, 120px) clamp(20px, 6vw, 80px);
 }
 
+.cc-padding-card {
+  padding: 80px;
+}
+
 
 @media (min-width: 640px) and (max-width: 1024px) {
   .cyber-clinic-layout .cc-page-rails::before,
@@ -483,7 +500,7 @@
   .cc-roadmap-left {
     width: 100%;
     position: unset;
-    padding: 40px 0 40px 0;
+    padding: 40px 0;
     margin-bottom: 0px;
   }
 
@@ -492,10 +509,8 @@
   }
 
   .cc-register-business-right {
-  width: 100%;
-  padding: 40px 0;
-  border-left: none;
-  }
+  padding: 20px 0 20px 20px;
+}
 
   .cc-news-main__image {
     height: 250px;
@@ -557,6 +572,10 @@
   .cc-about-center-divider {
     display: none;
   }
+
+  .cc-padding-card {
+  padding: 40px;
+}
 
 }
 
@@ -626,12 +645,23 @@
   .cc-roadmap-left {
     width: 100%;
     position: unset;
-    padding: 40px 0 40px 0;
+    padding: 40px 0;
     margin-bottom: 0px;
   }
 
   .cc-roadmap-right {
     width: 100%;
+  }
+
+  .cc-register-business-layout {
+  flex-direction: column;
+  }
+
+  .cc-register-business-left {
+    width: 100%;
+    position: unset;
+    padding: 40px 0;
+    margin-bottom: 0px;
   }
 
   .cc-register-business-right {
@@ -738,7 +768,7 @@
   }
 
   .cc-register-student-card-right {
-  padding: 40px 0 40px 0;
+  padding: 40px 0;
   height: 100%;
   border-left: none;
   }
@@ -763,5 +793,9 @@
   .cc-about-section-rail-left,
   .cc-about-section-rail-right {
     display: none;
+  }
+
+  .cc-padding-card {
+  padding: 32px;
   }
 }

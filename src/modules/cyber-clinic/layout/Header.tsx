@@ -33,7 +33,7 @@ export default function Header() {
   }
 
   return (
-    <div className="cc-header-wrap" style={{}}>
+    <div className="cc-header-wrap">
       <header className="cc-header">
         <div className="cc-header__inner">
           {/* Left – ACF logo */}

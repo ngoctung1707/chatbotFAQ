@@ -1,7 +1,7 @@
+import SplitText from '@/modules/cyber-clinic/components/SplitText'
 import React from 'react'
-import SplitText from '../../../components/SplitText'
 
-export default function ContextAbout() {
+export default function Context2() {
   const boxRailWrapStyle: React.CSSProperties = {
     width: '100%',
     maxWidth: 'var(--cc-about-box-max)',
@@ -15,9 +15,6 @@ export default function ContextAbout() {
   const boxStyle: React.CSSProperties = {
     width: '100%',
     minHeight: 'clamp(360px, 52vw, 484px)',
-    display: 'flex',
-    boxSizing: 'border-box',
-    overflow: 'hidden',
   }
 
   const contentStyle: React.CSSProperties = {
@@ -31,7 +28,6 @@ export default function ContextAbout() {
     borderLeft: '1px solid var(--cc-border-medium)',
     borderRight: '1px solid var(--cc-border-medium)',
   }
-
   return (
     <div
       style={{
@@ -44,7 +40,7 @@ export default function ContextAbout() {
             <div className="cc-about-context-content" style={contentStyle}>
               <SplitText
                 tag="h3"
-                text="An ninh mạng – nền tảng vững chắc để tăng trưởng trong nền kinh tế số"
+                text="Khẳng định vị thế và quyền năng kinh tế của phụ nữ Việt Nam"
                 textAlign="center"
                 style={{
                   color: 'var(--cc-fg-heading)',
@@ -52,13 +48,11 @@ export default function ContextAbout() {
                 }}
               />
               <p className="lead" data-aos="fade-up" data-aos-delay="200">
-                Trong bối cảnh Việt Nam thúc đẩy tăng trưởng kinh tế bền vững gắn với chuyển đổi số,
-                việc triển khai hiệu quả Nghị quyết số 57-NQ/TW ngày 22/12/2024 của Bộ Chính trị về
-                đột phá phát triển khoa học, công nghệ, đổi mới sáng tạo và chuyển đổi số quốc gia
-                đã đặt ra yêu cầu cấp thiết về nâng cao năng lực an ninh mạng cho doanh nghiệp. Nhận
-                thức rõ điều này, các hoạt động trong khuôn khổ dự án được triển khai nhằm hỗ trợ
-                doanh nhân nữ chủ động nắm bắt cơ hội từ nền kinh tế số, đồng thời nâng cao năng lực
-                nhận diện và ứng phó hiệu quả với những thách thức trên môi trường số.
+                Hiện nay doanh nghiệp do phụ nữ làm chủ chiếm khoảng 24% tổng số doanh nghiệp của
+                Việt Nam. Các doanh nghiệp do phụ nữ làm chủ không chỉ đóng góp đáng kể vào tăng
+                trưởng kinh tế và tạo việc làm, mà còn thể hiện vai trò tiên phong trong chăm lo đời
+                sống người lao động, tham gia các hoạt động cộng đồng và thúc đẩy bình đẳng giới
+                trong kinh doanh.
               </p>
             </div>
           </div>
