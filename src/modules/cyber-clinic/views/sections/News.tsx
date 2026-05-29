@@ -23,8 +23,8 @@ export default async function News({ limit = 4 }: { limit?: number }) {
     draft: false,
     sort: ['-publishedAt'],
     where: {
-      lang: {
-        equals: 'vi',
+      tag: {
+        in: ['cyber-clinic'],
       },
     },
   })

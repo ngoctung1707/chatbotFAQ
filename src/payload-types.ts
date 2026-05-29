@@ -195,7 +195,7 @@ export interface News {
   slug: string;
   description?: string | null;
   lang: 'en' | 'vi';
-  tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech' | 'hackday';
+  tag: 'news' | 'workshop' | 'seminar' | 'hackathon' | 'ecotech' | 'hackday' | 'cyber-clinic';
   publishedAt: string;
   heroImage: string | Media;
   content: {
