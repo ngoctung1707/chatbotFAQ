@@ -36,11 +36,8 @@ export default function RoleSelect() {
     <div
       className="cc-hero-bg"
       style={{
-        backgroundColor: 'var(--cc-bg-light)',
+        backgroundColor: '#E6E6E6',
         minHeight: '100svh',
-        backgroundImage: `url(${HeroBg.src})`,
-        backgroundPosition: 'right bottom',
-        backgroundRepeat: 'no-repeat',
         display: 'flex',
         alignItems: 'center',
       }}
