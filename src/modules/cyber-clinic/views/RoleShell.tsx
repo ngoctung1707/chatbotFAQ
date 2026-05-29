@@ -42,25 +42,27 @@ export default function RoleShell({
           background: 'linear-gradient(0deg, rgba(251, 57, 21, 0.00) 0%, #DD2604 100%)',
           backgroundSize: 'contain',
           backgroundPosition: 'center top',
-          backdropFilter: 'blur(2px)',
+          backdropFilter: `${userKey === 'student' ? 'none' : 'blur(2px)'}`,
           zIndex: 1,
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: '160px',
-          alignSelf: 'stretch',
-          background: 'linear-gradient(180deg, rgba(232, 113, 44, 0.00) 0%, #FB3915 100%)',
-          backgroundSize: 'contain',
-          backgroundPosition: 'center bottom',
-          backdropFilter: 'blur(1px)',
-          zIndex: 1,
-        }}
-      />
+      {userKey != 'student' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: '160px',
+            alignSelf: 'stretch',
+            background: 'linear-gradient(180deg, rgba(232, 113, 44, 0.00) 0%, #FB3915 100%)',
+            backgroundSize: 'contain',
+            backgroundPosition: 'center bottom',
+            backdropFilter: 'blur(1px)',
+            zIndex: 1,
+          }}
+        />
+      )}
       <div
         style={{
           position: 'absolute',
