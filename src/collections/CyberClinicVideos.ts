@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { anyone } from '@/access/anyone'
+import { slugifyHook } from './News'
 
 export const CyberClinicVideos: CollectionConfig = {
   slug: 'cyber-clinic-videos',
@@ -14,6 +15,31 @@ export const CyberClinicVideos: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      index: true,
+      required: true,
+      label: 'Slug',
+      hooks: {
+        beforeValidate: [slugifyHook],
+      },
+    },
+    {
+      name: 'publishedAt',
+      type: 'date',
+      label: 'Ngày đăng',
+      required: true,
+    },
+    {
+      name: 'coverImage',
+      type: 'upload',
+      relationTo: 'media',
+      required: true,
+      filterOptions: {
+        mimeType: { contains: 'image/' },
+      },
     },
     {
       name: 'source',

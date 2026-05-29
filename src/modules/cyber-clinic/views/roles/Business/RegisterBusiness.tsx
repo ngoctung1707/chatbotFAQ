@@ -2,6 +2,7 @@ import ButtonGradient from '@/modules/cyber-clinic/components/ButtonGradient'
 import CardCustom from '@/modules/cyber-clinic/components/CardCustom'
 import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
 import SplitText from '@/modules/cyber-clinic/components/SplitText'
+import { LINK_FORM_BUSINESS } from '@/modules/cyber-clinic/constants'
 import CheckListIcon from '@/modules/cyber-clinic/icons/CheckListIcon'
 import React from 'react'
 
@@ -42,7 +43,7 @@ export default function RegisterBusiness() {
               textAlign="left"
               style={{ maxWidth: '500px', marginBottom: '40px' }}
             />
-            <ButtonGradient text="Đăng ký ngay" variant="primary" />
+            <ButtonGradient text="Đăng ký ngay" variant="primary" linkTo={LINK_FORM_BUSINESS} />
           </div>
           <div className="cc-register-business-right">
             <div data-aos="fade-left">

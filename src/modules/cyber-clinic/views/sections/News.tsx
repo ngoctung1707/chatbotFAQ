@@ -7,11 +7,19 @@ import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
 import EmptyDiv from '../../components/EmptyDiv'
 
-export default async function News() {
+export const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
+
+export default async function News({ limit = 4 }: { limit?: number }) {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'news',
-    limit: 4,
+    limit: limit,
     draft: false,
     sort: ['-publishedAt'],
     where: {
@@ -26,19 +34,11 @@ export default async function News() {
 
   if (totalDocs === 1) {
     mainDoc = docs[0] as NewsType
-  } else if (totalDocs === 4) {
+  } else if (totalDocs >= 4) {
     mainDoc = docs[0] as NewsType
-    subDocs = docs.slice(1, 4) as NewsType[]
+    subDocs = docs.slice(1, limit) as NewsType[]
   } else {
     subDocs = docs as NewsType[]
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
   }
 
   return (
@@ -157,7 +157,7 @@ export default async function News() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
               }}
             >
               {subDocs.map((doc, index) => (
@@ -189,7 +189,15 @@ export default async function News() {
                       />
                     </Link>
                   </div>
-                  <div style={{ marginTop: '24px' }}>
+                  <div
+                    style={{
+                      marginTop: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      flex: 1,
+                    }}
+                  >
                     <div
                       style={{
                         padding: '4px 12px',

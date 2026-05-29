@@ -3,15 +3,13 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
 import type { LearningMaterial, Media } from '@/payload-types'
-import SplitText from '../../components/SplitText'
-import ButtonGradient from '../../components/ButtonGradient'
-import EmptyDiv from '../../components/EmptyDiv'
+import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
+import SplitText from '@/modules/cyber-clinic/components/SplitText'
 
-export default async function LearningMaterials() {
+export default async function LearningDocs() {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'learning-materials',
-    limit: 4,
     where: {
       _status: {
         equals: 'published',
@@ -19,15 +17,13 @@ export default async function LearningMaterials() {
     },
     sort: ['-publishedAt'],
   })
+
   const totalDocs = docs.length
   let mainDoc: LearningMaterial | undefined
   let subDocs: LearningMaterial[] = []
 
   if (totalDocs === 1) {
     mainDoc = docs[0] as LearningMaterial
-  } else if (totalDocs === 4) {
-    mainDoc = docs[0] as LearningMaterial
-    subDocs = docs.slice(1, 4) as LearningMaterial[]
   } else {
     subDocs = docs as LearningMaterial[]
   }
@@ -83,19 +79,6 @@ export default async function LearningMaterials() {
               </span>
             </div>
             <SplitText tag="h3" text="Tài liệu học tập" textAlign="left" />
-          </div>
-          <div
-            className="cc-register-student-content"
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <ButtonGradient
-              text="xem tất cả"
-              variant="secondary"
-              linkTo="/research/r&d-funding-projects/cyber-clinic/learning-materials"
-            />
           </div>
         </div>
       </div>

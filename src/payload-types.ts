@@ -357,6 +357,9 @@ export interface Solution {
 export interface CyberClinicVideo {
   id: string;
   title: string;
+  slug: string;
+  publishedAt: string;
+  coverImage: string | Media;
   source: 'upload' | 'external';
   videoFile?: (string | null) | Media;
   externalUrl?: string | null;
@@ -744,6 +747,9 @@ export interface SolutionsSelect<T extends boolean = true> {
  */
 export interface CyberClinicVideosSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
+  publishedAt?: T;
+  coverImage?: T;
   source?: T;
   videoFile?: T;
   externalUrl?: T;

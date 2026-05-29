@@ -5,6 +5,7 @@ import MailIcon from '../icons/MailIcon'
 import LocationIcon from '../icons/LocationIcon'
 import bkfintechLogo from '../imgs/logos/BKFintech.png'
 import googleLogo from '../imgs/logos/Google.png'
+import Link from 'next/link'
 
 export default function Footer() {
   return (
@@ -61,12 +62,18 @@ export default function Footer() {
           {/* Column 3 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#595959' }}>Mạng xã hội</h4>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}>
-              <FbIcon style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '14px', color: 'var(--cc-fg-primary)', fontWeight: 600 }}>
-                Facebook
-              </span>
-            </div>
+            <Link
+              href={'https://www.facebook.com/cyberclinic.hust'}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}>
+                <FbIcon style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '14px', color: 'var(--cc-fg-primary)', fontWeight: 600 }}>
+                  Facebook
+                </span>
+              </div>
+            </Link>
           </div>
         </div>
 

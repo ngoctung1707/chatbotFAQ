@@ -2,6 +2,7 @@ import ButtonGradient from '@/modules/cyber-clinic/components/ButtonGradient'
 import CardCustom from '@/modules/cyber-clinic/components/CardCustom'
 import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
 import SplitText from '@/modules/cyber-clinic/components/SplitText'
+import { LINK_FORM_TEACHER } from '@/modules/cyber-clinic/constants'
 import CheckListIcon from '@/modules/cyber-clinic/icons/CheckListIcon'
 import DoneIcon from '@/modules/cyber-clinic/icons/DoneIcon'
 import React from 'react'
@@ -53,7 +54,7 @@ export default function RegisterTeacher() {
             />
           </div>
           <div className="cc-register-teacher-content">
-            <ButtonGradient text="Đăng ký ngay" variant="primary" />
+            <ButtonGradient text="Đăng ký ngay" variant="primary" linkTo={LINK_FORM_TEACHER} />
           </div>
         </div>
       </div>
