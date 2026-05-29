@@ -21,7 +21,7 @@ export default function Student() {
       <EmptyDiv />
       <LearningMaterials />
       <Faq userKey="student" />
-      <Partners />
+      {/* <Partners /> */}
       <FooterWrap />
     </div>
   )

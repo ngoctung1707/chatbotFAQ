@@ -17,7 +17,7 @@ export default function Business() {
       <Roadmap />
       <News />
       <Faq userKey="business" />
-      <Partners />
+      {/* <Partners /> */}
       <FooterWrap />
     </div>
   )

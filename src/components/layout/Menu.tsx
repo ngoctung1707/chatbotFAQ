@@ -15,8 +15,8 @@ export const aboutLinks: { id: number; name: string; path: string }[] = [
 ].map(({ path, ...link }) => ({ ...link, path: `/about${path}` }))
 
 export const researchLinks: { id: number; name: string; path: string }[] = [
-  // { id: 1, name: 'r&d-funding-projects', path: '/r&d-funding-projects' },
-  { id: 1, name: 'publications', path: '/publications' },
+  { id: 1, name: 'r&d-funding-projects', path: '/r&d-funding-projects' },
+  { id: 2, name: 'publications', path: '/publications' },
 ].map(({ path, ...link }) => ({
   ...link,
   path: path.startsWith('http') ? path : `/research${path}`,
@@ -104,7 +104,8 @@ export default function Menu() {
     pathname.startsWith('/get-involved/vietnam-digital-economy-review')
   const isResearchLinkActive = () =>
     researchLinks.some((link) => link.path === pathname) ||
-    pathname.startsWith('/research/r&d-labs')
+    pathname.startsWith('/research/r&d-labs') ||
+    pathname.startsWith('/research/r&d-funding-projects')
   const t = useTranslations('Menu')
 
   const normalizeLabs = (labs: unknown): { slug: string; title: string }[] => {
@@ -277,7 +278,7 @@ export default function Menu() {
                 })}
               </ul>
             </li>
-            {/* <li className="nested-parent">
+            <li className="nested-parent">
               <Link
                 href="#"
                 className={pathname.startsWith('/research/r&d-funding-projects') ? 'active' : ''}
@@ -308,7 +309,7 @@ export default function Menu() {
                   </li>
                 ))}
               </ul>
-            </li> */}
+            </li>
             <li>
               <Link
                 href="/research/publications"

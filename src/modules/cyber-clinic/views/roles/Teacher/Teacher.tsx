@@ -17,7 +17,7 @@ export default function Teacher() {
       <EmptyDiv />
       <News />
       <Faq userKey="teacher" />
-      <Partners />
+      {/* <Partners /> */}
       <FooterWrap />
     </div>
   )
