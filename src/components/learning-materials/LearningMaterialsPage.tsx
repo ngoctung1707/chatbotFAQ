@@ -42,7 +42,9 @@ export default function LearningMaterialsPage({ data }: Props) {
           <RichText converters={jsxConverters} data={data.content}></RichText>
         </div>
       </div>
-      <Footer />
+      <div id="contact">
+        <Footer />
+      </div>
     </>
   )
 }

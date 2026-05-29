@@ -87,7 +87,9 @@ export default function VideosPage({ data }: Props) {
           )}
         </div>
       </div>
-      <Footer />
+      <div id="contact">
+        <Footer />
+      </div>
     </>
   )
 }
