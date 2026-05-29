@@ -26,6 +26,9 @@ export default async function News({ limit = 4 }: { limit?: number }) {
       tag: {
         in: ['cyber-clinic'],
       },
+      lang: {
+        equals: 'vi',
+      },
     },
   })
   const totalDocs = docs.length
