@@ -86,9 +86,6 @@ export default function Footer() {
             ©2026 Copyright © BKFintech | All Right Reserved
           </div>
           <div className="cc-footer-bottom-right">
-            <span style={{ fontSize: '12px', color: '#595959', fontWeight: 500 }}>
-              with support from
-            </span>
             <Image
               src={googleLogo}
               alt="Google.org"

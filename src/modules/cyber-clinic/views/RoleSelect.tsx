@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import HeroBg from '../imgs/banners/hero-student.png'
+import HeroBg from '../imgs/banners/hero.png'
 import studentImg from '../imgs/banners/student.png'
 import teacherImg from '../imgs/banners/teacher.png'
 import businessImg from '../imgs/banners/business.png'
