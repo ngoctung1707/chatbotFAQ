@@ -5,8 +5,8 @@ import Student from '@/modules/cyber-clinic/views/roles/Student/Student'
 import Teacher from '@/modules/cyber-clinic/views/roles/Teacher/Teacher'
 import Business from '@/modules/cyber-clinic/views/roles/Business/Business'
 import bgStudent from '@/modules/cyber-clinic/imgs/banners/hero-student.png'
-import bgTeacher from '@/modules/cyber-clinic/imgs/banners/hero-teacher.png'
-import bgBusiness from '@/modules/cyber-clinic/imgs/banners/hero-business.png'
+import bgTeacher from '@/modules/cyber-clinic/imgs/banners/hero-teacher.jpg'
+import bgBusiness from '@/modules/cyber-clinic/imgs/banners/hero-business.jpg'
 
 type PageProps = {
   searchParams?: Promise<{
