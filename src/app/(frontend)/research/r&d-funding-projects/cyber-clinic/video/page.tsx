@@ -1,6 +1,6 @@
-import Video from '@/modules/cyber-clinic/views/sites/video/Video'
+import Videos from '@/modules/cyber-clinic/views/sites/video/Videos'
 import React from 'react'
 
 export default function page() {
-  return <Video />
+  return <Videos />
 }

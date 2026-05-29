@@ -3,6 +3,7 @@ import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
 import Image from 'next/image'
 import ctaBg from '../../imgs/decors/cta_bg.png'
+import { LINK_FORM_STUDENT } from '../../constants'
 
 export default function CTA() {
   return (
@@ -40,7 +41,7 @@ export default function CTA() {
           transform: 'scaleY(-1)',
         }}
       />
-      <div className="container">
+      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
         <div className="cc-cta-content">
           <SplitText
             tag="h2"
@@ -53,7 +54,7 @@ export default function CTA() {
               color: 'var(--cc-primary)',
             }}
           />
-          <ButtonGradient variant="primary" text="Đăng ký ngay" />
+          <ButtonGradient variant="primary" text="Đăng ký ngay" linkTo={LINK_FORM_STUDENT} />
         </div>
       </div>
     </div>

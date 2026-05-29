@@ -2,6 +2,7 @@ import ButtonGradient from '@/modules/cyber-clinic/components/ButtonGradient'
 import CardCustom from '@/modules/cyber-clinic/components/CardCustom'
 import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
 import SplitText from '@/modules/cyber-clinic/components/SplitText'
+import { LINK_FORM_STUDENT } from '@/modules/cyber-clinic/constants'
 import CheckListIcon from '@/modules/cyber-clinic/icons/CheckListIcon'
 import DoneIcon from '@/modules/cyber-clinic/icons/DoneIcon'
 import React from 'react'
@@ -66,7 +67,7 @@ export default function RegisterStudent() {
                 thuộc phạm vi dự án; ưu tiên các ngành Công nghệ thông tin, An toàn thông tin, Phân
                 tích dữ liệu, Khoa học – Kỹ thuật – Công nghệ và các ngành liên quan.
               </h6>
-              <ButtonGradient text="Đăng ký ngay" variant="primary" />
+              <ButtonGradient text="Đăng ký ngay" variant="primary" linkTo={LINK_FORM_STUDENT} />
             </div>
           </div>
         </div>

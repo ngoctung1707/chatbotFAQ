@@ -1,5 +1,6 @@
 import ButtonGradient from '@/modules/cyber-clinic/components/ButtonGradient'
 import SplitText from '@/modules/cyber-clinic/components/SplitText'
+import { LINK_FORM_BUSINESS } from '@/modules/cyber-clinic/constants'
 import React from 'react'
 
 const ROADMAP_ITEMS = [
@@ -148,7 +149,11 @@ export default function Roadmap() {
                   </p>
                   {index == 0 && (
                     <div style={{ marginTop: '24px' }}>
-                      <ButtonGradient text="Gửi đăng ký" variant="primary" />
+                      <ButtonGradient
+                        text="Gửi đăng ký"
+                        variant="primary"
+                        linkTo={LINK_FORM_BUSINESS}
+                      />
                     </div>
                   )}
                 </div>

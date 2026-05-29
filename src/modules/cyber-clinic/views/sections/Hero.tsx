@@ -8,7 +8,7 @@ import bgTeacher from '../../imgs/banners/hero-teacher.png'
 import bgBusiness from '../../imgs/banners/hero-business.png'
 import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
-import { Role } from '../../constants'
+import { LINK_FORM_BUSINESS, LINK_FORM_STUDENT, LINK_FORM_TEACHER, Role } from '../../constants'
 import TabCustom from '../../components/TabCustom'
 
 type HeroProps = {
@@ -22,6 +22,7 @@ const RoleInfo: {
     description: string
     img: string
     bgColor: string
+    link: string
   }
 } = {
   student: {
@@ -30,6 +31,7 @@ const RoleInfo: {
     description: '',
     img: bgStudent.src,
     bgColor: 'var(--cc-bg-light)',
+    link: LINK_FORM_STUDENT,
   },
   teacher: {
     title: 'Giảng viên',
@@ -38,6 +40,7 @@ const RoleInfo: {
       'Vườn ươm Nhân lực An toàn Thông tin tại Đại học Bách khoa Hà Nội hướng tới mạng lưới giảng viên và chuyên gia đồng hành trong đào tạo, mentoring và phát triển năng lực an toàn thông tin cho sinh viên và doanh nghiệp.',
     img: bgTeacher.src,
     bgColor: '#F2F7F8',
+    link: LINK_FORM_TEACHER,
   },
   business: {
     title: 'Doanh nghiệp',
@@ -46,6 +49,7 @@ const RoleInfo: {
       'Chương trình đồng hành cùng doanh nghiệp nhỏ và siêu nhỏ, hộ kinh doanh và doanh nghiệp xã hội trong nâng cao năng lực an toàn thông tin, bảo mật dữ liệu và quản lý số.',
     img: bgBusiness.src,
     bgColor: '#F2F7F8',
+    link: LINK_FORM_BUSINESS,
   },
 }
 
@@ -120,7 +124,7 @@ export default function Hero({ userKey }: HeroProps) {
             </h6>
           </div>
           <div data-aos="fade-up">
-            <ButtonGradient variant="secondary" text="Đăng ký ngay" />
+            <ButtonGradient variant="secondary" text="Đăng ký ngay" linkTo={roleInfo.link} />
           </div>
         </div>
       </div>

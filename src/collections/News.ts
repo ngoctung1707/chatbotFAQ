@@ -4,7 +4,7 @@ import { anyone } from '@/access/anyone'
 import slugify from '@sindresorhus/slugify'
 import { generatePreviewPath } from '@/util/generatePreviewPath'
 
-const slugifyHook: FieldHook = ({ data, operation, value }) => {
+export const slugifyHook: FieldHook = ({ data, operation, value }) => {
   if (typeof value === 'string') {
     return slugify(value)
   }
