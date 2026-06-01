@@ -88,6 +88,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                   href={`/news/${mainDoc.slug}`}
                   style={{ display: 'block', width: '100%', height: '100%' }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
                   <img
                     className="cc-news-main__image"
@@ -131,6 +132,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                         textDecoration: 'none',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       {mainDoc.title}
                     </Link>
@@ -149,6 +151,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                     textTransform: 'uppercase',
                   }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
                   XEM THÊM
                 </Link>
@@ -184,6 +187,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                       href={`/news/${doc.slug}`}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       <img
                         src={(doc.heroImage as Media)?.url || ''}
@@ -231,6 +235,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                         href={`/news/${doc.slug}`}
                         style={{ color: 'inherit', textDecoration: 'none' }}
                         target="blank"
+                        rel="noopener noreferrer"
                       >
                         {doc.title}
                       </Link>
@@ -245,6 +250,7 @@ export default async function News({ limit = 4 }: { limit?: number }) {
                         textTransform: 'uppercase',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       XEM THÊM
                     </Link>

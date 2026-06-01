@@ -77,7 +77,7 @@ export default function VideosPage({ data }: Props) {
                 <a
                   href={externalUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   style={{ color: '#D41F3D', fontWeight: 600, textDecoration: 'none' }}
                 >
                   {externalUrl}

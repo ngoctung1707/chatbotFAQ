@@ -13,7 +13,7 @@ import LearningMaterials from '../../sections/LearningMaterials'
 
 export default function Student() {
   return (
-    <div>
+    <main>
       <Hero userKey="student" />
       <SliderStudent />
       <Roadmap />
@@ -23,6 +23,6 @@ export default function Student() {
       <Faq userKey="student" />
       {/* <Partners /> */}
       <FooterWrap />
-    </div>
+    </main>
   )
 }

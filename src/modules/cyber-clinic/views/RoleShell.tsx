@@ -1,15 +1,15 @@
 'use client'
 import React, { useEffect } from 'react'
+import Image from 'next/image'
 import Header from '@/modules/cyber-clinic/layout/Header'
 import Aos from 'aos'
 
 type RoleShellProps = {
   userKey: string
   children: React.ReactNode
-  backgroundColor?: string
   backgroundImage?: string
   backgroundSize?: string
-  height?: string
+  imageAlt?: string
 }
 
 export default function RoleShell({
@@ -17,18 +17,19 @@ export default function RoleShell({
   children,
   backgroundImage,
   backgroundSize,
-  height,
+  imageAlt,
 }: Readonly<RoleShellProps>) {
   useEffect(() => {
     Aos.init({ duration: 1000 })
   }, [])
+  const objectFit = backgroundSize === 'cover' ? 'cover' : 'contain'
   return (
     <div
       style={{
         position: 'relative',
         backgroundColor: '#190301',
         width: '100%',
-        height: height || 'calc(100svh + 300px)',
+        height: '100svh',
       }}
     >
       <div
@@ -63,22 +64,29 @@ export default function RoleShell({
           }}
         />
       )}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-          backgroundSize: backgroundSize || 'contain',
-          backgroundPosition: 'center bottom',
-          backgroundRepeat: 'no-repeat',
-          zIndex: 0,
-          pointerEvents: 'none',
-        }}
-      />
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      {backgroundImage && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <Image
+            src={backgroundImage}
+            alt={imageAlt || 'Cyber Clinic hero'}
+            fill
+            priority={true}
+            sizes="100vw"
+            style={{ objectFit, objectPosition: 'center bottom' }}
+          />
+        </div>
+      )}
+      <div style={{ position: 'relative', zIndex: 2, overflow: 'hidden' }}>
         <Header />
         {children}
       </div>

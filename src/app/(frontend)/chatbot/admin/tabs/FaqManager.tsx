@@ -57,7 +57,7 @@ const parseCSV = (text: string): FAQCsvRow[] => {
   return data
 }
 
-export default function FaqManager({ token }: { token: string }) {
+export default function FaqManager() {
   const [faqs, setFaqs] = useState<FAQOut[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -174,7 +174,7 @@ export default function FaqManager({ token }: { token: string }) {
     if (!previewData || previewData.length === 0) return
     setIsPreviewSubmitting(true)
     try {
-      await faqService.addRows(previewData, token)
+      await faqService.addRows(previewData)
       setPreviewData(null)
       fetchFaqs()
       toast.success('Nhập dữ liệu thành công!')
@@ -231,15 +231,12 @@ export default function FaqManager({ token }: { token: string }) {
         .split('\n')
         .map((v) => v.trim())
         .filter((v) => v)
-      await faqService.create(
-        {
-          question,
-          answer,
-          category: category || null,
-          variants: variants.length > 0 ? variants : undefined,
-        },
-        token,
-      )
+      await faqService.create({
+        question,
+        answer,
+        category: category || null,
+        variants: variants.length > 0 ? variants : undefined,
+      })
       setQuestion('')
       setAnswer('')
       setCategory('')
@@ -255,7 +252,7 @@ export default function FaqManager({ token }: { token: string }) {
   const handleDelete = async (id: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa FAQ này?')) return
     try {
-      await faqService.delete(id, token)
+      await faqService.delete(id)
       fetchFaqs()
       toast.success('Đã xóa FAQ')
     } catch (e) {
@@ -289,18 +286,13 @@ export default function FaqManager({ token }: { token: string }) {
             variant_text: variant.variant_text,
             is_active: variant.is_active,
           })),
-          token,
         )
       }
-      await faqService.update(
-        editingId,
-        {
-          category: editForm.category || null,
-          question: editForm.question,
-          answer: editForm.answer,
-        },
-        token,
-      )
+      await faqService.update(editingId, {
+        category: editForm.category || null,
+        question: editForm.question,
+        answer: editForm.answer,
+      })
       setEditingId(null)
       fetchFaqs()
       toast.success('Đã cập nhật FAQ')
@@ -312,7 +304,7 @@ export default function FaqManager({ token }: { token: string }) {
   const handleAddVariantAPI = async (answerId: number) => {
     if (!newVariantText.trim()) return
     try {
-      await faqService.addVariant(answerId, { variant_text: newVariantText.trim() }, token)
+      await faqService.addVariant(answerId, { variant_text: newVariantText.trim() })
       setNewVariantText('')
       fetchFaqs()
       toast.success('Đã thêm biến thể')
@@ -324,7 +316,7 @@ export default function FaqManager({ token }: { token: string }) {
   const handleDeleteVariantAPI = async (answerId: number, variantId: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa biến thể này?')) return
     try {
-      await faqService.deleteVariant(answerId, variantId, token)
+      await faqService.deleteVariant(answerId, variantId)
       fetchFaqs()
       toast.success('Đã xóa biến thể')
     } catch (e) {

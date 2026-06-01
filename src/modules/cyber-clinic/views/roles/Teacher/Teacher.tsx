@@ -10,7 +10,7 @@ import EmptyDiv from '@/modules/cyber-clinic/components/EmptyDiv'
 
 export default function Teacher() {
   return (
-    <div>
+    <main>
       <Hero userKey="teacher" />
       <SliderTeacher />
       <RegisterTeacher />
@@ -19,6 +19,6 @@ export default function Teacher() {
       <Faq userKey="teacher" />
       {/* <Partners /> */}
       <FooterWrap />
-    </div>
+    </main>
   )
 }

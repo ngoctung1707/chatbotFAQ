@@ -14,17 +14,14 @@ import type {
   FAQVariantCreate,
   FAQVariantOut,
   LoginPayload,
-  LogoutRequest,
   MessageResponse,
   MeResponse,
   PaginatedChatLogOut,
   PaginatedFAQOut,
-  RefreshTokenRequest,
   RewriteCreate,
   RewriteOut,
   RewriteUpdate,
   SupportEmailOut,
-  TokenWithRefresh,
   UserCreate,
   UserOut,
   UserUpdate,
@@ -33,6 +30,45 @@ import type {
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const BASE_URL = 'https://chatbot-bkfinteck-api.a-star.group/api/v1'
+const CSRF_HEADER_NAME = 'X-CSRF-Token'
+const CSRF_META_NAMES = ['csrf-token', 'csrf_token', 'xsrf-token', 'xsrf_token']
+const CSRF_COOKIE_NAMES = ['csrf-token', 'csrf_token', 'XSRF-TOKEN', 'xsrf-token', 'xsrf_token']
+
+const isBrowser = typeof document !== 'undefined'
+
+const getMetaContent = (name: string): string | undefined => {
+  if (!isBrowser) return undefined
+  const meta = document.querySelector(`meta[name="${name}"]`)
+  const value = meta?.getAttribute('content')?.trim()
+  return value || undefined
+}
+
+const getCookieValue = (name: string): string | undefined => {
+  if (!isBrowser || !document.cookie) return undefined
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const [key, ...rest] = cookie.trim().split('=')
+    if (key === name) {
+      const value = rest.join('=')
+      return value ? decodeURIComponent(value) : undefined
+    }
+  }
+  return undefined
+}
+
+const getCsrfToken = (): string | undefined => {
+  for (const name of CSRF_META_NAMES) {
+    const value = getMetaContent(name)
+    if (value) return value
+  }
+
+  for (const name of CSRF_COOKIE_NAMES) {
+    const value = getCookieValue(name)
+    if (value) return value
+  }
+
+  return undefined
+}
 
 // ─── HTTP helpers ─────────────────────────────────────────────────────────────
 
@@ -73,19 +109,35 @@ export const getChatbotErrorDetail = (err: unknown): string | undefined => {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, token, headers: extraHeaders, ...rest } = options
+  const credentials = rest.credentials ?? 'include'
 
   const isNativeObject =
     (typeof FormData !== 'undefined' && body instanceof FormData) ||
     (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams)
 
-  const headers: HeadersInit = {
-    ...(body !== undefined && !isNativeObject ? { 'Content-Type': 'application/json' } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(extraHeaders ?? {}),
+  const headers = new Headers()
+
+  if (body !== undefined && !isNativeObject) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  if (extraHeaders) {
+    const extra = new Headers(extraHeaders)
+    extra.forEach((value, key) => headers.set(key, value))
+  }
+
+  const csrfToken = getCsrfToken()
+  if (csrfToken && !headers.has(CSRF_HEADER_NAME)) {
+    headers.set(CSRF_HEADER_NAME, csrfToken)
   }
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...rest,
+    credentials,
     headers,
     body:
       body !== undefined && !isNativeObject ? JSON.stringify(body) : (body as BodyInit | undefined),
@@ -111,9 +163,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export const authService = {
   /**
-   * Đăng nhập, trả về access_token + refresh_token.
+   * Đăng nhập, backend sẽ set HttpOnly cookie.
    */
-  login(payload: LoginPayload): Promise<TokenWithRefresh> {
+  login(payload: LoginPayload): Promise<MessageResponse> {
     const form = new URLSearchParams()
     form.set('username', payload.username)
     form.set('password', payload.password)
@@ -122,7 +174,7 @@ export const authService = {
     if (payload.client_id) form.set('client_id', payload.client_id)
     if (payload.client_secret) form.set('client_secret', payload.client_secret)
 
-    return request<TokenWithRefresh>('/auth/login', {
+    return request<MessageResponse>('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form as unknown, // FormData-encoded, bypass JSON stringify
@@ -130,30 +182,28 @@ export const authService = {
   },
 
   /**
-   * Làm mới access token + refresh token.
+   * Làm mới access token bằng HttpOnly cookie.
    */
-  refresh(payload: RefreshTokenRequest): Promise<TokenWithRefresh> {
-    return request<TokenWithRefresh>('/auth/refresh', {
+  refresh(): Promise<MessageResponse> {
+    return request<MessageResponse>('/auth/refresh', {
       method: 'POST',
-      body: payload,
     })
   },
 
   /**
-   * Đăng xuất, vô hiệu hóa refresh token.
+   * Đăng xuất, backend sẽ xóa cookie.
    */
-  logout(payload: LogoutRequest): Promise<MessageResponse> {
+  logout(): Promise<MessageResponse> {
     return request<MessageResponse>('/auth/logout', {
       method: 'POST',
-      body: payload,
     })
   },
 
   /**
-   * Lấy thông tin người dùng hiện tại (yêu cầu xác thực).
+   * Lấy thông tin người dùng hiện tại (cookie).
    */
-  me(token: string): Promise<MeResponse> {
-    return request<MeResponse>('/auth/me', { token })
+  me(): Promise<MeResponse> {
+    return request<MeResponse>('/auth/me')
   },
 }
 
@@ -209,32 +259,29 @@ export const faqService = {
   /**
    * Tạo mới FAQ (yêu cầu xác thực).
    */
-  create(payload: FAQCreate, token: string): Promise<FAQOut> {
+  create(payload: FAQCreate): Promise<FAQOut> {
     return request<FAQOut>('/faq/', {
       method: 'POST',
       body: payload,
-      token,
     })
   },
 
   /**
    * Cập nhật FAQ (yêu cầu xác thực).
    */
-  update(answerId: number, payload: FAQUpdate, token: string): Promise<FAQOut> {
+  update(answerId: number, payload: FAQUpdate): Promise<FAQOut> {
     return request<FAQOut>(`/faq/${answerId}`, {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 
   /**
    * Xoá FAQ (yêu cầu xác thực).
    */
-  delete(answerId: number, token: string): Promise<void> {
+  delete(answerId: number): Promise<void> {
     return request<void>(`/faq/${answerId}`, {
       method: 'DELETE',
-      token,
     })
   },
 
@@ -243,36 +290,33 @@ export const faqService = {
   /**
    * Thêm FAQ hàng loạt (yêu cầu xác thực).
    */
-  addRows(payload: FAQCsvRow[], token: string): Promise<FAQOut[]> {
+  addRows(payload: FAQCsvRow[]): Promise<FAQOut[]> {
     return request<FAQOut[]>('/faq/add', {
       method: 'POST',
       body: payload,
-      token,
     })
   },
 
   /**
    * Cập nhật FAQ hàng loạt (yêu cầu xác thực).
    */
-  editRows(payload: FAQCsvRow[], token: string): Promise<FAQOut[]> {
+  editRows(payload: FAQCsvRow[]): Promise<FAQOut[]> {
     return request<FAQOut[]>('/faq/edit', {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 
   /**
    * Thêm FAQ từ file CSV (yêu cầu xác thực).
    */
-  addCsv(file: File | Blob, token: string): Promise<FAQOut[]> {
+  addCsv(file: File | Blob): Promise<FAQOut[]> {
     const formData = new FormData()
     formData.append('file', file)
 
     return request<FAQOut[]>('/faq/add-csv', {
       method: 'POST',
       body: formData as unknown,
-      token,
     })
   },
 
@@ -288,35 +332,29 @@ export const faqService = {
   /**
    * Thêm câu hỏi biến thể (yêu cầu xác thực).
    */
-  addVariant(answerId: number, payload: FAQVariantCreate, token: string): Promise<FAQVariantOut> {
+  addVariant(answerId: number, payload: FAQVariantCreate): Promise<FAQVariantOut> {
     return request<FAQVariantOut>(`/faq/${answerId}/variants`, {
       method: 'POST',
       body: payload,
-      token,
     })
   },
 
   /**
    * Xoá câu hỏi biến thể (yêu cầu xác thực).
    */
-  deleteVariant(answerId: number, variantId: number, token: string): Promise<void> {
+  deleteVariant(answerId: number, variantId: number): Promise<void> {
     return request<void>(`/faq/${answerId}/variants/${variantId}`, {
       method: 'DELETE',
-      token,
     })
   },
 
   /**
    * Cập nhật hàng loạt biến thể (yêu cầu xác thực).
    */
-  bulkUpdateVariants(
-    payload: FAQVariantBulkUpdateItem[],
-    token: string,
-  ): Promise<BulkUpdateResultWithDetails> {
+  bulkUpdateVariants(payload: FAQVariantBulkUpdateItem[]): Promise<BulkUpdateResultWithDetails> {
     return request<BulkUpdateResultWithDetails>('/faq/variants/bulk', {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 }
@@ -334,32 +372,29 @@ export const rewriteService = {
   /**
    * Tạo rewrite rule mới (yêu cầu xác thực).
    */
-  create(payload: RewriteCreate, token: string): Promise<RewriteOut> {
+  create(payload: RewriteCreate): Promise<RewriteOut> {
     return request<RewriteOut>('/rewrite/', {
       method: 'POST',
       body: payload,
-      token,
     })
   },
 
   /**
    * Cập nhật rewrite rule (yêu cầu xác thực).
    */
-  update(ruleId: number, payload: RewriteUpdate, token: string): Promise<RewriteOut> {
+  update(ruleId: number, payload: RewriteUpdate): Promise<RewriteOut> {
     return request<RewriteOut>(`/rewrite/${ruleId}`, {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 
   /**
    * Xoá rewrite rule (yêu cầu xác thực).
    */
-  delete(ruleId: number, token: string): Promise<void> {
+  delete(ruleId: number): Promise<void> {
     return request<void>(`/rewrite/${ruleId}`, {
       method: 'DELETE',
-      token,
     })
   },
 }
@@ -384,11 +419,10 @@ export const configService = {
   /**
    * Cập nhật cấu hình hệ thống (yêu cầu xác thực).
    */
-  update(payload: ConfigUpdate, token: string): Promise<ConfigOut> {
+  update(payload: ConfigUpdate): Promise<ConfigOut> {
     return request<ConfigOut>('/config/', {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 }
@@ -399,39 +433,36 @@ export const userService = {
   /**
    * Lấy danh sách người dùng (yêu cầu xác thực).
    */
-  list(token: string): Promise<UserOut[]> {
-    return request<UserOut[]>('/users/', { token })
+  list(): Promise<UserOut[]> {
+    return request<UserOut[]>('/users/')
   },
 
   /**
    * Tạo người dùng mới (yêu cầu xác thực).
    */
-  create(payload: UserCreate, token: string): Promise<UserOut> {
+  create(payload: UserCreate): Promise<UserOut> {
     return request<UserOut>('/users/', {
       method: 'POST',
       body: payload,
-      token,
     })
   },
 
   /**
    * Cập nhật thông tin người dùng (yêu cầu xác thực).
    */
-  update(userId: number, payload: UserUpdate, token: string): Promise<UserOut> {
+  update(userId: number, payload: UserUpdate): Promise<UserOut> {
     return request<UserOut>(`/users/${userId}`, {
       method: 'PUT',
       body: payload,
-      token,
     })
   },
 
   /**
    * Xoá người dùng (yêu cầu xác thực).
    */
-  delete(userId: number, token: string): Promise<void> {
+  delete(userId: number): Promise<void> {
     return request<void>(`/users/${userId}`, {
       method: 'DELETE',
-      token,
     })
   },
 }
@@ -442,16 +473,13 @@ export const chatLogService = {
   /**
    * Lấy lịch sử hội thoại (yêu cầu xác thực).
    */
-  list(
-    token: string,
-    params?: {
-      page?: number
-      page_size?: number
-      key_word?: string
-      decistion_type?: ChatLogDecision
-      sort_timestamp?: ChatLogSort
-    },
-  ): Promise<PaginatedChatLogOut> {
+  list(params?: {
+    page?: number
+    page_size?: number
+    key_word?: string
+    decistion_type?: ChatLogDecision
+    sort_timestamp?: ChatLogSort
+  }): Promise<PaginatedChatLogOut> {
     const query = new URLSearchParams()
     if (params?.page !== undefined) query.set('page', String(params.page))
     if (params?.page_size !== undefined) query.set('page_size', String(params.page_size))
@@ -460,7 +488,7 @@ export const chatLogService = {
     if (params?.sort_timestamp) query.set('sort_timestamp', params.sort_timestamp)
     const qs = query.toString()
 
-    return request<PaginatedChatLogOut>(`/chat-log/${qs ? `?${qs}` : ''}`, { token })
+    return request<PaginatedChatLogOut>(`/chat-log/${qs ? `?${qs}` : ''}`)
   },
 }
 

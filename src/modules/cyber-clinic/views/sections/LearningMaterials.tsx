@@ -2,6 +2,7 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { LearningMaterial, Media } from '@/payload-types'
 import SplitText from '../../components/SplitText'
 import ButtonGradient from '../../components/ButtonGradient'
@@ -104,16 +105,23 @@ export default async function LearningMaterials() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {mainDoc && (
             <div className="cc-news-main">
-              <div style={{ flex: '1 1 200px', overflow: 'hidden' }}>
+              <div
+                className="cc-news-main__image"
+                style={{ flex: '1 1 200px', overflow: 'hidden', position: 'relative' }}
+              >
                 <Link
                   href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${mainDoc.slug}`}
                   style={{ display: 'block', width: '100%', height: '100%' }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
-                  <img
-                    className="cc-news-main__image"
+                  <Image
                     src={(mainDoc.heroImage as Media)?.url || ''}
                     alt={(mainDoc.heroImage as Media)?.caption || mainDoc.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 50vw"
+                    priority
+                    style={{ objectFit: 'cover' }}
                   />
                 </Link>
               </div>
@@ -152,6 +160,7 @@ export default async function LearningMaterials() {
                         textDecoration: 'none',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       {mainDoc.title}
                     </Link>
@@ -170,6 +179,7 @@ export default async function LearningMaterials() {
                     textTransform: 'uppercase',
                   }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
                   XEM THÊM
                 </Link>
@@ -199,17 +209,21 @@ export default async function LearningMaterials() {
                     style={{
                       overflow: 'hidden',
                       aspectRatio: '16/9',
+                      position: 'relative',
                     }}
                   >
                     <Link
                       href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
-                      <img
+                      <Image
                         src={(doc.heroImage as Media)?.url || ''}
                         alt={(doc.heroImage as Media)?.caption || doc.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{ objectFit: 'cover' }}
                       />
                     </Link>
                   </div>
@@ -252,6 +266,7 @@ export default async function LearningMaterials() {
                         href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                         style={{ color: 'inherit', textDecoration: 'none' }}
                         target="blank"
+                        rel="noopener noreferrer"
                       >
                         {doc.title}
                       </Link>
@@ -266,6 +281,7 @@ export default async function LearningMaterials() {
                         textTransform: 'uppercase',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       XEM THÊM
                     </Link>

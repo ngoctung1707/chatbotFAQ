@@ -92,6 +92,7 @@ export default async function LearningDocs() {
                   href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${mainDoc.slug}`}
                   style={{ display: 'block', width: '100%', height: '100%' }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
                   <img
                     className="cc-news-main__image"
@@ -135,6 +136,7 @@ export default async function LearningDocs() {
                         textDecoration: 'none',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       {mainDoc.title}
                     </Link>
@@ -153,6 +155,7 @@ export default async function LearningDocs() {
                     textTransform: 'uppercase',
                   }}
                   target="blank"
+                  rel="noopener noreferrer"
                 >
                   XEM THÊM
                 </Link>
@@ -188,6 +191,7 @@ export default async function LearningDocs() {
                       href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       <img
                         src={(doc.heroImage as Media)?.url || ''}
@@ -235,6 +239,7 @@ export default async function LearningDocs() {
                         href={`/research/r&d-funding-projects/cyber-clinic/learning-materials/${doc.slug}`}
                         style={{ color: 'inherit', textDecoration: 'none' }}
                         target="blank"
+                        rel="noopener noreferrer"
                       >
                         {doc.title}
                       </Link>
@@ -249,6 +254,7 @@ export default async function LearningDocs() {
                         textTransform: 'uppercase',
                       }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       XEM THÊM
                     </Link>

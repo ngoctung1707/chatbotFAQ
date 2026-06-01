@@ -7,12 +7,11 @@ import styles from '../page.module.css'
 import { toast } from 'react-toastify'
 
 type UserManagerProps = {
-  token: string
   currentUser?: { username: string; role: string } | null
   isAdmin?: boolean
 }
 
-export default function UserManager({ token, currentUser, isAdmin = false }: UserManagerProps) {
+export default function UserManager({ currentUser, isAdmin = false }: UserManagerProps) {
   const [users, setUsers] = useState<UserOut[]>([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +31,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
 
   const fetchUsers = async () => {
     try {
-      const data = await userService.list(token)
+      const data = await userService.list()
       setUsers(data || [])
     } catch (e) {
       console.error(e)
@@ -41,7 +40,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
 
   useEffect(() => {
     fetchUsers()
-  }, [token])
+  }, [])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +53,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
       return
     }
     try {
-      await userService.create({ username, password, full_name: fullName || null }, token)
+      await userService.create({ username, password, full_name: fullName || null })
       setUsername('')
       setPassword('')
       setConfirmPassword('')
@@ -78,7 +77,7 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
     }
     if (!confirm('Bạn có chắc chắn muốn xóa người dùng này?')) return
     try {
-      await userService.delete(id, token)
+      await userService.delete(id)
       fetchUsers()
       toast.success('Đã xóa người dùng')
     } catch (e) {
@@ -165,15 +164,11 @@ export default function UserManager({ token, currentUser, isAdmin = false }: Use
       return
     }
     try {
-      await userService.update(
-        editingUser.id,
-        {
-          full_name: editFullName || null,
-          is_active: isAdmin ? editIsActive : undefined,
-          password: editPassword ? editPassword : null,
-        },
-        token,
-      )
+      await userService.update(editingUser.id, {
+        full_name: editFullName || null,
+        is_active: isAdmin ? editIsActive : undefined,
+        password: editPassword ? editPassword : null,
+      })
       closeEdit()
       fetchUsers()
       toast.success('Đã cập nhật người dùng')

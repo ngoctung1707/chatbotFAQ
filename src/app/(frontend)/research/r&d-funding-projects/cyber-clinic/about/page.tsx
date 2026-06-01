@@ -3,9 +3,9 @@ import AosInit from './AosInit'
 
 export default function page() {
   return (
-    <>
+    <main style={{ overflow: 'hidden' }}>
       <AosInit />
       <About />
-    </>
+    </main>
   )
 }

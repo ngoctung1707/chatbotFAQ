@@ -38,7 +38,7 @@ const buildCsv = (rows: ChatLogResponse[]) => {
   return `\ufeff${lines.join('\r\n')}`
 }
 
-export default function ChatLogsManager({ token }: { token: string }) {
+export default function ChatLogsManager() {
   const [logs, setLogs] = useState<ChatLogResponse[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -55,7 +55,7 @@ export default function ChatLogsManager({ token }: { token: string }) {
   const fetchLogs = async () => {
     setLoading(true)
     try {
-      const data = await chatLogService.list(token, {
+      const data = await chatLogService.list({
         page,
         page_size: pageSize,
         key_word: searchQuery.trim() || undefined,

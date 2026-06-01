@@ -76,6 +76,7 @@ export default async function Video() {
                     href={`/research/r&d-funding-projects/cyber-clinic/video/${doc.slug}`}
                     style={{ display: 'block', width: '100%', height: '100%' }}
                     target="blank"
+                    rel="noopener noreferrer"
                   >
                     <img
                       src={(doc.coverImage as Media)?.url || ''}
@@ -123,6 +124,7 @@ export default async function Video() {
                       href={`/research/r&d-funding-projects/cyber-clinic/video/${doc.slug}`}
                       style={{ color: 'inherit', textDecoration: 'none' }}
                       target="blank"
+                      rel="noopener noreferrer"
                     >
                       {doc.title}
                     </Link>
@@ -137,6 +139,7 @@ export default async function Video() {
                       textTransform: 'uppercase',
                     }}
                     target="blank"
+                    rel="noopener noreferrer"
                   >
                     XEM THÊM
                   </Link>

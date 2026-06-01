@@ -6,7 +6,7 @@ import type { ConfigOut } from '@/services/chatbot/types'
 import styles from '../page.module.css'
 import { toast } from 'react-toastify'
 
-export default function ConfigManager({ token }: { token: string }) {
+export default function ConfigManager() {
   const [config, setConfig] = useState<ConfigOut | null>(null)
 
   const fetchConfig = async () => {
@@ -26,15 +26,12 @@ export default function ConfigManager({ token }: { token: string }) {
     e.preventDefault()
     if (!config) return
     try {
-      await configService.update(
-        {
-          similarity_threshold: config.similarity_threshold,
-          margin_threshold: config.margin_threshold,
-          log_retention_days: config.log_retention_days,
-          support_email: config.support_email || null,
-        },
-        token,
-      )
+      await configService.update({
+        similarity_threshold: config.similarity_threshold,
+        margin_threshold: config.margin_threshold,
+        log_retention_days: config.log_retention_days,
+        support_email: config.support_email || null,
+      })
       toast.success('Cập nhật cấu hình thành công.')
     } catch (e) {
       toast.error(getChatbotErrorDetail(e) || 'Lỗi khi cập nhật cấu hình.')

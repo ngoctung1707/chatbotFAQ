@@ -6,7 +6,7 @@ import type { RewriteOut } from '@/services/chatbot/types'
 import styles from '../page.module.css'
 import { toast } from 'react-toastify'
 
-export default function RuleManager({ token }: { token: string }) {
+export default function RuleManager() {
   const [rules, setRules] = useState<RewriteOut[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -36,7 +36,7 @@ export default function RuleManager({ token }: { token: string }) {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await rewriteService.create({ raw_text: rawText, normalized_text: normalizedText }, token)
+      await rewriteService.create({ raw_text: rawText, normalized_text: normalizedText })
       setRawText('')
       setNormalizedText('')
       setShowCreateModal(false)
@@ -50,7 +50,7 @@ export default function RuleManager({ token }: { token: string }) {
   const handleDelete = async (id: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa quy tắc này?')) return
     try {
-      await rewriteService.delete(id, token)
+      await rewriteService.delete(id)
       fetchRules()
       toast.success('Đã xóa quy tắc')
     } catch (e) {
@@ -70,7 +70,7 @@ export default function RuleManager({ token }: { token: string }) {
   const saveEdit = async () => {
     if (!editingId) return
     try {
-      await rewriteService.update(editingId, editForm, token)
+      await rewriteService.update(editingId, editForm)
       setEditingId(null)
       fetchRules()
       toast.success('Đã cập nhật quy tắc')

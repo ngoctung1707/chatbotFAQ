@@ -1,14 +1,5 @@
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export interface Token {
-  access_token: string
-  token_type: 'bearer'
-}
-
-export interface TokenWithRefresh extends Token {
-  refresh_token: string
-}
-
 export interface LoginPayload {
   username: string
   password: string
@@ -23,14 +14,6 @@ export interface MeResponse {
   role: string
   full_name: string
   is_active: boolean
-}
-
-export interface RefreshTokenRequest {
-  refresh_token: string
-}
-
-export interface LogoutRequest {
-  refresh_token: string
 }
 
 export interface MessageResponse {

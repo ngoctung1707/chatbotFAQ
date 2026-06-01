@@ -30,6 +30,7 @@ const montserratHeading = Montserrat({
 
 export const metadata = {
   title: 'BK Fintech',
+  description: 'BK Fintech',
 }
 export const dynamic = 'force-dynamic'
 export default async function RootLayout({

@@ -10,7 +10,7 @@ import RegisterBusiness from './RegisterBusiness'
 
 export default function Business() {
   return (
-    <div>
+    <main>
       <Hero userKey="business" />
       <SliderBusiness />
       <RegisterBusiness />
@@ -19,6 +19,6 @@ export default function Business() {
       <Faq userKey="business" />
       {/* <Partners /> */}
       <FooterWrap />
-    </div>
+    </main>
   )
 }
