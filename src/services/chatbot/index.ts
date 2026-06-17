@@ -29,7 +29,7 @@ import type {
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const BASE_URL = 'https://chatbot-api.bkfin.tech'
+const BASE_URL = 'https://chatbot-api.bkfin.tech/api/v1'
 const CSRF_HEADER_NAME = 'X-CSRF-Token'
 const CSRF_META_NAMES = ['csrf-token', 'csrf_token', 'xsrf-token', 'xsrf_token']
 const CSRF_COOKIE_NAMES = ['csrf-token', 'csrf_token', 'XSRF-TOKEN', 'xsrf-token', 'xsrf_token']
