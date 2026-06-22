@@ -247,7 +247,7 @@ export default function UserManager({ currentUser, isAdmin = false }: UserManage
             ))}
             {visibleUsers.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '32px' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '32px' }}>
                   Không có dữ liệu người dùng
                 </td>
               </tr>
