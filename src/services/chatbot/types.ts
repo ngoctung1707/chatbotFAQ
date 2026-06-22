@@ -10,6 +10,7 @@ export interface LoginPayload {
 }
 
 export interface MeResponse {
+  id: number
   username: string
   role: string
   full_name: string

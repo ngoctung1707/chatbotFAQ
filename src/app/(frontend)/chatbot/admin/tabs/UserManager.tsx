@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { getChatbotErrorDetail, userService } from '@/services/chatbot'
+import { authService, getChatbotErrorDetail, userService } from '@/services/chatbot'
 import type { UserOut } from '@/services/chatbot/types'
 import styles from '../page.module.css'
 import { toast } from 'react-toastify'
@@ -31,8 +31,25 @@ export default function UserManager({ currentUser, isAdmin = false }: UserManage
 
   const fetchUsers = async () => {
     try {
-      const data = await userService.list()
-      setUsers(data || [])
+      if (isAdmin) {
+        const data = await userService.list()
+        setUsers(data || [])
+      } else {
+        const data = await authService.me()
+        if (data) {
+          const userOut: UserOut = {
+            id: data.id,
+            username: data.username,
+            full_name: data.full_name,
+            is_active: data.is_active,
+            role: data.role,
+            created_at: null,
+          }
+          setUsers([userOut])
+        } else {
+          setUsers([])
+        }
+      }
     } catch (e) {
       console.error(e)
     }

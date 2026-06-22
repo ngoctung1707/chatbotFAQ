@@ -225,7 +225,6 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 14px;
   color: #231919;
   background: transparent;
 }
@@ -269,7 +268,7 @@
     bottom: 16px;
     right: 16px;
   }
-  
+
   .chatWindow {
     width: calc(100vw - 32px);
     height: 500px;
