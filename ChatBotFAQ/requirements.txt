@@ -1,0 +1,22 @@
+# Serving
+fastapi
+uvicorn[standard]
+google-genai
+python-dotenv
+
+# Embedding + vector search. FlagEmbedding, not sentence-transformers: BGE-M3's
+# sparse head lives in sparse_linear.pt, which SentenceTransformer.save() drops.
+FlagEmbedding
+faiss-cpu
+numpy
+
+# Local vi->en query translation (no API calls)
+ctranslate2
+sentencepiece
+
+# Ingestion. playwright also needs its browser binary, which pip does not
+# install: python -m playwright install chromium
+playwright
+beautifulsoup4
+requests
+pymupdf

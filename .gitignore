@@ -136,3 +136,6 @@ media/
 # Python
 __pycache__/
 *.pyc
+
+# Nested ChatBotFAQ project (installed deps)
+ChatBotFAQ/.venv/

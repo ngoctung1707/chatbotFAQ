@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BKFintech Chatbot</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #fff; --line: #e3e3df; --ink: #1c1c1a;
+    --muted: #6b6b66; --accent: #9a3b2a; --user: #ecebe6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#17171a; --panel:#1f1f23; --line:#33333a; --ink:#eceae5;
+            --muted:#9a9a95; --accent:#e08a6f; --user:#2a2a30; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  header {
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+    background: var(--panel); display: flex; align-items: baseline; gap: 12px;
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 650; }
+  header span { font-size: 13px; color: var(--muted); }
+  #log { flex: 1; overflow-y: auto; padding: 20px; }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  .msg { margin-bottom: 22px; }
+  .msg.user .bubble {
+    background: var(--user); padding: 10px 14px; border-radius: 12px;
+    display: inline-block; max-width: 90%;
+  }
+  .msg.bot .bubble { white-space: pre-wrap; }
+  .sources { margin-top: 12px; font-size: 13px; }
+  .sources summary { color: var(--muted); cursor: pointer; }
+  .sources ol { margin: 8px 0 0; padding-left: 22px; }
+  .translated { margin-top: 8px; color: var(--muted); }
+  .sources li { margin-bottom: 5px; }
+  .sources a { color: var(--accent); text-decoration: none; word-break: break-all; }
+  .sources a:hover { text-decoration: underline; }
+  .score { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .err { color: #b3261e; }
+  form {
+    border-top: 1px solid var(--line); background: var(--panel); padding: 14px 20px;
+  }
+  .row { max-width: 780px; margin: 0 auto; display: flex; gap: 10px; }
+  input[type=text] {
+    flex: 1; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg); color: var(--ink); font: inherit;
+  }
+  input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button {
+    padding: 11px 20px; border: 0; border-radius: 10px; background: var(--accent);
+    color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BKFintech Chatbot</h1>
+  <span id="meta">đang tải…</span>
+</header>
+
+<div id="log"><div class="wrap" id="thread"></div></div>
+
+<form id="form">
+  <div class="row">
+    <input id="q" type="text" autocomplete="off" placeholder="Hỏi về BKFintech…" />
+    <button id="send" type="submit">Gửi</button>
+  </div>
+</form>
+
+<script>
+const thread = document.getElementById('thread');
+const log = document.getElementById('log');
+const form = document.getElementById('form');
+const input = document.getElementById('q');
+const send = document.getElementById('send');
+
+fetch('/api/health').then(r => r.json()).then(h => {
+  document.getElementById('meta').textContent =
+    `${h.chunks_indexed} chunks · ${h.model} · top-k ${h.default_top_k}`;
+}).catch(() => {});
+
+function add(role) {
+  const el = document.createElement('div');
+  el.className = 'msg ' + role;
+  el.innerHTML = '<div class="bubble"></div>';
+  thread.appendChild(el);
+  return el;
+}
+const scroll = () => { log.scrollTop = log.scrollHeight; };
+
+const esc = s => String(s).replace(/</g, '&lt;');
+
+function renderSources(el, sources, queryUsed) {
+  if (!sources.length) return;
+  const d = document.createElement('details');
+  d.className = 'sources';
+  const items = sources.map(s =>
+    `<li>[${s.n}] <a href="${s.url}" target="_blank" rel="noopener">${
+      esc(s.title || s.url)
+    }</a> <span class="score">${s.score}</span></li>`).join('');
+  // The passages are mostly English, so a Vietnamese question is translated
+  // before it is embedded. Showing the translation makes an odd-looking result
+  // traceable instead of mysterious.
+  const translated = queryUsed
+    ? `<div class="translated">Đã tìm bằng: <em>${esc(queryUsed)}</em></div>` : '';
+  d.innerHTML = `<summary>${sources.length} nguồn tham khảo</summary>${translated}<ol>${items}</ol>`;
+  el.appendChild(d);
+  scroll();
+}
+
+// The response is an SSE stream but this is a POST, so EventSource (GET-only)
+// cannot be used — the body is parsed from the fetch reader instead.
+async function ask(question) {
+  add('user').querySelector('.bubble').textContent = question;
+  const botEl = add('bot');
+  const bubble = botEl.querySelector('.bubble');
+  scroll();
+
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question })
+  });
+  if (!res.ok) {
+    bubble.className = 'bubble err';
+    bubble.textContent = `Lỗi ${res.status}`;
+    return;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE frames are separated by a blank line; keep any partial tail buffered.
+    const frames = buffer.split('\n\n');
+    buffer = frames.pop();
+
+    for (const frame of frames) {
+      const ev = /^event: (.+)$/m.exec(frame)?.[1];
+      const raw = /^data: (.+)$/m.exec(frame)?.[1];
+      if (!ev || !raw) continue;
+      const data = JSON.parse(raw);
+      if (ev === 'sources') renderSources(botEl, data.sources, data.query_used);
+      else if (ev === 'delta') { bubble.textContent += data.text; scroll(); }
+      else if (ev === 'error') {
+        bubble.className = 'bubble err';
+        bubble.textContent += `\n\n[${data.message}]`;
+      }
+    }
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  input.disabled = send.disabled = true;
+  try { await ask(question); }
+  finally {
+    input.disabled = send.disabled = false;
+    input.focus();
+  }
+});
+input.focus();
+</script>
+</body>
+</html>

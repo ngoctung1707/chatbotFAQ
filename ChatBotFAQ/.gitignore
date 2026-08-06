@@ -1,0 +1,19 @@
+# The BGE-M3 weights (2.2GB) — re-downloaded on first run by Data_embedding.py.
+# A wildcard, not the bare directory: git will not look inside an excluded
+# directory, so the exception below only works if the contents are what is
+# excluded rather than the directory itself.
+app/models/*
+
+# …except the int8 translator (74MB), which is committed so a fresh clone can
+# search Vietnamese questions without running the conversion step first.
+!app/models/opus-mt-vi-en-ct2/
+
+# Rebuilt from data/chunks_all.jsonl by scripts/build_index.py
+data/faiss_index/
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+.env
