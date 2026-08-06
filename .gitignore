@@ -132,3 +132,7 @@ dist
 .idea
 
 media/
+
+# Python
+__pycache__/
+*.pyc

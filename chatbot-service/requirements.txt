@@ -1,1 +1,11 @@
-pip freeze > requirements.txt
+requests>=2.32.0
+
+beautifulsoup4>=4.12.3
+
+lxml>=5.2.2
+
+PyYAML>=6.0.2
+
+langchain-text-splitters>=0.3.0
+
+tqdm>=4.66.5

@@ -1,0 +1,43 @@
+pages:
+
+  news:
+    collection: news
+    parser: news
+    listing_urls:
+      - https://fintech.hust.edu.vn/news
+
+  courses:
+    collection: courses
+    parser: course
+    listing_urls:
+      - https://fintech.hust.edu.vn/courses
+
+  research_labs:
+    collection: research-labs
+    parser: research_lab
+    listing_urls:
+      - https://fintech.hust.edu.vn/research/r&d-labs
+
+  solutions:
+    collection: solutions
+    parser: solution
+    listing_urls:
+      - https://fintech.hust.edu.vn/solutions
+
+  static:
+    collection: static
+    parser: static
+    urls:
+      - https://fintech.hust.edu.vn/about/welcome-message
+      - https://fintech.hust.edu.vn/about/business-intelligence-en
+      - https://fintech.hust.edu.vn/about/advisory-board
+      - https://fintech.hust.edu.vn/about/institute-council
+      - https://fintech.hust.edu.vn/about/board-of-deans
+      - https://fintech.hust.edu.vn/about/researchers-and-assistants
+      - https://fintech.hust.edu.vn/about/back-office
+      - https://fintech.hust.edu.vn/get-involved/hackday
+      - https://fintech.hust.edu.vn/get-involved/club
+      - https://fintech.hust.edu.vn/research/publications
+      - https://fintech.hust.edu.vn/research/r&d-funding-projects
+      - https://fintech.hust.edu.vn/research/cyber-clinic/about
+      - https://fintech.hust.edu.vn/research/cyber-clinic/query
