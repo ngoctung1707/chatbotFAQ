@@ -1,0 +1,106 @@
+/**
+ * In-memory, brute-force cosine similarity store — the JS replacement for
+ * retriever.py's FAISS-backed VectorStore.
+ *
+ * Deliberately NOT using a native ANN library (faiss-node, hnswlib-node):
+ * both need a compiled native addon, which is a real liability on Vercel's
+ * serverless build/runtime (arch mismatches between build and execution
+ * environment, cold-start cost of loading a native binary). For a single
+ * institute's public website — hundreds to a few thousand chunks — a flat
+ * O(n) cosine scan over plain JS arrays is fast enough (sub-10ms range) and
+ * has zero native-dependency risk. If the corpus grows into the tens of
+ * thousands of chunks, revisit this with a real ANN index.
+ *
+ * The index is built offline by scripts/build-index.ts and loaded here as a
+ * single JSON file — analogous to VectorStore.load(index_dir) reading the
+ * FAISS binary + sidecar metadata, just one file instead of two formats.
+ */
+import { readFile } from "fs/promises";
+import path from "path";
+import { INDEX_DIR } from "./config";
+import type { LexicalWeights } from "./embedding";
+
+export interface ChunkRecord {
+  chunk_id: string;
+  url: string;
+  title?: string;
+  published_at?: string;
+  collection?: string;
+  raw: string;
+  content?: string;
+}
+
+export interface StoredChunk extends ChunkRecord {
+  dense: number[];
+  // Serialized as an array of pairs for JSON; converted to Map on load.
+  lexical: [string, number][];
+}
+
+export interface SearchHit extends ChunkRecord {
+  index: number;
+  score: number;
+}
+
+function cosine(a: number[], b: number[]): number {
+  let dot = 0;
+  for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
+  // Vectors from embedDense() are already L2-normalized at embed time, so a
+  // plain dot product *is* cosine similarity — norms are computed here too
+  // only as a safety net in case a caller passes in a non-normalized vector.
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) normA += a[i] * a[i];
+  for (let i = 0; i < b.length; i++) normB += b[i] * b[i];
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom < 1e-9 ? 0 : dot / denom;
+}
+
+export class VectorStore {
+  private chunks: StoredChunk[];
+  private lexicalCache: LexicalWeights[];
+
+  private constructor(chunks: StoredChunk[]) {
+    this.chunks = chunks;
+    this.lexicalCache = chunks.map((c) => new Map(c.lexical));
+  }
+
+  static async load(indexDir: string = INDEX_DIR): Promise<VectorStore> {
+    const file = path.join(indexDir, "store.json");
+    let raw: string;
+    try {
+      raw = await readFile(file, "utf-8");
+    } catch {
+      throw new Error(
+        `Không tìm thấy index tại ${file}. Chạy \`npm run build-index\` trước ` +
+          `(đọc data/processed/chunks.json và tạo file này).`
+      );
+    }
+    const chunks: StoredChunk[] = JSON.parse(raw);
+    return new VectorStore(chunks);
+  }
+
+  get size(): number {
+    return this.chunks.length;
+  }
+
+  /** Brute-force top-k by cosine similarity against the dense query vector. */
+  search(queryDense: number[], topK: number): SearchHit[] {
+    const scored = this.chunks.map((chunk, index) => ({
+      index,
+      score: cosine(queryDense, chunk.dense),
+      chunk_id: chunk.chunk_id,
+      url: chunk.url,
+      title: chunk.title,
+      published_at: chunk.published_at,
+      collection: chunk.collection,
+      raw: chunk.raw,
+      content: chunk.content,
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, topK);
+  }
+
+  lexicalFor(index: number): LexicalWeights {
+    return this.lexicalCache[index];
+  }
+}
