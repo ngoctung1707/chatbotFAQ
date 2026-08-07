@@ -19,6 +19,19 @@ from app.services.llm import build_request
 from app.services.retriever import Retriever
 
 
+def _contents_text(contents) -> str:
+    """Flatten the multi-turn `contents` list back into printable text.
+
+    Prior turns are labeled by role so history reads as history; the final
+    (current) turn is left bare since that's the one being previewed.
+    """
+    blocks = []
+    for i, turn in enumerate(contents):
+        text = "".join(part.text for part in turn.parts)
+        blocks.append(text if i == len(contents) - 1 else f"[{turn.role}] {text}")
+    return "\n\n".join(blocks)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("question")
@@ -34,6 +47,12 @@ def main():
     request = build_request(args.question, chunks)
 
     if args.json:
+        # `contents` is a list of SDK `Content` objects (multi-turn history +
+        # the live question), not plain data — flatten it before dumping.
+        request["contents"] = [
+            {"role": turn.role, "text": "".join(p.text for p in turn.parts)}
+            for turn in request["contents"]
+        ]
         print(json.dumps(request, ensure_ascii=False, indent=2))
         return
 
@@ -55,7 +74,7 @@ def main():
     print("\n--- system_instruction ---")
     print(request["system"])
     print("\n--- contents ---")
-    user = request["contents"]
+    user = _contents_text(request["contents"])
     print(user if args.full else user[:1500] + "\n… (use --full for everything)")
 
     words = len(user.split()) + len(request["system"].split())

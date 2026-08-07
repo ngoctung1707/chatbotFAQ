@@ -24,14 +24,18 @@ function parseSseFrames(buffer: string): { events: SseEvent[]; rest: string } {
 
 export async function POST(req: NextRequest) {
   let message: unknown
+  let session_id: unknown
   try {
-    ;({ message } = await req.json())
+    ;({ message, session_id } = await req.json())
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   if (typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ error: 'message is required' }, { status: 400 })
+  }
+  if (typeof session_id !== 'string' || !session_id.trim()) {
+    return NextResponse.json({ error: 'session_id is required' }, { status: 400 })
   }
   const question = message.trim().slice(0, 2000)
 
@@ -43,7 +47,7 @@ export async function POST(req: NextRequest) {
     upstream = await fetch(`${CHATBOT_FAQ_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, session_id }),
       signal: controller.signal,
     })
   } catch {

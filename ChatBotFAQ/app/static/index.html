@@ -80,6 +80,11 @@ const form = document.getElementById('form');
 const input = document.getElementById('q');
 const send = document.getElementById('send');
 
+// One id per page load, kept only in memory: the server pairs it with up to
+// 3 Q&A turns in Mongo so a follow-up question can refer back to what was
+// just asked, without needing a login or persisting anything on this side.
+const sessionId = crypto.randomUUID();
+
 fetch('/api/health').then(r => r.json()).then(h => {
   document.getElementById('meta').textContent =
     `${h.chunks_indexed} chunks · ${h.model} · top-k ${h.default_top_k}`;
@@ -94,7 +99,23 @@ function add(role) {
 }
 const scroll = () => { log.scrollTop = log.scrollHeight; };
 
-const esc = s => String(s).replace(/</g, '&lt;');
+const esc = s => String(s).replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// [n] citation markers (e.g. "[1]" or "[2][5]") are how the server picks
+// which chunks the footer links to, but they're noise once the footer itself
+// is a clickable link — stripped before display, kept in the raw text that
+// goes to chat history. The leading \s* eats the space before a run of
+// markers too, so "kinh tế [1][2]." doesn't leave a stray space before the
+// period. Negative lookahead so the footer's own "[title](url)" links
+// (title is never pure digits) survive untouched.
+const CITATION_MARKER_RE = /\s*(?:\[\d+\])+(?!\()/g;
+
+// Only the citation footer uses markdown links ("[title](url)").
+// http(s)-only on purpose — no javascript: URIs from any source.
+const LINK_RE = /\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g;
+const linkify = raw => esc(raw.replace(CITATION_MARKER_RE, '')).replace(LINK_RE,
+  '<a href="$2" target="_blank" rel="noopener">$1</a>');
 
 function renderSources(el, sources, queryUsed) {
   if (!sources.length) return;
@@ -120,12 +141,16 @@ async function ask(question) {
   add('user').querySelector('.bubble').textContent = question;
   const botEl = add('bot');
   const bubble = botEl.querySelector('.bubble');
+  // Tracked separately from bubble.innerHTML: re-parsing the rendered HTML
+  // back into markdown on every delta would be lossy. Named answerText, not
+  // raw — the SSE loop below already uses `raw` for each frame's data payload.
+  let answerText = '';
   scroll();
 
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question })
+    body: JSON.stringify({ question, session_id: sessionId })
   });
   if (!res.ok) {
     bubble.className = 'bubble err';
@@ -152,10 +177,14 @@ async function ask(question) {
       if (!ev || !raw) continue;
       const data = JSON.parse(raw);
       if (ev === 'sources') renderSources(botEl, data.sources, data.query_used);
-      else if (ev === 'delta') { bubble.textContent += data.text; scroll(); }
-      else if (ev === 'error') {
+      else if (ev === 'delta') {
+        answerText += data.text;
+        bubble.innerHTML = linkify(answerText);
+        scroll();
+      } else if (ev === 'error') {
         bubble.className = 'bubble err';
-        bubble.textContent += `\n\n[${data.message}]`;
+        answerText += `\n\n[${data.message}]`;
+        bubble.innerHTML = linkify(answerText);
       }
     }
   }

@@ -12,8 +12,10 @@ Run with:
 """
 import json
 import os
+import re
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,6 +34,7 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 # the request handler* and the answer never streams.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+from app.services.chat_history import append_message, get_history
 from app.services.llm import FREE_TIER_RPM, MODEL, TIMEOUT_MS, Answerer, MockAnswerer
 from app.services.retriever import Retriever
 from app.services.translator import ENABLED as TRANSLATE_ENABLED, QueryTranslator
@@ -52,6 +55,11 @@ MOCK = os.environ.get("CHATBOT_MOCK", "") not in ("", "0", "false")
 LOG_CHUNKS = os.environ.get("CHATBOT_LOG_CHUNKS", "1") not in ("0", "false", "")
 LOG_SNIPPET_CHARS = 120
 
+# How many source links the footer may show. Kept small: the footer is a quick
+# pointer to what the answer actually drew from, not a full source dump.
+MAX_CITATION_LINKS = 2
+CITATION_RE = re.compile(r"\[(\d+)\]")
+
 app = FastAPI(title="BKFintech Chatbot")
 
 # Loading the embedding model takes seconds and ~2GB of RAM, so both services
@@ -68,6 +76,7 @@ answerer = MockAnswerer() if MOCK else Answerer()
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=DEFAULT_TOP_K, ge=1, le=20)
+    session_id: str = Field(min_length=1, max_length=200)
 
 
 def sse(event: str, data: dict) -> str:
@@ -124,6 +133,34 @@ def log_retrieval(question: str, query_used: str, chunks: list[dict]):
     print("=" * 96, flush=True)
 
 
+def citation_links(answer_text: str, chunks: list[dict]) -> str:
+    """Build a markdown footer for the up-to-`MAX_CITATION_LINKS` chunks the
+    answer actually cited.
+
+    Ranked by how often each [n] appears in the answer, not by retrieval
+    score — the model can cite a lower-ranked chunk and ignore the top one, and
+    the footer should reflect what was used, not what was fetched.
+    """
+    valid_ns = [int(n) for n in CITATION_RE.findall(answer_text) if 1 <= int(n) <= len(chunks)]
+    if not valid_ns:
+        return ""
+
+    counts = Counter(valid_ns)
+    first_seen = {}
+    for n in valid_ns:
+        first_seen.setdefault(n, len(first_seen))
+    ranked = sorted(counts, key=lambda n: (-counts[n], first_seen[n]))
+
+    # The [n] index is only for ranking, not for display — the footer is
+    # meant to read as plain clickable links, not a renumbered citation list.
+    lines = []
+    for n in ranked[:MAX_CITATION_LINKS]:
+        chunk = chunks[n - 1]
+        title = (chunk.get("title") or "").strip() or chunk.get("url", "")
+        lines.append(f"[{title}]({chunk.get('url', '')})")
+    return "\n\n---\n" + "\n".join(lines)
+
+
 @app.get("/")
 def index():
     return FileResponse(STATIC_DIR / "index.html")
@@ -151,6 +188,10 @@ def chat(request: ChatRequest):
     # the model call then fails.
     log_retrieval(request.question, query_used, chunks)
 
+    # Fetched once up front, alongside retrieval: the Answerer needs it before
+    # the first token is generated, so there is no later point to fetch it at.
+    history = get_history(request.session_id)
+
     def events():
         # Sources first: they are ready immediately and give the reader
         # something to look at while the answer generates.
@@ -169,14 +210,23 @@ def chat(request: ChatRequest):
         })
 
         if not chunks:
+            # Not saved to history: this reply carries no information from the
+            # knowledge base, so remembering it would only spend one of the
+            # three Q&A slots on a turn with nothing for a later question to
+            # refer back to.
             yield sse("delta", {"text": "Tôi không tìm thấy thông tin nào liên quan "
                                         "đến câu hỏi này trong dữ liệu của BKFintech."})
             yield sse("done", {})
             return
 
         started = time.monotonic()
+        # MockAnswerer.stream() only ever echoes chunks — it has no notion of
+        # conversation history, so history is passed to the real Answerer only.
+        stream_args = (request.question, chunks) if MOCK else (request.question, chunks, history)
+        answer_parts = []
         try:
-            for text in answerer.stream(request.question, chunks):
+            for text in answerer.stream(*stream_args):
+                answer_parts.append(text)
                 yield sse("delta", {"text": text})
         except Exception as exc:  # surface the failure in the UI instead of a dead stream
             # Also to the console: an error that only reaches the browser is
@@ -185,8 +235,19 @@ def chat(request: ChatRequest):
             print(f"    !! {type(exc).__name__} sau {elapsed:.1f}s: "
                   f"{str(exc)[:200]}", flush=True)
             yield sse("error", {"message": friendly_error(exc)})
+            # Not saved: a half-formed or failed answer would poison the
+            # context for every question asked after it in this session.
             return
         print(f"    trả lời xong sau {time.monotonic() - started:.1f}s", flush=True)
+        answer_text = "".join(answer_parts)
+        footer = citation_links(answer_text, chunks)
+        if footer:
+            # Not saved to history below: it carries no new information beyond
+            # the [n] markers already in answer_text, so keeping it out saves a
+            # history slot for turns that actually add context.
+            yield sse("delta", {"text": footer})
+        append_message(request.session_id, "user", request.question)
+        append_message(request.session_id, "assistant", answer_text)
         yield sse("done", {})
 
     return StreamingResponse(

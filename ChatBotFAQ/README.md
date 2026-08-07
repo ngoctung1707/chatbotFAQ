@@ -152,7 +152,7 @@ threshold; they are different scales.
 | Env var | Default | Notes |
 |---|---|---|
 | `GEMINI_API_KEY` | — | Or `GOOGLE_API_KEY` |
-| `CHATBOT_MODEL` | `gemini-3.6-flash` | |
+| `CHATBOT_MODEL` | `gemini-3.1-flash-lite` | |
 | `CHATBOT_TOP_K` | `7` | Chunks reaching the prompt, after reranking 20 |
 | `CHATBOT_MAX_POINTS` | `5` | Bullets the answer may use |
 | `CHATBOT_THINKING` | `LOW` | Answering from supplied passages is closer to extraction than open reasoning |

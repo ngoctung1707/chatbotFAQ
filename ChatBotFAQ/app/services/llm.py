@@ -1,4 +1,5 @@
-"""Build the grounded prompt and stream Gemini's answer.
+"""Build the grounded prompt and stream the model's answer (Gemini or Gemma,
+both served through the same google-genai client).
 
 The retrieved passages are passed as a numbered list so the model can cite by
 number, and the answering rules go in the system instruction rather than being
@@ -8,6 +9,7 @@ repeated per turn — that keeps the per-question part of the request small.
 `content` exists to steer the *embedding*, and feeding it to the model would
 just be noise it might quote back.
 """
+
 import os
 import sys
 import time
@@ -18,14 +20,14 @@ from google.genai import types
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-MODEL = os.environ.get("CHATBOT_MODEL", "gemini-3.5-flash-lite")
+MODEL = os.environ.get("CHATBOT_MODEL", "gemini-3.1-flash-lite")
 MAX_OUTPUT_TOKENS = 2048
 
-# Answering from supplied passages is extraction, not open reasoning, and the
-# measurements say so: on gemini-3.5-flash-lite the same question took 2.0s at
-# MINIMAL and 148.8s at LOW, for answers that differed only in word choice —
-# same three bullets, same facts, same citations. Nothing here needs a model to
-# deliberate; the passages are already in front of it.
+# Thinking budgets are a Gemini-only feature (Gemma has no "thinking" mode), so
+# this is only read/applied when MODEL is a Gemini model — see build_config().
+# Kept for whoever switches back: on gemini-3.5-flash-lite the same question
+# took 2.0s at MINIMAL and 148.8s at LOW, for answers that differed only in
+# word choice, so MINIMAL was the right default there too.
 THINKING_LEVEL = os.environ.get("CHATBOT_THINKING", "MINIMAL").upper()
 
 # Give up rather than leave the browser watching an open stream that will never
@@ -35,10 +37,11 @@ THINKING_LEVEL = os.environ.get("CHATBOT_THINKING", "MINIMAL").upper()
 # are told.
 TIMEOUT_MS = int(os.environ.get("CHATBOT_TIMEOUT_MS", "10000"))
 
-# Free-tier requests per minute, which is per project *per model*: 15 on
-# gemini-3.5-flash-lite, 5 on gemini-3.6-flash. Nothing enforces it here — it is
-# quoted so the 429 message tells the user a number that matches their plan, and
-# so the evaluation script has one place to read it from.
+# Free-tier requests per minute is per project *per model* and varies by model
+# — check the current quota for MODEL on the AI Studio/API quota page and set
+# CHATBOT_RPM to match. Nothing enforces it here — it is quoted so the 429
+# message tells the user a number that matches their plan, and so the
+# evaluation script has one place to read it from.
 FREE_TIER_RPM = int(os.environ.get("CHATBOT_RPM", "15"))
 
 # How many bullets the answer may use. Kept small on purpose: the failure mode
@@ -48,28 +51,39 @@ MAX_POINTS = int(os.environ.get("CHATBOT_MAX_POINTS", "5"))
 # The exact string the model must return when the passages do not answer the
 # question. Fixed and short so it can be detected downstream, and so there is no
 # room to soften a refusal into a guess.
-NO_ANSWER = "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?"
+NO_ANSWER = (
+    "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?"
+)
+NOT_UPDATED = "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết."
 
 SYSTEM_PROMPT = f"""\
-Bạn là trợ lý của BKFintech — Viện Công nghệ và Kinh tế số, Đại học Bách khoa Hà Nội.
-
-Chỉ dùng thông tin nằm trong khối <data> của tin nhắn người dùng. Không dùng kiến \
-thức có sẵn của bạn, không tra cứu bên ngoài, không suy luận thêm ngoài những gì \
-văn bản nói.
-
-- Nếu <data> không chứa thông tin trả lời được câu hỏi, trả lời đúng một câu \
-này và không gì khác: "{NO_ANSWER}"
-  Không giải thích thêm, không đề xuất câu hỏi khác.
-- Trả lời thẳng vào vấn đề. Tuyệt đối không viết câu dẫn kiểu "Dựa vào văn bản \
-bạn cung cấp", "Theo thông tin được cung cấp".
-- Tối đa {MAX_POINTS} gạch đầu dòng, mỗi ý một dòng. Câu hỏi đơn giản thì một ý \
-là đủ — không kéo dài cho đủ số.
-- Cuối mỗi ý ghi số nguồn đã dùng, dạng [1] hoặc [2][5].
-- Không đoán ngày tháng, số liệu, tên người hay giá tiền không có trong <data>.
-- Trả lời bằng đúng ngôn ngữ của câu hỏi. Nguồn có thể khác ngôn ngữ với câu hỏi \
-— dịch phần cần dùng, không đổi ngôn ngữ trả lời và không xin lỗi về việc đó.
-- Nếu các nguồn mâu thuẫn nhau, nêu cả hai và chỉ ra chỗ khác biệt thay vì tự \
-chọn một bên.\
+Bạn là trợ lý BKFintech (Viện Công nghệ và Kinh tế số, ĐH Bách khoa Hà Nội). \
+Chỉ dùng thông tin trong <data>. Không dùng kiến thức ngoài, không tra cứu \
+ngoài, không suy luận thêm những gì văn bản không nói.
+Văn phong:
+- Xưng "mình", gọi người dùng là "bạn";
+- Nói như trò chuyện. Mở đầu ngắn ("Dạ,") được; câu dẫn thủ tục \
+("Dựa trên thông tin được cung cấp…", "Theo tài liệu…") không.
+- Không chấm than, không nịnh, không xin lỗi dài dòng.
+- <data> không đủ trả lời câu hỏi → trả lời đúng một câu, không gì khác: \
+"{NOT_UPDATED}"
+- nếu như bạn không hiểu câu hỏi của user hoặc phạm vi của câu hỏi quá rộng, hãy trả lời đúng một câu: "{NO_ANSWER}"
+- <data> đúng đối tượng hỏi (khóa học, chương trình...) nhưng THIẾU chi tiết \
+câu hỏi cần (chi phí, thời lượng, ngày khai giảng, năm thành lập...) → trả lời "{NOT_UPDATED}" \
+kèm số nguồn xác nhận đối tượng. KHÔNG dùng câu "{NO_ANSWER}" cho trường hợp này.
+- Trả lời thẳng vào vấn đề, không dẫn kiểu "Dựa vào văn bản/Theo thông tin cung cấp".
+- Tối đa {MAX_POINTS} gạch đầu dòng; câu đơn giản thì 1 ý là đủ.
+- Không bịa ngày tháng, số liệu, tên người, giá tiền ngoài <data>.
+- Trả lời đúng ngôn ngữ câu hỏi; nguồn khác ngôn ngữ thì dịch phần cần dùng, \
+không đổi ngôn ngữ trả lời, không xin lỗi vì điều đó.
+Văn phong:
+Xưng "mình", gọi người dùng là "bạn";
+Nói như trò chuyện. Mở đầu ngắn ("Dạ,") được; câu dẫn thủ tục \
+("Dựa trên thông tin được cung cấp…", "Theo tài liệu…") không.
+Không chấm than, không nịnh, không xin lỗi dài dòng.
+- Nguồn mâu thuẫn nhau → nêu cả hai, chỉ rõ khác biệt, không tự chọn một bên.
+- Lượt hỏi-đáp trước chỉ dùng khi câu hỏi hiện tại phụ thuộc ngữ cảnh (đại từ, \
+hỏi tiếp điều vừa nhắc). Chủ đề mới, độc lập → bỏ qua lượt trước.\
 """
 
 
@@ -97,36 +111,63 @@ def build_user_message(question: str, chunks: list[dict]) -> str:
         # Nothing retrieved is itself an empty <data> block, so the NO_ANSWER
         # rule applies on its own without a second code path here.
         return f"Câu hỏi: {question}\n\n<data>\n</data>"
-    return (
-        f"Câu hỏi: {question}\n\n"
-        "<data>\n"
-        f"{format_sources(chunks)}\n"
-        "</data>"
+    return f"Câu hỏi: {question}\n\n" "<data>\n" f"{format_sources(chunks)}\n" "</data>"
+
+
+def build_contents(question: str, chunks: list[dict], history: list[dict]) -> list:
+    """Prior turns plus the current question, as the multi-turn list the SDK
+    expects — not one string with the history flattened into it, which would
+    leave the model unable to tell where a past answer ends and the live
+    question's <data> block begins.
+
+    `history` stores roles as "user"/"assistant" (see chat_history.py); Gemini
+    calls the model's own turns "model", so that rename happens only here, at
+    the boundary, rather than leaking the Gemini-specific name into storage.
+    """
+    turns = [
+        types.Content(
+            role="model" if msg["role"] == "assistant" else "user",
+            parts=[types.Part(text=msg["content"])],
+        )
+        for msg in history
+    ]
+    turns.append(
+        types.Content(
+            role="user",
+            parts=[types.Part(text=build_user_message(question, chunks))],
+        )
     )
+    return turns
 
 
 def build_config() -> types.GenerateContentConfig:
-    return types.GenerateContentConfig(
+    kwargs = dict(
         system_instruction=SYSTEM_PROMPT,
         max_output_tokens=MAX_OUTPUT_TOKENS,
-        thinking_config=types.ThinkingConfig(thinking_level=THINKING_LEVEL),
     )
+    # Gemma rejects thinking_config outright — it's a Gemini-only field, so it
+    # is only attached when MODEL is actually a Gemini model.
+    if MODEL.startswith("gemini"):
+        kwargs["thinking_config"] = types.ThinkingConfig(thinking_level=THINKING_LEVEL)
+    return types.GenerateContentConfig(**kwargs)
 
 
-def build_request(question: str, chunks: list[dict]) -> dict:
+def build_request(
+    question: str, chunks: list[dict], history: list[dict] = None
+) -> dict:
     """What gets sent to the API, as a plain dict for preview_prompt.py.
 
     Kept separate from `build_config()` so the prompt can be inspected without
     constructing SDK objects or holding an API key.
     """
+    config = {"max_output_tokens": MAX_OUTPUT_TOKENS}
+    if MODEL.startswith("gemini"):
+        config["thinking_level"] = THINKING_LEVEL
     return {
         "model": MODEL,
         "system": SYSTEM_PROMPT,
-        "contents": build_user_message(question, chunks),
-        "config": {
-            "max_output_tokens": MAX_OUTPUT_TOKENS,
-            "thinking_level": THINKING_LEVEL,
-        },
+        "contents": build_contents(question, chunks, history or []),
+        "config": config,
     }
 
 
@@ -177,7 +218,7 @@ class Answerer:
             http_options=types.HttpOptions(timeout=TIMEOUT_MS)
         )
 
-    def stream(self, question: str, chunks: list[dict]):
+    def stream(self, question: str, chunks: list[dict], history: list[dict] = None):
         """Yield answer text as it is generated, or give up at the deadline.
 
         Streaming rather than a single response: a grounded answer over seven
@@ -192,7 +233,7 @@ class Answerer:
         deadline = time.monotonic() + TIMEOUT_MS / 1000
         for part in self.client.models.generate_content_stream(
             model=MODEL,
-            contents=build_user_message(question, chunks),
+            contents=build_contents(question, chunks, history or []),
             config=build_config(),
         ):
             if part.text:

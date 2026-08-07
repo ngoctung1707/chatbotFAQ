@@ -3,6 +3,7 @@ fastapi
 uvicorn[standard]
 google-genai
 python-dotenv
+pymongo
 
 # Embedding + vector search. FlagEmbedding, not sentence-transformers: BGE-M3's
 # sparse head lives in sparse_linear.pt, which SentenceTransformer.save() drops.

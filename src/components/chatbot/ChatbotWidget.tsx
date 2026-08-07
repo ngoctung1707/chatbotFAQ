@@ -44,11 +44,37 @@ const SendIcon = () => (
   </svg>
 )
 
-async function fetchBotReply(message: string): Promise<string> {
+// The backend answer carries [n] citation markers (e.g. "[1]" or "[2][5]")
+// used only to pick which sources the trailing "[title](url)" footer links
+// to — stripped here since they're not meant to be shown to the user.
+const CITATION_MARKER_RE = /\s*(?:\[\d+\])+(?!\()/g
+const LINK_RE = /\[([^[\]]+)\]\((https?:\/\/[^\s()]+)\)/g
+
+function renderMessageContent(content: string): React.ReactNode[] {
+  const cleaned = content.replace(CITATION_MARKER_RE, '')
+  const nodes: React.ReactNode[] = []
+  let lastIndex = 0
+  let key = 0
+  let match: RegExpExecArray | null
+  LINK_RE.lastIndex = 0
+  while ((match = LINK_RE.exec(cleaned)) !== null) {
+    if (match.index > lastIndex) nodes.push(cleaned.slice(lastIndex, match.index))
+    nodes.push(
+      <a key={key++} href={match[2]} target="_blank" rel="noopener noreferrer">
+        {match[1]}
+      </a>,
+    )
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < cleaned.length) nodes.push(cleaned.slice(lastIndex))
+  return nodes
+}
+
+async function fetchBotReply(message: string, sessionId: string): Promise<string> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, session_id: sessionId }),
   })
 
   if (!res.ok) {
@@ -65,6 +91,14 @@ export default function ChatbotWidget() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  // Generated once per mount, kept only in memory: pairs this browser tab
+  // with up to 3 Q&A turns of server-side history so a follow-up question
+  // can refer back to what was just asked, without needing a login.
+  const sessionIdRef = useRef<string>('')
+
+  useEffect(() => {
+    sessionIdRef.current = crypto.randomUUID()
+  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -79,7 +113,7 @@ export default function ChatbotWidget() {
     setLoading(true)
 
     try {
-      const reply = await fetchBotReply(text)
+      const reply = await fetchBotReply(text, sessionIdRef.current)
       setMessages((prev) => [
         ...prev,
         { id: nextId(), role: 'bot', content: reply || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.' },
@@ -127,7 +161,9 @@ export default function ChatbotWidget() {
                 key={msg.id}
                 className={`${styles.messageRow} ${msg.role === 'user' ? styles.user : styles.bot}`}
               >
-                <div className={styles.bubble}>{msg.content}</div>
+                <div className={styles.bubble}>
+                  {msg.role === 'bot' ? renderMessageContent(msg.content) : msg.content}
+                </div>
               </div>
             ))}
 

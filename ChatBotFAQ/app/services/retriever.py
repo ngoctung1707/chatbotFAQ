@@ -57,6 +57,30 @@ DEFAULT_CANDIDATES = 20
 DENSE_WEIGHT = float(os.environ.get("CHATBOT_DENSE_WEIGHT", "0.7"))
 SPARSE_WEIGHT = float(os.environ.get("CHATBOT_SPARSE_WEIGHT", "0.3"))
 
+# Words a user says when they mean "this institute" without naming it — this
+# bot only ever serves one organization, so there is no ambiguity to resolve,
+# just a name missing from the query that the corpus's own pages spell out in
+# full. Kept short and reviewed by hand rather than inferred, since a wrong
+# entry here silently pollutes every query that contains it.
+INSTITUTE_ALIASES = ["viện", "trường"]
+INSTITUTE_FULL_NAME = "Viện Công nghệ và Kinh tế số BK Fintech"
+
+
+def expand_self_reference(question: str) -> str | None:
+    """A second query variant with the institute's full name appended, for
+    questions that refer to it only as "viện"/"trường".
+
+    Returns None (rather than the question unchanged) when no alias is
+    present, so callers can tell "nothing to add" apart from "added and it's
+    a no-op" without a second check.
+    """
+    q = question.lower()
+    if INSTITUTE_FULL_NAME.lower() in q:
+        return None
+    if any(alias in q for alias in INSTITUTE_ALIASES):
+        return f"{question} {INSTITUTE_FULL_NAME}"
+    return None
+
 
 def _rescale(values: list[float]) -> list[float]:
     """Stretch a list onto 0..1. A flat list carries no ranking signal, so it
@@ -106,7 +130,14 @@ class Retriever:
         # sometimes lose a match the original would have found. Keeping both and
         # taking the better score per chunk can only add, never subtract.
         queries = [question]
-        english = self.query_for(question)
+        expanded = expand_self_reference(question)
+        if expanded:
+            queries.append(expanded)
+        # Translate the expanded form when there is one: "viện" alone commonly
+        # mistranslates to "hospital" (the more frequent sense in general text),
+        # but with the institute's full name attached the translator has an
+        # anchor and resolves it correctly.
+        english = self.query_for(expanded or question)
         if english != question:
             queries.append(english)
 
