@@ -52,9 +52,8 @@ const STOPWORDS = new Set([
 ]);
 
 function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || []).filter(
-    (t) => t.length > 1 && !STOPWORDS.has(t)
-  );
+  const matches: string[] = text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  return matches.filter((t) => t.length > 1 && !STOPWORDS.has(t));
 }
 
 /** Term-frequency weights, L2-normalized so lexicalScore() is a cosine-like

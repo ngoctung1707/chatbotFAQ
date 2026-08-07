@@ -9,7 +9,7 @@
  *
  * Only the last HISTORY_MAX_MESSAGES are kept per session — see config.ts.
  */
-import { MongoClient, Collection, Document } from "mongodb";
+import { MongoClient, Collection, Document, UpdateFilter } from "mongodb";
 import { HISTORY_MAX_MESSAGES, MONGODB_URI, SESSION_TTL_SECONDS } from "./config";
 
 export type ChatRole = "user" | "assistant";
@@ -91,10 +91,10 @@ export async function appendMessage(
           $each: [{ role, content }],
           $slice: -HISTORY_MAX_MESSAGES,
         },
-      } as unknown as Document,
+      },
       $set: { updated_at: now },
       $setOnInsert: { created_at: now },
-    },
+    } as unknown as UpdateFilter<Document>,
     { upsert: true }
   );
 }

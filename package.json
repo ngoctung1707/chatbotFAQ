@@ -11,9 +11,11 @@
     "lint": "next lint",
     "sass": "sass --watch public/assets/scss/main.scss:public/assets/css/main.css",
     "prepare": "husky",
-    "payload-gen-types": "payload generate:types"
+    "payload-gen-types": "payload generate:types",
+    "build-index": "tsx scripts/build-index.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.37",
     "@gsap/react": "^2.1.2",
     "@payloadcms/db-mongodb": "3.66.0",
     "@payloadcms/live-preview-react": "3.66.0",
@@ -21,9 +23,12 @@
     "@payloadcms/payload-cloud": "3.66.0",
     "@payloadcms/richtext-lexical": "3.66.0",
     "@sindresorhus/slugify": "^3.0.0",
+    "@xenova/transformers": "^2.17.2",
+    "ai": "^7.0.56",
     "aos": "^2.3.4",
     "graphql": "^16.11.0",
     "gsap": "^3.15.0",
+    "mongodb": "^7.5.0",
     "next": "15.5.7",
     "next-intl": "^4.3.7",
     "payload": "3.66.0",
@@ -54,7 +59,18 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "3.6.2",
+    "tsx": "^4.23.9",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.43.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "@swc/core",
+      "esbuild",
+      "unrs-resolver",
+      "protobufjs",
+      "@parcel/watcher"
+    ]
   }
 }

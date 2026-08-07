@@ -38,6 +38,9 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "bkft-chatbot-js",
+    "chatbot-js-integration-files",
+    "ChatBotFAQ"
   ]
 }

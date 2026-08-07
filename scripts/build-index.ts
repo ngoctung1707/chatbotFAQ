@@ -21,9 +21,9 @@
  */
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { embedDense, lexicalWeights } from "../src/lib/embedding";
-import type { ChunkRecord, StoredChunk } from "../src/lib/vectorStore";
-import { INDEX_DIR } from "../src/lib/config";
+import { embedDense, lexicalWeights } from "../src/lib/chatbot/embedding";
+import type { ChunkRecord, StoredChunk } from "../src/lib/chatbot/vectorStore";
+import { INDEX_DIR } from "../src/lib/chatbot/config";
 
 const CHUNKS_PATH =
   process.env.CHATBOT_CHUNKS_PATH ||

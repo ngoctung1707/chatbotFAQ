@@ -1,25 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { appendMessage, getHistory } from '@/lib/chatbot/chatHistory'
+import { answerStream, friendlyError } from '@/lib/chatbot/llm'
+import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
+import { MOCK } from '@/lib/chatbot/config'
 
-// ChatBotFAQ is a separate FastAPI service (retrieval + Gemini), not part of
-// this Next.js app. Proxying keeps it off the public internet and lets the
-// widget stay a same-origin, non-streaming JSON caller.
-const CHATBOT_FAQ_URL = process.env.CHATBOT_FAQ_URL || 'http://localhost:8000'
-const REQUEST_TIMEOUT_MS = 30_000
+// Runs the retrieval + Gemini-answering pipeline in-process (ported from the
+// old chatbot-service FastAPI app — see src/lib/chatbot/*). There is no
+// external chatbot service anymore: this route replaces the proxy that used
+// to forward to CHATBOT_FAQ_URL.
+export const runtime = 'nodejs'
+// Free-tier Gemini answers were measured taking up to ~150s on the Python
+// side; give this route the same ceiling rather than the platform default.
+export const maxDuration = 180
 
-type SseEvent = { event: string; data: string }
+// Built once and reused across requests within a warm process — loading the
+// embedding model (BGE-M3, ~1.1GB) costs real time, so this must not happen
+// per-request.
+let retrieverPromise: Promise<Retriever> | null = null
+function getRetriever(): Promise<Retriever> {
+  if (!retrieverPromise) retrieverPromise = Promise.resolve(new Retriever())
+  return retrieverPromise
+}
 
-function parseSseFrames(buffer: string): { events: SseEvent[]; rest: string } {
-  const frames = buffer.split('\n\n')
-  const rest = frames.pop() ?? ''
-  const events: SseEvent[] = []
-  for (const frame of frames) {
-    const eventMatch = /^event: (.+)$/m.exec(frame)
-    const dataMatch = /^data: (.+)$/m.exec(frame)
-    if (eventMatch && dataMatch) {
-      events.push({ event: eventMatch[1], data: dataMatch[1] })
-    }
+function logRetrieval(question: string, queryUsed: string, chunks: RetrievalChunk[]) {
+  if (process.env.CHATBOT_LOG_CHUNKS === '0') return
+  console.log('\n' + '='.repeat(96))
+  console.log(`HỎI: ${question}`)
+  if (queryUsed && queryUsed !== question) console.log(`     tìm bằng: ${queryUsed}`)
+  if (chunks.length === 0) {
+    console.log('     (không đoạn nào vượt ngưỡng điểm)')
+    console.log('='.repeat(96))
+    return
   }
-  return { events, rest }
+  for (let i = 0; i < chunks.length; i++) {
+    const c = chunks[i]
+    const dense = c.dense_score ?? c.score
+    const lexical = c.lexical_score ?? 0
+    console.log(
+      `${i + 1}  score=${c.score.toFixed(4)} dense=${dense.toFixed(4)} lex=${lexical.toFixed(4)}  ${c.collection}  ${c.chunk_id}`,
+    )
+    console.log(`    ${c.url}`)
+  }
+  console.log('='.repeat(96))
 }
 
 export async function POST(req: NextRequest) {
@@ -39,59 +61,59 @@ export async function POST(req: NextRequest) {
   }
   const question = message.trim().slice(0, 2000)
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-
-  let upstream: Response
+  let chunks: RetrievalChunk[]
   try {
-    upstream = await fetch(`${CHATBOT_FAQ_URL}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, session_id }),
-      signal: controller.signal,
+    const retriever = await getRetriever()
+    const queryUsed = await retriever.queryFor(question)
+    chunks = await retriever.search(question)
+    logRetrieval(question, queryUsed, chunks)
+  } catch (err) {
+    // Most commonly: the vector index hasn't been built yet (no
+    // data/faiss_index_js/store.json — see `npm run build-index`). Treated
+    // the same as "found nothing" rather than a hard 500 so the widget stays
+    // usable while the index/data pipeline catches up; the real cause is
+    // still visible server-side.
+    console.error('    !! retrieval unavailable:', err)
+    retrieverPromise = null
+    chunks = []
+  }
+
+  const sources = chunks.map((c, i) => ({
+    n: i + 1,
+    title: c.title ?? null,
+    url: c.url,
+    score: Math.round(c.score * 10000) / 10000,
+    collection: c.collection ?? null,
+  }))
+
+  if (chunks.length === 0) {
+    // Not saved to history — same reasoning as the old Python service: a
+    // reply with no retrieved knowledge carries nothing for a later question
+    // to refer back to, so it isn't worth spending one of the history slots.
+    return NextResponse.json({
+      reply:
+        'Tôi không tìm thấy thông tin nào liên quan đến câu hỏi này trong dữ liệu của BKFintech.',
+      sources,
     })
-  } catch {
-    return NextResponse.json(
-      { error: 'Chatbot service is unreachable' },
-      { status: 502 },
-    )
-  } finally {
-    clearTimeout(timeout)
   }
 
-  if (!upstream.ok || !upstream.body) {
-    return NextResponse.json(
-      { error: `Chatbot service error ${upstream.status}` },
-      { status: 502 },
-    )
-  }
-
-  // The backend streams SSE (sources / delta / error / done); the widget
-  // wants one JSON reply, so the deltas are collected server-side here.
-  const reader = upstream.body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let reply = ''
-  let sources: unknown[] = []
-  let errorMessage: string | null = null
-
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const { events, rest } = parseSseFrames(buffer)
-    buffer = rest
-
-    for (const { event, data } of events) {
-      const payload = JSON.parse(data)
-      if (event === 'sources') sources = payload.sources ?? []
-      else if (event === 'delta') reply += payload.text ?? ''
-      else if (event === 'error') errorMessage = payload.message ?? 'Unknown error'
+  const history = MOCK ? [] : await getHistory(session_id)
+  const started = Date.now()
+  const parts: string[] = []
+  try {
+    for await (const text of answerStream(question, chunks, history)) {
+      parts.push(text)
     }
+  } catch (err) {
+    const elapsed = ((Date.now() - started) / 1000).toFixed(1)
+    console.error(`    !! lỗi sau ${elapsed}s:`, err)
+    return NextResponse.json({ error: friendlyError(err), sources }, { status: 502 })
   }
 
-  if (errorMessage) {
-    return NextResponse.json({ error: errorMessage, sources }, { status: 502 })
+  const reply = parts.join('')
+  if (!MOCK) {
+    await appendMessage(session_id, 'user', question)
+    await appendMessage(session_id, 'assistant', reply)
   }
 
   return NextResponse.json({ reply, sources })

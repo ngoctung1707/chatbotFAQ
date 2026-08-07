@@ -8,8 +8,15 @@
 
 import path from "path";
 
+// Reuses DATABASE_URI — the same connection string Payload already reads for
+// its own MongoDB — instead of inventing a second Mongo config that could
+// drift out of sync with it (same reasoning as chat_history.py on the Python
+// side). MONGODB_URI is kept as a fallback only for anyone who still has it
+// set from the standalone bkft-chatbot-js days.
 export const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/bkft";
+  process.env.DATABASE_URI ||
+  process.env.MONGODB_URI ||
+  "mongodb://localhost:27017/bkft";
 
 // 6 messages = 3 Q&A pairs. Same cap as chat_history.py, same reasoning:
 // enough for the model to resolve a pronoun back to the prior turn, not so
