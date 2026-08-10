@@ -111,7 +111,7 @@ export class Retriever {
     const lexicals: LexicalWeights[] = [];
 
     for (const text of queries) {
-      const { dense, lexical } = await embedQuery(text);
+      const { dense, lexical } = await embedQuery(text, store.idf);
       lexicals.push(lexical);
       const found = store.search(dense, Math.max(candidates, topK));
       for (const hit of found) {

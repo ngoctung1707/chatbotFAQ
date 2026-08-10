@@ -24,7 +24,7 @@
  * for that reason, not just for parity.
  */
 import { pipeline, type TranslationPipeline } from "@xenova/transformers";
-import { TRANSLATE_ENABLED, TRANSLATE_MODEL_ID } from "./config";
+import { TRANSLATE_BEAM, TRANSLATE_ENABLED, TRANSLATE_MODEL_ID } from "./config";
 
 const SPECIAL = new Set(["</s>", "<pad>", "<unk>", "<s>"]);
 
@@ -83,7 +83,15 @@ export async function toEnglish(question: string): Promise<string> {
 
   try {
     const translator = await loadTranslator();
-    const output = await translator(key, { max_new_tokens: 72 });
+    // num_beams is passed explicitly, matching translator.py's BEAM_SIZE=2.
+    // Leaving it off is not the same thing: transformers.js falls back to the
+    // beam count in the model's own generation_config, and the Helsinki-NLP
+    // Marian exports ship a much wider default — so the search ran wider than
+    // the Python side for output measured to be identical at 2.
+    const output = await translator(key, {
+      max_new_tokens: 72,
+      num_beams: TRANSLATE_BEAM,
+    });
     const result = Array.isArray(output) ? output[0] : output;
     const text = (result as { translation_text?: string })?.translation_text;
     const cleaned = (text || "")

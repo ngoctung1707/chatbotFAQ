@@ -56,18 +56,75 @@ function tokenize(text: string): string[] {
   return matches.filter((t) => t.length > 1 && !STOPWORDS.has(t));
 }
 
-/** Term-frequency weights, L2-normalized so lexicalScore() is a cosine-like
- * dot product rather than being dominated by document length. */
-export function lexicalWeights(text: string): LexicalWeights {
+/**
+ * Inverse document frequency over the indexed corpus, built once offline.
+ *
+ * Why this exists: BGE-M3's own sparse head (what Data_embedding.py used via
+ * `return_sparse=True`) emits *learned* per-token weights that already know
+ * "institute" is uninformative on this corpus and "minh" is not.
+ * transformers.js exposes only the dense head, so the JS port scored lexical
+ * overlap on raw term frequency — which rewards whichever chunk is longest and
+ * most generic. Measured on "Viện trưởng là ai": the homepage chunk scored
+ * lex=0.41 and the three-line board-of-deans chunk that actually answers it
+ * scored 0.08, purely because the homepage repeats common terms more often.
+ * IDF is the classic stand-in for those learned weights: same intent — damp
+ * tokens that appear everywhere, keep the ones that discriminate.
+ */
+export type IdfTable = Map<string, number>;
+
+/** BM25's robust IDF: always positive, unlike log(N/df), which goes negative
+ * for a token present in more than half the corpus and would then *subtract*
+ * from the score of a chunk that legitimately contains it. */
+export function buildIdf(documents: string[]): IdfTable {
+  const df = new Map<string, number>();
+  for (const doc of documents) {
+    for (const tok of new Set(tokenize(doc))) {
+      df.set(tok, (df.get(tok) || 0) + 1);
+    }
+  }
+  const n = documents.length;
+  const idf: IdfTable = new Map();
+  for (const [tok, freq] of df) {
+    idf.set(tok, Math.log(1 + (n - freq + 0.5) / (freq + 0.5)));
+  }
+  return idf;
+}
+
+// A query token absent from the corpus is treated as maximally rare. The value
+// barely matters: such a token matches no document, so it only ever scales the
+// query's L2 norm — and that scale cancels out in retriever.ts's rescale(),
+// which is min-max over one query's candidates. Kept principled anyway so the
+// weights mean what they claim to.
+const maxIdfCache = new WeakMap<IdfTable, number>();
+function fallbackIdf(idf: IdfTable): number {
+  let max = maxIdfCache.get(idf);
+  if (max === undefined) {
+    max = 0;
+    for (const v of idf.values()) if (v > max) max = v;
+    maxIdfCache.set(idf, max);
+  }
+  return max;
+}
+
+/** TF-IDF weights, L2-normalized so lexicalScore() is a cosine-like dot
+ * product rather than being dominated by document length. Without `idf` this
+ * degrades to plain term frequency — the pre-IDF behaviour, kept so an index
+ * built before the IDF table existed still scores rather than throwing. */
+export function lexicalWeights(text: string, idf?: IdfTable): LexicalWeights {
   const counts = new Map<string, number>();
   for (const tok of tokenize(text)) {
     counts.set(tok, (counts.get(tok) || 0) + 1);
   }
+  const weighted = new Map<string, number>();
+  for (const [tok, tf] of counts) {
+    const w = idf ? tf * (idf.get(tok) ?? fallbackIdf(idf)) : tf;
+    if (w > 0) weighted.set(tok, w);
+  }
   let normSq = 0;
-  for (const v of counts.values()) normSq += v * v;
+  for (const v of weighted.values()) normSq += v * v;
   const norm = Math.sqrt(normSq) || 1;
   const weights: LexicalWeights = new Map();
-  for (const [k, v] of counts) weights.set(k, v / norm);
+  for (const [k, v] of weighted) weights.set(k, v / norm);
   return weights;
 }
 
@@ -91,11 +148,15 @@ export function lexicalScore(
 /** Both representations in one call, since a caller almost always wants both
  * (matches DataEmbedding.embed_query's dense+lexical tuple return). */
 export async function embedQuery(
-  text: string
+  text: string,
+  idf?: IdfTable
 ): Promise<{ dense: number[]; lexical: LexicalWeights }> {
   const [dense, lexical] = await Promise.all([
     embedDense(text),
-    Promise.resolve(lexicalWeights(text)),
+    // Must be the same IDF table the index was built with, or query and
+    // document weights are on different scales and their dot product is
+    // meaningless. The store carries it for exactly that reason.
+    Promise.resolve(lexicalWeights(text, idf)),
   ]);
   return { dense, lexical };
 }

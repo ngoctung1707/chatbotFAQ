@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { appendMessage, getHistory } from '@/lib/chatbot/chatHistory'
-import { answerStream, friendlyError } from '@/lib/chatbot/llm'
+import { answerStream, friendlyError, isRefusal } from '@/lib/chatbot/llm'
 import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
 import { MOCK } from '@/lib/chatbot/config'
 
@@ -116,5 +116,11 @@ export async function POST(req: NextRequest) {
     await appendMessage(session_id, 'assistant', reply)
   }
 
-  return NextResponse.json({ reply, sources })
+  // A refusal states that the passages did not answer the question, so the
+  // passages are not sources for it. Returning them anyway would let the UI
+  // put "Nguồn tham khảo" under "tôi chưa được cập nhật thông tin" — citing
+  // pages for a claim they do not support, which is worse than citing nothing.
+  // Dropped here rather than in the widget so every client behaves the same
+  // and the refusal strings stay in one place.
+  return NextResponse.json({ reply, sources: isRefusal(reply) ? [] : sources })
 }

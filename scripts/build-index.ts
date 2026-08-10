@@ -8,12 +8,24 @@
  * index: it embeds each chunk once, offline, and writes a single JSON file
  * vectorStore.ts loads at request time.
  *
- * ASSUMPTION TO VERIFY: the field names below (chunk_id, url, title,
- * published_at, collection, raw) are inferred from how llm.py and
- * retriever.py *read* chunks — format_sources() reads title/published_at/
- * url/raw, MockAnswerer reads collection/chunk_id. If the real
- * chunks.json from the crawler uses different key names, adjust the
+ * Field names (chunk_id, url, title, published_at, collection, raw, content)
+ * verified against the crawler's real output (data/chunks_all.jsonl, 694
+ * records). If a future crawler run uses different key names, adjust the
  * `toChunkRecord()` mapping below rather than the rest of the pipeline.
+ *
+ * `content` and `raw` are NOT interchangeable, and which one goes where is the
+ * whole point of chunking.py's build_context_header():
+ *
+ *   content = "[BK Fintech]\nAssoc. Prof. Nguyen Binh Minh Dean | ..."  -> embedded
+ *   raw     = "Assoc. Prof. Nguyen Binh Minh Dean | ..."                -> sent to the LLM
+ *
+ * The breadcrumb exists to steer the *embedding*: that chunk answers "who is
+ * the Dean of the institute?" but its own text never names the institute, so
+ * embedded without the header it cannot be retrieved by any question that
+ * mentions BK Fintech. Feeding the header to the LLM instead would just be
+ * noise it might quote back, which is why llm.ts reads `raw` (same split as
+ * llm.py). Embedding `raw` here was the original port bug — it silently cost
+ * retrieval the header on 681 of 694 chunks.
  *
  * Run with: npm run build-index
  * (loads the ~1.1GB BGE-M3 model — expect this to take a while and use
@@ -21,8 +33,12 @@
  */
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { embedDense, lexicalWeights } from "../src/lib/chatbot/embedding";
-import type { ChunkRecord, StoredChunk } from "../src/lib/chatbot/vectorStore";
+import { buildIdf, embedDense, lexicalWeights } from "../src/lib/chatbot/embedding";
+import type {
+  ChunkRecord,
+  StoredChunk,
+  StoredIndex,
+} from "../src/lib/chatbot/vectorStore";
 import { INDEX_DIR } from "../src/lib/chatbot/config";
 
 const CHUNKS_PATH =
@@ -56,31 +72,127 @@ function toChunkRecord(raw: RawChunk, fallbackIndex: number): ChunkRecord {
     published_at: raw.published_at,
     collection: raw.collection,
     raw: text,
+    // Kept alongside `raw`, not merged into it — see the header comment.
+    content: raw.content,
   };
+}
+
+/**
+ * What kind of page a chunk came from, in both languages, prepended to the
+ * embedded text.
+ *
+ * The crawler's own breadcrumb names the *item* but never its *category*: the
+ * course pages embed as "[Fintech]", "[Business Intelligence]",
+ * "[Private Intelligence: AI for Everyone]" — not one of the 15 contains the
+ * words "khóa học" or "course" anywhere in its embedded text. So "khoá học ở
+ * bkfintech" had nothing to match on and retrieved the homepage, the advisory
+ * board and the back-office staff list instead; the <data> block reaching the
+ * model mentioned no course at all, and it refused. This is the same class of
+ * bug the header comment above describes for the institute name, one level up:
+ * a chunk cannot be found by the category it belongs to when its text never
+ * names that category.
+ *
+ * Both languages because the corpus is mixed — 11 of the 15 course pages are
+ * written in English while the questions arrive in Vietnamese — and the label
+ * has to match whichever the query uses.
+ */
+const COLLECTION_LABEL: Record<string, string> = {
+  academic: "Đào tạo · Academic programme",
+  application: "Ứng dụng · Application",
+  course: "Khóa học · Course · Chương trình đào tạo",
+  ecotech: "Hội thảo ECOTECH · ECOTECH conference",
+  event: "Sự kiện · Event",
+  hackathon: "Cuộc thi Hackathon · Hackathon",
+  home: "Trang chủ · Home",
+  lab: "Phòng thí nghiệm · Research lab",
+  news: "Tin tức · News",
+  people: "Nhân sự · People · Ban lãnh đạo",
+  publication: "Công bố khoa học · Publication",
+  report: "Báo cáo · Report",
+  research: "Nghiên cứu · Research",
+  solutions: "Giải pháp · Solution",
+  static: "Giới thiệu · About",
+  workshop: "Workshop · Chuỗi hội thảo",
+};
+
+/**
+ * The text that gets embedded: the context-headed form when the crawler
+ * produced one, the plain text otherwise, both prefixed with the category and
+ * the institute name.
+ *
+ * The institute name goes on *every* chunk deliberately, which sounds like it
+ * would make the term useless — and that is the point. It is already in most
+ * chunks, just unevenly: densest on the homepage, the staff pages and the
+ * apps list, absent from the course pages. That imbalance is what made adding
+ * "bkfintech" to a query actively harmful, dragging the best course chunk from
+ * rank 11 down to rank 39 and out of the candidate pool. Spread evenly the
+ * term stops discriminating between chunks, so the rest of the question —
+ * the part that carries the user's actual intent — decides the ranking.
+ */
+function embeddedText(record: ChunkRecord): string {
+  const label = COLLECTION_LABEL[record.collection ?? ""] ?? record.collection;
+  const header = label
+    ? `[${label} — BK Fintech, Viện Công nghệ và Kinh tế số]`
+    : "[BK Fintech, Viện Công nghệ và Kinh tế số]";
+  return `${header}\n${record.content || record.raw}`;
+}
+
+/**
+ * Accepts both shapes the crawler has been seen to emit: a single JSON array
+ * (chunks.json) and one-object-per-line JSONL (chunks_all.jsonl). Detected by
+ * content rather than file extension, so a mis-named file still works.
+ * Line-level parse errors name the line number — with hundreds of records, "is
+ * not valid JSON" alone is not enough to find the bad one.
+ */
+function parseChunks(text: string): RawChunk[] {
+  if (text.trimStart().startsWith("[")) return JSON.parse(text) as RawChunk[];
+  return text
+    .split(/\r?\n/)
+    .map((line, i) => ({ line: line.trim(), n: i + 1 }))
+    .filter(({ line }) => line)
+    .map(({ line, n }) => {
+      try {
+        return JSON.parse(line) as RawChunk;
+      } catch (err) {
+        throw new Error(`${CHUNKS_PATH} dòng ${n}: JSON không hợp lệ — ${err}`);
+      }
+    });
 }
 
 async function main() {
   console.log(`Đọc chunks từ ${CHUNKS_PATH} ...`);
-  const raw = JSON.parse(await readFile(CHUNKS_PATH, "utf-8")) as RawChunk[];
+  const raw = parseChunks(await readFile(CHUNKS_PATH, "utf-8"));
   console.log(`  ${raw.length} chunk. Bắt đầu embedding (BGE-M3, lần đầu sẽ tải model) ...`);
+
+  const records = raw.map(toChunkRecord);
+  const indexedTexts = records.map(embeddedText);
+
+  // IDF needs the whole corpus before any single document can be weighted, so
+  // it is a separate pass — cheap next to embedding (tokenizing 694 chunks is
+  // milliseconds, embedding them is minutes).
+  const idf = buildIdf(indexedTexts);
+  console.log(`  từ vựng: ${idf.size} token. Bắt đầu embedding (BGE-M3, lần đầu sẽ tải model) ...`);
 
   const stored: StoredChunk[] = [];
   const started = Date.now();
-  for (let i = 0; i < raw.length; i++) {
-    const record = toChunkRecord(raw[i], i);
-    const dense = await embedDense(record.raw);
-    const lexical = Array.from(lexicalWeights(record.raw).entries());
-    stored.push({ ...record, dense, lexical });
-    if ((i + 1) % 25 === 0 || i === raw.length - 1) {
+  for (let i = 0; i < records.length; i++) {
+    // Both halves of the hybrid score must see the same text, or the lexical
+    // rerank would match on tokens the dense vector never saw.
+    const indexed = indexedTexts[i];
+    const dense = await embedDense(indexed);
+    const lexical = Array.from(lexicalWeights(indexed, idf).entries());
+    stored.push({ ...records[i], dense, lexical });
+    if ((i + 1) % 25 === 0 || i === records.length - 1) {
       const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-      console.log(`  ${i + 1}/${raw.length} (${elapsed}s)`);
+      console.log(`  ${i + 1}/${records.length} (${elapsed}s)`);
     }
   }
 
   await mkdir(INDEX_DIR, { recursive: true });
   const outPath = path.join(INDEX_DIR, "store.json");
-  await writeFile(outPath, JSON.stringify(stored));
-  console.log(`Đã ghi ${stored.length} chunk vào ${outPath}`);
+  const index: StoredIndex = { idf: Array.from(idf.entries()), chunks: stored };
+  await writeFile(outPath, JSON.stringify(index));
+  console.log(`Đã ghi ${stored.length} chunk + ${idf.size} token IDF vào ${outPath}`);
 }
 
 main().catch((err) => {

@@ -128,6 +128,10 @@
 .messageRow {
   display: flex;
   max-width: 85%;
+  /* Flex items default to min-width:auto, which refuses to shrink below their
+     content's intrinsic width — one long unbroken source title would then push
+     the bubble past this max-width instead of wrapping inside it. */
+  min-width: 0;
 }
 
 .messageRow.user {
@@ -146,6 +150,8 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .user .bubble {
@@ -159,6 +165,65 @@
   color: #262626;
   border: 1px solid #ececec;
   border-bottom-left-radius: 4px;
+}
+
+.bot .bubble a {
+  color: var(--tg-theme-primary, #f7a400);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bot .bubble a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.sources {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #ececec;
+  /* .bubble sets pre-wrap so the answer keeps its line breaks; the list builds
+     its own layout and would otherwise inherit stray whitespace from JSX. */
+  white-space: normal;
+}
+
+.sourcesLabel {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a8a8a;
+}
+
+.sourcesList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sourcesList li {
+  font-size: 12px;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.sourcesList a {
+  /* Titles run long (full uppercase headlines) and slugs are single unbroken
+     tokens. Wrapping — rather than nowrap + ellipsis — is what guarantees the
+     bubble never grows sideways: an ellipsis needs a resolved width to clip
+     against, and until one exists the link still reports its full width as the
+     minimum. `anywhere` covers the slug case, which has no space to break on.
+     Clamped to two lines so a headline cannot dominate the answer. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .typingDots {

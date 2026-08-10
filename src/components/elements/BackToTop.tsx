@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import styles from './BackToTop.module.css'
 
 export default function BackToTop() {
   const [hasScrolled, setHasScrolled] = useState(false)
@@ -24,10 +25,9 @@ export default function BackToTop() {
     <>
       {hasScrolled && (
         <a
-          className="scroll__top scroll-to-target open"
+          className={`scroll__top ${styles.backToTop}`}
           href="#"
           onClick={handleBackToTopClick}
-          style={{ position: 'fixed', zIndex: 2147483647 }}
           aria-label="Back to top"
         >
           <i className="fas fa-angle-up"></i>

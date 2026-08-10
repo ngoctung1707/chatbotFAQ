@@ -139,3 +139,5 @@ __pycache__/
 
 # Nested ChatBotFAQ project (installed deps)
 ChatBotFAQ/.venv/
+# Chatbot generated index/data
+data/

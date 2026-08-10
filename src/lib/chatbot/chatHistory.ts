@@ -99,6 +99,25 @@ export async function appendMessage(
   );
 }
 
+/**
+ * Drop a session's messages the moment the conversation ends.
+ *
+ * The TTL index below is a backstop, not the delete path: it is the only thing
+ * that ever removed a session before, so a transcript stayed readable in the
+ * database for SESSION_TTL_SECONDS after the tab that produced it was gone.
+ * Nothing could reach it by then either — the session id is a per-mount
+ * `crypto.randomUUID()` held only in the widget's memory, never persisted to
+ * the browser, so a reload starts a new session and orphans the old document.
+ * It was retained storage no feature could use.
+ *
+ * Deleting a session that does not exist is a no-op, so this is safe to call
+ * for a tab that never sent a message, and safe to call twice.
+ */
+export async function deleteSession(sessionId: string): Promise<void> {
+  const coll = await sessions();
+  await coll.deleteOne({ _id: sessionId as unknown as Document["_id"] });
+}
+
 /** Oldest-to-newest messages for this session, or [] for a new one. */
 export async function getHistory(sessionId: string): Promise<ChatMessage[]> {
   const coll = await sessions();

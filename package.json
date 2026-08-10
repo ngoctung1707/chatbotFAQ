@@ -12,7 +12,8 @@
     "sass": "sass --watch public/assets/scss/main.scss:public/assets/css/main.css",
     "prepare": "husky",
     "payload-gen-types": "payload generate:types",
-    "build-index": "tsx scripts/build-index.ts"
+    "build-index": "tsx --env-file-if-exists=.env scripts/build-index.ts",
+    "test:alias": "tsx --env-file-if-exists=.env scripts/test-alias-expansion.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.37",

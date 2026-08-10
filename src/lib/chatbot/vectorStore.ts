@@ -18,7 +18,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import { INDEX_DIR } from "./config";
-import type { LexicalWeights } from "./embedding";
+import type { IdfTable, LexicalWeights } from "./embedding";
 
 export interface ChunkRecord {
   chunk_id: string;
@@ -41,6 +41,15 @@ export interface SearchHit extends ChunkRecord {
   score: number;
 }
 
+/** On-disk shape of store.json. The IDF table is corpus-wide, so it lives
+ * beside the chunks rather than being duplicated into each one — and it has to
+ * ship with them: query weights computed from a *different* corpus's IDF would
+ * not be comparable to the stored document weights. */
+export interface StoredIndex {
+  idf: [string, number][];
+  chunks: StoredChunk[];
+}
+
 function cosine(a: number[], b: number[]): number {
   let dot = 0;
   for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
@@ -58,10 +67,14 @@ function cosine(a: number[], b: number[]): number {
 export class VectorStore {
   private chunks: StoredChunk[];
   private lexicalCache: LexicalWeights[];
+  /** Empty for an index built before IDF existed — lexicalWeights() then falls
+   * back to plain term frequency, which is what that index was scored with. */
+  readonly idf: IdfTable;
 
-  private constructor(chunks: StoredChunk[]) {
+  private constructor(chunks: StoredChunk[], idf: IdfTable) {
     this.chunks = chunks;
     this.lexicalCache = chunks.map((c) => new Map(c.lexical));
+    this.idf = idf;
   }
 
   static async load(indexDir: string = INDEX_DIR): Promise<VectorStore> {
@@ -75,8 +88,13 @@ export class VectorStore {
           `(đọc data/processed/chunks.json và tạo file này).`
       );
     }
-    const chunks: StoredChunk[] = JSON.parse(raw);
-    return new VectorStore(chunks);
+    // A bare array is the pre-IDF format. Accepted rather than rejected so an
+    // older index keeps working (degraded to term-frequency scoring) instead
+    // of taking the chat down until someone reruns a 4-minute rebuild.
+    const parsed: StoredIndex | StoredChunk[] = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? new VectorStore(parsed, new Map())
+      : new VectorStore(parsed.chunks, new Map(parsed.idf));
   }
 
   get size(): number {

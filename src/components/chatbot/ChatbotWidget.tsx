@@ -3,10 +3,21 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styles from './ChatbotWidget.module.css'
 
+// Shape returned by /api/chat alongside `reply` — one entry per retrieved
+// passage, already ranked. `n` is what the answer's [n] markers refer to.
+type Source = {
+  n: number
+  title: string | null
+  url: string
+  score: number
+  collection: string | null
+}
+
 type ChatMessage = {
   id: string
   role: 'user' | 'bot'
   content: string
+  sources?: Source[]
 }
 
 const WELCOME_MESSAGE: ChatMessage = {
@@ -44,11 +55,95 @@ const SendIcon = () => (
   </svg>
 )
 
-// The backend answer carries [n] citation markers (e.g. "[1]" or "[2][5]")
-// used only to pick which sources the trailing "[title](url)" footer links
-// to — stripped here since they're not meant to be shown to the user.
-const CITATION_MARKER_RE = /\s*(?:\[\d+\])+(?!\()/g
+// The backend answer carries [n] citation markers indexing into the `sources`
+// array the same response returns. They are stripped from the visible text and
+// used instead to decide which sources get listed under the answer — the
+// numbers themselves mean nothing to a reader.
+//
+// The model groups them four different ways and all four have to be covered,
+// because a form that isn't matched here leaks into the answer verbatim:
+// adjacent ("[1][2]"), comma-separated inside one bracket ("[1, 2]" / "[1,2]"),
+// padded ("[ 1 ]"), and — the one seen most in real answers — separate brackets
+// joined by punctuation ("[1], [2], [4]"). That last form is why the separator
+// is part of the repetition rather than the brackets alone: stripping only the
+// brackets leaves the commas stranded ("…chi tiết,,.").
+const ONE_MARKER = String.raw`\[\s*\d+(?:\s*,\s*\d+)*\s*\](?!\()`
+const CITATION_MARKER_RE = new RegExp(
+  String.raw`\s*${ONE_MARKER}(?:\s*[,;]?\s*${ONE_MARKER})*`,
+  'g',
+)
+// Same negative lookahead so a genuine markdown link "[x](url)" is never
+// mistaken for a citation — it also keeps a numeric link label like
+// "[2024](https://…)" intact, which the digits alone would not. No separator
+// handling needed here: this one only collects the numbers, so each bracket
+// can be matched on its own.
+const CITATION_NUMBER_RE = /\[\s*(\d+(?:\s*,\s*\d+)*)\s*\](?!\()/g
 const LINK_RE = /\[([^[\]]+)\]\((https?:\/\/[^\s()]+)\)/g
+
+// At most two links under an answer. The backend returns every passage it
+// retrieved (7 by default) and the model routinely cites four of them, which
+// buries a three-line answer under a longer list of links than answer. Two is
+// enough to let a reader verify the claim; `sources` is already ranked, so
+// these are the two the retriever was most confident in.
+const MAX_SOURCES_SHOWN = 2
+
+/**
+ * The sources the answer actually cited, deduplicated by URL, best first.
+ *
+ * Only cited ones: listing passages the answer never used would attribute it
+ * to pages it did not draw on. Dedup by URL because one page routinely
+ * contributes several chunks — the homepage alone supplies two — and the same
+ * link twice reads like a bug.
+ */
+function citedSources(content: string, sources: Source[]): Source[] {
+  const cited = new Set<number>()
+  let match: RegExpExecArray | null
+  CITATION_NUMBER_RE.lastIndex = 0
+  while ((match = CITATION_NUMBER_RE.exec(content)) !== null) {
+    // One bracket can hold several numbers ("[1, 2]"), so every capture is a
+    // list — a single "[1]" is just the one-element case of it.
+    for (const n of match[1].split(',')) cited.add(Number(n.trim()))
+  }
+  const seen = new Set<string>()
+  return sources
+    .filter((s) => {
+      if (!cited.has(s.n) || seen.has(s.url)) return false
+      seen.add(s.url)
+      return true
+    })
+    .slice(0, MAX_SOURCES_SHOWN)
+}
+
+/**
+ * Readable label for a source link.
+ *
+ * News pages carry a real headline, but every /about/* page the crawler saw
+ * reports its title as the site name ("BK Fintech"), which identifies nothing
+ * — three sources would all render as the same word. Such titles are dropped
+ * in favour of the path, so "/about/board-of-deans" is what the user reads.
+ *
+ * "Generic" is decided by length plus a hostname match rather than a hardcoded
+ * string: a genuine headline that happens to mention BK Fintech is far longer
+ * than the bare brand, so the length guard keeps it.
+ */
+function sourceLabel(source: Source): string {
+  const title = (source.title || '').trim()
+  let pathname = ''
+  let brand = ''
+  try {
+    const url = new URL(source.url)
+    pathname = url.pathname
+    brand = url.hostname.split('.')[0].toLowerCase()
+  } catch {
+    return title || source.url
+  }
+
+  const normalized = title.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const isSiteName = normalized.length <= 20 && brand !== '' && normalized.includes(brand)
+
+  if (title && !isSiteName) return title
+  return pathname === '/' || pathname === '' ? 'Trang chủ' : pathname
+}
 
 function renderMessageContent(content: string): React.ReactNode[] {
   const cleaned = content.replace(CITATION_MARKER_RE, '')
@@ -70,7 +165,10 @@ function renderMessageContent(content: string): React.ReactNode[] {
   return nodes
 }
 
-async function fetchBotReply(message: string, sessionId: string): Promise<string> {
+async function fetchBotReply(
+  message: string,
+  sessionId: string,
+): Promise<{ reply: string; sources: Source[] }> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -82,7 +180,10 @@ async function fetchBotReply(message: string, sessionId: string): Promise<string
   }
 
   const data = await res.json()
-  return data.reply ?? data.answer ?? ''
+  return {
+    reply: data.reply ?? data.answer ?? '',
+    sources: Array.isArray(data.sources) ? data.sources : [],
+  }
 }
 
 export default function ChatbotWidget() {
@@ -95,9 +196,45 @@ export default function ChatbotWidget() {
   // with up to 3 Q&A turns of server-side history so a follow-up question
   // can refer back to what was just asked, without needing a login.
   const sessionIdRef = useRef<string>('')
+  // Whether this session ever reached the database. Only /api/chat writes
+  // there, so a visitor who opened the widget and typed nothing has nothing to
+  // delete and should not cost a request on the way out.
+  const persistedRef = useRef(false)
 
   useEffect(() => {
     sessionIdRef.current = crypto.randomUUID()
+  }, [])
+
+  // Delete the transcript when the tab goes away. `pagehide` rather than
+  // `beforeunload`: beforeunload does not fire reliably on mobile Safari or
+  // Chrome for Android, which kill backgrounded tabs outright, and it blocks
+  // the bfcache. sendBeacon rather than fetch, because a fetch started here is
+  // cancelled as the document tears down — the browser only guarantees
+  // delivery for a beacon.
+  //
+  // Refs, not state, are read inside the handler: it is registered once, so a
+  // closure over state would still see the values from first render.
+  useEffect(() => {
+    const endSession = () => {
+      if (!persistedRef.current || !sessionIdRef.current) return
+      // Fires at most once — a tab can pagehide and come back via bfcache, and
+      // the second delete would be a wasted request against a document the
+      // first one already removed.
+      persistedRef.current = false
+      navigator.sendBeacon(
+        '/api/chat/session',
+        new Blob([JSON.stringify({ session_id: sessionIdRef.current })], {
+          type: 'application/json',
+        }),
+      )
+    }
+    window.addEventListener('pagehide', endSession)
+    return () => {
+      window.removeEventListener('pagehide', endSession)
+      // Unmounting is the end of the conversation too — the widget is removed
+      // on navigation within the app, where no pagehide fires at all.
+      endSession()
+    }
   }, [])
 
   useEffect(() => {
@@ -113,10 +250,17 @@ export default function ChatbotWidget() {
     setLoading(true)
 
     try {
-      const reply = await fetchBotReply(text, sessionIdRef.current)
+      const { reply, sources } = await fetchBotReply(text, sessionIdRef.current)
+      // The route persisted this turn, so there is now a document to clean up.
+      persistedRef.current = true
       setMessages((prev) => [
         ...prev,
-        { id: nextId(), role: 'bot', content: reply || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.' },
+        {
+          id: nextId(),
+          role: 'bot',
+          content: reply || 'Xin lỗi, tôi chưa có câu trả lời phù hợp.',
+          sources: reply ? citedSources(reply, sources) : [],
+        },
       ])
     } catch {
       setMessages((prev) => [
@@ -163,6 +307,20 @@ export default function ChatbotWidget() {
               >
                 <div className={styles.bubble}>
                   {msg.role === 'bot' ? renderMessageContent(msg.content) : msg.content}
+                  {msg.role === 'bot' && msg.sources && msg.sources.length > 0 && (
+                    <div className={styles.sources}>
+                      <p className={styles.sourcesLabel}>Nguồn tham khảo</p>
+                      <ul className={styles.sourcesList}>
+                        {msg.sources.map((source) => (
+                          <li key={source.url}>
+                            <a href={source.url} target="_blank" rel="noopener noreferrer">
+                              {sourceLabel(source)}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
