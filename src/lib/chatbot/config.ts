@@ -37,10 +37,159 @@ export const SESSION_TTL_SECONDS = Number(
   process.env.SESSION_TTL_SECONDS || 3600
 );
 
-// Gemini model id via @ai-sdk/google. gemini-3.1-flash-lite matches the
-// Python default; override with GOOGLE_GENERATIVE_AI_API_KEY set in env
-// (that's the var name @ai-sdk/google reads automatically).
-export const CHAT_MODEL = process.env.CHATBOT_MODEL || "gemini-3.1-flash-lite";
+// --- Model pool ---
+
+export interface ModelLimits {
+  id: string;
+  rpm: number;
+  tpm: number;
+  rpd: number;
+  /** Ưu tiên chất lượng, 0 = tốt nhất. Phá hòa khi nhiều model còn budget. */
+  tier: number;
+  /** Gemma phục vụ qua Gemini API KHÔNG nhận system_instruction. */
+  supportsSystemInstruction: boolean;
+}
+
+// PLACEHOLDER QUOTAS — none of the rpm/tpm/rpd numbers below have been checked
+// against this project's own quota page (AI Studio → Rate limits), and free-tier
+// figures differ per project, per model version, and change without notice.
+// Read the real numbers off that page and set CHATBOT_MODEL_POOL from them
+// before trusting rateLimiter.ts to keep a deployment under its limit; until
+// then the counters are only as right as these guesses, and BUDGET_HEADROOM is
+// what stands between a wrong guess and a wall of 429s.
+//
+// The model *ids* need the same treatment. Which ones a key can call varies by
+// project: gemma-3-27b-it below answers 404 NOT_FOUND on the key this was
+// developed against (that project has gemma-4-31b-it and gemma-4-26b-a4b-it
+// instead), and a 404 entry is a silently wasted slot — the pool falls straight
+// past it to the next model, so nothing but the log says the third choice never
+// existed. Check against ListModels, and re-check supportsSystemInstruction
+// while doing so: gemma-4-31b-it accepts a system_instruction through
+// @ai-sdk/google, unlike the Gemma generation this flag was written for.
+//
+// The order is the fallback order at zero load: quality first (tier), not
+// round-robin — see rankModels(). Gemma sits last because it is the only one
+// that cannot take a system_instruction, so its answers go through a different
+// prompt shape (see buildCallShape) and are the least like the ones the prompt
+// was tuned against.
+const DEFAULT_MODEL_POOL: ModelLimits[] = [
+  {
+    id: "gemini-3.1-flash-lite",
+    rpm: 15,
+    tpm: 250000,
+    rpd: 1000,
+    tier: 0,
+    supportsSystemInstruction: true,
+  },
+  {
+    id: "gemini-3.5-flash-lite",
+    rpm: 15,
+    tpm: 250000,
+    rpd: 1000,
+    tier: 1,
+    supportsSystemInstruction: true,
+  },
+  {
+    id: "gemma-3-27b-it",
+    rpm: 30,
+    tpm: 15000,
+    rpd: 14400,
+    tier: 2,
+    supportsSystemInstruction: false,
+  },
+];
+
+/** Pool read from CHATBOT_MODEL_POOL (a JSON array of ModelLimits), or the
+ * default above.
+ *
+ * Validated rather than trusted: this runs at module import, so a typo in a
+ * deployment's env var would otherwise take the whole app down at boot — every
+ * page, not just the chatbot — for a value only the chatbot reads. A pool that
+ * does not parse is a misconfiguration worth shouting about in the logs, not
+ * worth a blank site, so it falls back to the default and keeps serving. */
+function parseModelPool(): ModelLimits[] {
+  const raw = process.env.CHATBOT_MODEL_POOL;
+  if (!raw || !raw.trim()) return DEFAULT_MODEL_POOL;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error("phải là mảng JSON không rỗng");
+    }
+    return parsed.map((entry, i) => {
+      const m = entry as Partial<ModelLimits>;
+      // Each numeric field is a divisor in Usage.load; a missing or zero one
+      // would make load Infinity or NaN and quietly park the model at the back
+      // of every ranking, which looks exactly like "that model is always busy".
+      if (!m || typeof m.id !== "string" || !m.id.trim()) {
+        throw new Error(`phần tử ${i} thiếu "id"`);
+      }
+      for (const field of ["rpm", "tpm", "rpd"] as const) {
+        if (typeof m[field] !== "number" || !(m[field] > 0)) {
+          throw new Error(`model ${m.id}: "${field}" phải là số > 0`);
+        }
+      }
+      return {
+        id: m.id,
+        rpm: m.rpm as number,
+        tpm: m.tpm as number,
+        rpd: m.rpd as number,
+        // Tier defaults to pool position, so a pool listed best-first works
+        // without spelling the field out.
+        tier: typeof m.tier === "number" ? m.tier : i,
+        // Defaults to true: only the Gemma family needs the false path, and a
+        // model wrongly marked false still answers (the system prompt just
+        // rides in the user turn) whereas one wrongly marked true gets its
+        // request rejected outright.
+        supportsSystemInstruction: m.supportsSystemInstruction !== false,
+      };
+    });
+  } catch (err) {
+    console.warn(
+      `CHATBOT_MODEL_POOL không hợp lệ (${err instanceof Error ? err.message : err}) — dùng pool mặc định.`
+    );
+    return DEFAULT_MODEL_POOL;
+  }
+}
+
+export const MODEL_POOL: ModelLimits[] = parseModelPool();
+
+// Gemini model id via @ai-sdk/google. Now the *first* entry of MODEL_POOL
+// rather than a standalone default — streamAnswer() picks per request out of
+// the pool, so this is only what the pool would be asked for first at zero
+// load. Still exported and still honours CHATBOT_MODEL because buildRequest()
+// and scripts/qa-test.ts report "the model" as a single name.
+export const CHAT_MODEL =
+  process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.1-flash-lite";
+
+// Fraction of each published limit the local counters will actually spend.
+// 0.8 because those counters and Google's disagree by construction: token
+// counts here are estimated from character length (see estimateTokens), the
+// minute windows start at different instants, and any second process sharing
+// this API key is invisible from here. The 20% gap is what absorbs that drift
+// — without it the first request the counters think is fine is routinely the
+// one that comes back 429. Also the single knob for the multi-instance problem
+// described in the README: N warm instances each believe they own the full
+// quota, so ~1/N is the honest setting.
+export const BUDGET_HEADROOM = Number(process.env.CHATBOT_BUDGET_HEADROOM || 0.8);
+
+// Ceiling for the whole fallback chain, where TIMEOUT_MS is the ceiling for one
+// call. Without it the two are multiplied: three models timing out in sequence
+// at 10s each is 30s of a blank bubble, and the user has left long before the
+// third one is asked. 25s keeps the worst case just under the point where a
+// visitor assumes the widget is broken, while still leaving room for two full
+// attempts plus a partial third.
+export const TOTAL_BUDGET_MS = Number(
+  process.env.CHATBOT_TOTAL_BUDGET_MS || 25000
+);
+
+// Keep a session on whichever model answered its first question. On by default:
+// the models word things differently (and Gemma phrases the fixed refusals its
+// own way — see isRefusal), so switching mid-conversation makes the assistant
+// read like two people taking turns. Sticky yields to budget, never the other
+// way round — a pinned model that is out of quota is skipped, not waited for.
+export const STICKY_SESSION = !["0", "false"].includes(
+  (process.env.CHATBOT_STICKY_SESSION || "1").toLowerCase()
+);
 
 // Thinking budget, same default and same reasoning as llm.py's THINKING_LEVEL:
 // on gemini-3.5-flash-lite the same question took 2.0s at MINIMAL and 148.8s

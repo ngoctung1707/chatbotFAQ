@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import styles from './ChatbotWidget.module.css'
+import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
 
 // Shape returned by /api/chat alongside `reply` — one entry per retrieved
 // passage, already ranked. `n` is what the answer's [n] markers refer to.
@@ -348,11 +349,16 @@ export default function ChatbotWidget() {
                 handleSend()
               }}
             >
+              {/* Trần này khớp với chỗ /api/chat cắt câu hỏi. Chặn ngay ở ô
+                  nhập thay vì để backend cắt âm thầm: người dùng gõ 1500 ký tự
+                  rồi bị bỏ mất 500 ký tự cuối mà không hề biết là hỏng thật —
+                  họ chỉ thấy bot trả lời lạc đề. */}
               <input
                 type="text"
                 className={styles.input}
                 placeholder="Nhập câu hỏi của bạn..."
                 value={input}
+                maxLength={MAX_QUESTION_CHARS}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={loading}
               />

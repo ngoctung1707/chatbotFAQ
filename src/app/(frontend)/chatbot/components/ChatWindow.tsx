@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import styles from './ChatWindow.module.css'
 import { chatService } from '@/services/chatbot'
 import type { Suggestion, ChatDecision } from '@/services/chatbot/types'
+import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
 import RobotIcon from '../icons/RobotIcon'
 import { Saira } from 'next/font/google'
 
@@ -228,11 +229,14 @@ export default function ChatWindow() {
                 handleSend()
               }}
             >
+              {/* Xem chú thích cùng chủ đề trong ChatbotWidget.tsx: trần này
+                  phải khớp với chỗ /api/chat cắt câu hỏi. */}
               <input
                 type="text"
                 className={styles.input}
                 placeholder="Bạn muốn hỏi về vấn đề gì"
                 value={input}
+                maxLength={MAX_QUESTION_CHARS}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={loading}
               />

@@ -52,15 +52,33 @@ export function isVietnamese(text: string): boolean {
 // mirrors the Python QueryTranslator's lazy `_engine` cache. There is no
 // cross-invocation guarantee on Vercel (a cold start reloads it), but within
 // one warm instance this avoids reloading the model per request.
-let translatorPromise: Promise<TranslationPipeline> | null = null;
-function loadTranslator(): Promise<TranslationPipeline> {
-  if (!translatorPromise) {
-    translatorPromise = pipeline(
-      "translation",
-      TRANSLATE_MODEL_ID
-    ) as Promise<TranslationPipeline>;
+// On globalThis for the same reason as loadEmbedder's cache in embedding.ts —
+// instrumentation.ts and the route handlers are compiled into separate webpack
+// layers, so a module-level variable here would be two variables at runtime and
+// the preload would warm a copy no request ever reaches. See the longer note
+// there.
+declare global {
+  var __bkftTranslatorPromise: Promise<TranslationPipeline> | undefined;
+}
+
+/** Exported so instrumentation.ts can warm this at server start, same reason as
+ * loadEmbedder(): the cache is what makes preload and lazy load the same code
+ * path, so a failed preload just falls back to loading on first use. */
+export function loadTranslator(): Promise<TranslationPipeline> {
+  if (!globalThis.__bkftTranslatorPromise) {
+    globalThis.__bkftTranslatorPromise = (
+      pipeline("translation", TRANSLATE_MODEL_ID) as Promise<TranslationPipeline>
+    ).catch((err) => {
+      // Uncache a failed load so the next caller retries — see the same guard
+      // in embedding.ts. It matters slightly less here (toEnglish swallows the
+      // failure and searches with the original Vietnamese), but a permanently
+      // poisoned cache would silently disable translation for the whole
+      // process after one bad moment at boot.
+      globalThis.__bkftTranslatorPromise = undefined;
+      throw err;
+    });
   }
-  return translatorPromise;
+  return globalThis.__bkftTranslatorPromise;
 }
 
 // Small in-memory cache, same intent as the Python side's lru_cache(512): a

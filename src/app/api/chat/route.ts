@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { appendMessage, getHistory } from '@/lib/chatbot/chatHistory'
+import {
+  appendMessage,
+  getHistoryAndModel,
+  setSessionModel,
+} from '@/lib/chatbot/chatHistory'
 import { answerStream, friendlyError, isRefusal } from '@/lib/chatbot/llm'
 import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
 import { MOCK } from '@/lib/chatbot/config'
+import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
 
 // Runs the retrieval + Gemini-answering pipeline in-process (ported from the
 // old chatbot-service FastAPI app — see src/lib/chatbot/*). There is no
@@ -59,7 +64,7 @@ export async function POST(req: NextRequest) {
   if (typeof session_id !== 'string' || !session_id.trim()) {
     return NextResponse.json({ error: 'session_id is required' }, { status: 400 })
   }
-  const question = message.trim().slice(0, 2000)
+  const question = message.trim().slice(0, MAX_QUESTION_CHARS)
 
   let chunks: RetrievalChunk[]
   try {
@@ -97,11 +102,34 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const history = MOCK ? [] : await getHistory(session_id)
+  const { history, model: pinnedModel } = MOCK
+    ? { history: [], model: null }
+    : await getHistoryAndModel(session_id)
+
+  // Held in an object rather than a bare `let` so the assignment inside the
+  // callback and the read after the loop are plainly the same slot.
+  const used: { model: string | null } = { model: null }
+  const onModel = (model: string) => {
+    used.model = model
+    // Fire-and-forget: this runs at the first token, with the rest of the
+    // answer still streaming out of the model. Awaiting a Mongo write here
+    // would stall the answer behind it, and a write that fails is worth a log
+    // line — the next question just picks a model again — but never worth
+    // killing a reply that is already on its way.
+    if (!MOCK && model !== pinnedModel) {
+      setSessionModel(session_id as string, model).catch((err) =>
+        console.error('    !! không ghi được model của phiên:', err),
+      )
+    }
+  }
+
   const started = Date.now()
   const parts: string[] = []
   try {
-    for await (const text of answerStream(question, chunks, history)) {
+    for await (const text of answerStream(question, chunks, history, {
+      pinnedModel,
+      onModel,
+    })) {
       parts.push(text)
     }
   } catch (err) {
@@ -122,5 +150,16 @@ export async function POST(req: NextRequest) {
   // pages for a claim they do not support, which is worse than citing nothing.
   // Dropped here rather than in the widget so every client behaves the same
   // and the refusal strings stay in one place.
-  return NextResponse.json({ reply, sources: isRefusal(reply) ? [] : sources })
+  // `model` is which model in the pool actually produced this answer, and it is
+  // the first thing worth knowing when someone reports an odd reply — the pool
+  // falls back silently by design, so nothing else in the response says whether
+  // the answer came from the usual model or the third choice. Added as an extra
+  // field rather than replacing anything: the widget reads `reply`/`sources` off
+  // the parsed body and ignores what it does not know, so this is invisible to
+  // every existing client. Null in mock mode, where no model was called.
+  return NextResponse.json({
+    reply,
+    sources: isRefusal(reply) ? [] : sources,
+    model: used.model,
+  })
 }

@@ -118,12 +118,65 @@ export async function deleteSession(sessionId: string): Promise<void> {
   await coll.deleteOne({ _id: sessionId as unknown as Document["_id"] });
 }
 
-/** Oldest-to-newest messages for this session, or [] for a new one. */
-export async function getHistory(sessionId: string): Promise<ChatMessage[]> {
+/**
+ * Messages plus the model this session is pinned to, in one round-trip.
+ *
+ * Both are read at the same point in the request and both live on the same
+ * document, so a second findOne would be a second network hop for a field that
+ * was already on the wire. The pinned model is a field on `chat_sessions`
+ * rather than a collection of its own for the same reason: it has exactly the
+ * lifetime of a session, so it should expire with one — a separate collection
+ * would need its own TTL index kept in step with this one.
+ */
+export async function getHistoryAndModel(
+  sessionId: string
+): Promise<{ history: ChatMessage[]; model: string | null }> {
   const coll = await sessions();
   const doc = await coll.findOne(
     { _id: sessionId as unknown as Document["_id"] },
-    { projection: { messages: 1 } }
+    { projection: { messages: 1, model: 1 } }
   );
-  return (doc?.messages as ChatMessage[]) || [];
+  return {
+    history: (doc?.messages as ChatMessage[]) || [],
+    model: (doc?.model as string) ?? null,
+  };
+}
+
+/** Oldest-to-newest messages for this session, or [] for a new one. */
+export async function getHistory(sessionId: string): Promise<ChatMessage[]> {
+  return (await getHistoryAndModel(sessionId)).history;
+}
+
+/** Which model answered this session's earlier turns, or null for a new
+ * session / one that only ever got mock answers. */
+export async function getSessionModel(
+  sessionId: string
+): Promise<string | null> {
+  return (await getHistoryAndModel(sessionId)).model;
+}
+
+/** Remember which model answered, so the next question in this session goes to
+ * the same one (see STICKY_SESSION).
+ *
+ * Upserts because the first question of a session writes this *before*
+ * appendMessage has created the document — without the upsert the very first
+ * turn, the one that chooses the model, would be the one turn that never
+ * records it. `updated_at` is set alongside so this counts as activity for the
+ * TTL index; a session kept alive only by questions whose answers failed would
+ * otherwise expire mid-conversation.
+ */
+export async function setSessionModel(
+  sessionId: string,
+  model: string
+): Promise<void> {
+  const coll = await sessions();
+  const now = new Date();
+  await coll.updateOne(
+    { _id: sessionId as unknown as Document["_id"] },
+    {
+      $set: { model, updated_at: now },
+      $setOnInsert: { created_at: now },
+    } as unknown as UpdateFilter<Document>,
+    { upsert: true }
+  );
 }

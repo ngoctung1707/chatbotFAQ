@@ -23,15 +23,44 @@ import { EMBEDDING_MODEL_ID } from "./config";
 
 export type LexicalWeights = Map<string, number>;
 
-let embedderPromise: Promise<FeatureExtractionPipeline> | null = null;
-function loadEmbedder(): Promise<FeatureExtractionPipeline> {
-  if (!embedderPromise) {
-    embedderPromise = pipeline(
-      "feature-extraction",
-      EMBEDDING_MODEL_ID
-    ) as Promise<FeatureExtractionPipeline>;
+// The cache lives on globalThis, not in a module-level `let`, and that is not
+// paranoia: Next compiles instrumentation.ts in a different webpack layer from
+// the route handlers, so this one source file ends up as *two* module
+// instances inside a single server process. With a plain module variable each
+// instance gets its own cache — measured on this project, instrumentation.ts
+// preloaded the model into a copy the /api/chat route never touched, so the
+// first question still paid the full ~5s load and the process carried ~1.1GB
+// of a second, unused model. globalThis is the one registry both instances
+// share. The transformers.js library itself is already a singleton (it is in
+// serverExternalPackages, so it is a plain Node require, not bundled twice).
+declare global {
+  var __bkftEmbedderPromise: Promise<FeatureExtractionPipeline> | undefined;
+}
+
+/** Exported so instrumentation.ts can warm this at server start — the model is
+ * ~560MB and loading it on the first real question makes that question wait for
+ * the download plus ONNX session init. Still lazy for every other caller: the
+ * cache means preloading and lazy loading are the same code path, so a preload
+ * that never ran (or failed) just moves the cost back to first use. */
+export function loadEmbedder(): Promise<FeatureExtractionPipeline> {
+  if (!globalThis.__bkftEmbedderPromise) {
+    globalThis.__bkftEmbedderPromise = (
+      pipeline(
+        "feature-extraction",
+        EMBEDDING_MODEL_ID
+      ) as Promise<FeatureExtractionPipeline>
+    ).catch((err) => {
+      // Uncache a failed load so the next caller retries. Without this the
+      // rejected promise is the cache: one transient failure at boot (the
+      // observed one was an out-of-memory during ONNX init on a loaded
+      // machine) would make every question for the rest of the process's life
+      // fail with that same stale error, which is exactly the crash-proofing
+      // the preload's allSettled is supposed to buy.
+      globalThis.__bkftEmbedderPromise = undefined;
+      throw err;
+    });
   }
-  return embedderPromise;
+  return globalThis.__bkftEmbedderPromise;
 }
 
 /** Mean-pooled, L2-normalized dense embedding as a plain number[]. */
