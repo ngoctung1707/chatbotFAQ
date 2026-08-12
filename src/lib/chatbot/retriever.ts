@@ -3,6 +3,11 @@
  * retriever.py's two-stage search — see that file's module docstring for the
  * full reasoning; kept here only where the JS port changes something.
  *
+ * Stage 0 (query building): the question is turned into two search texts —
+ * bản tiếng Việt (khôi phục dấu nếu cần, xem diacritics.ts) và một truy vấn
+ * tiếng Anh độc lập do LLM dựng lại (xem queryRewriter.ts). Bước rewrite này
+ * thay cho cặp expand_self_reference + bản dịch Marian mà retriever.py dùng;
+ * đừng đi tìm hàm tương ứng bên đó.
  * Stage 1 (dense): VectorStore.search() over the whole corpus.
  * Stage 2 (lexical rerank): re-score the dense candidates against the
  * query's lexical weights and blend the two — see embedding.ts's top comment
@@ -14,28 +19,29 @@
  *   - no single URL takes more than DEFAULT_MAX_PER_URL of the final slots
  *   - candidates are over-fetched so both filters have room to trim
  *
- * One thing here is NOT a port: the context-merged query variant (the
+ * One more thing here is NOT a port: the context-merged query variant (the
  * `options.history` path below, see contextQuery.ts). retriever.py has no
- * equivalent and its search() signature does not take history at all — don't go
- * looking for the function it corresponds to.
+ * equivalent and its search() signature does not take history at all.
  */
 import {
   CONTEXT_MAX_HITS,
   CONTEXT_QUERY_WEIGHT,
-  CONTEXT_TRANSLATE,
   DEFAULT_CANDIDATES,
   DEFAULT_MAX_PER_URL,
   DEFAULT_MIN_SCORE,
   DEFAULT_TOP_K,
   DENSE_WEIGHT,
-  INSTITUTE_ALIASES,
-  INSTITUTE_FULL_NAME,
   SPARSE_WEIGHT,
 } from "./config";
 import { mergeWithHistory } from "./contextQuery";
-import { embedQuery, lexicalScore, type LexicalWeights } from "./embedding";
+import {
+  embedQuery,
+  lexicalScore,
+  loadEmbedder,
+  type LexicalWeights,
+} from "./embedding";
 import { VectorStore, type SearchHit } from "./vectorStore";
-import { toEnglish } from "./translator";
+import { rewriteQuery } from "./queryRewriter";
 import { restoreQuestion } from "./diacritics";
 // `import type`, not a value import, and it has to stay that way: TS erases it
 // completely at compile time, so the mongodb driver chatHistory.ts pulls in
@@ -43,20 +49,6 @@ import { restoreQuestion } from "./diacritics";
 // and every file that touches the retriever drags Mongo along with it, with
 // nothing at the call site to explain why the bundle grew.
 import type { ChatMessage } from "./chatHistory";
-
-/** A second query variant with the institute's full name appended, for
- * questions that refer to it only as "viện"/"trường". Returns null (not the
- * unchanged question) so callers can tell "nothing to add" apart from
- * "added and it's a no-op" without a second check — same contract as
- * retriever.py's expand_self_reference(). */
-export function expandSelfReference(question: string): string | null {
-  const q = question.toLowerCase();
-  if (q.includes(INSTITUTE_FULL_NAME.toLowerCase())) return null;
-  if (INSTITUTE_ALIASES.some((alias) => q.includes(alias))) {
-    return `${question} ${INSTITUTE_FULL_NAME}`;
-  }
-  return null;
-}
 
 function rescale(values: number[]): number[] {
   if (values.length === 0) return values;
@@ -76,6 +68,17 @@ export interface RetrievalChunk extends SearchHit {
   lexical_score?: number;
 }
 
+export interface RetrievalResult {
+  chunks: RetrievalChunk[];
+  /** Truy vấn tiếng Anh đã đem đi nhúng, hoặc chính câu hỏi nếu bước rewrite bị
+   * bỏ qua. Trả ra ngoài chứ không để caller tự dựng lại: hai đường dựng query
+   * độc lập là đúng cái bug vừa sửa ở đây (queryFor() và search() gọi bước dịch
+   * hai lần với chuỗi hơi khác nhau, miss cache cả hai lần). Public vì người
+   * dùng thấy hỏi tiếng Việt mà khớp tài liệu tiếng Anh thì xứng đáng biết lý
+   * do — cùng mục đích như query_for() bên retriever.py. */
+  searchQuery: string;
+}
+
 export class Retriever {
   private storePromise: Promise<VectorStore>;
 
@@ -85,14 +88,6 @@ export class Retriever {
 
   private async store(): Promise<VectorStore> {
     return this.storePromise;
-  }
-
-  /** The text actually embedded — English if the question was translated.
-   * Public so the API layer can surface it, same as retriever.py's
-   * query_for(): a user seeing Vietnamese-in/English-matches deserves to
-   * know why. */
-  async queryFor(question: string): Promise<string> {
-    return toEnglish(await restoreQuestion(question));
   }
 
   /**
@@ -128,51 +123,59 @@ export class Retriever {
       maxPerUrl?: number;
       candidates?: number;
       rerank?: boolean;
-      /** This session's earlier turns, oldest first. Only the last user
-       * message is read, and only to build the context-merged variant —
-       * omitting it just disables that variant. */
+      /** This session's earlier turns, oldest first. Read twice, for two
+       * different things: queryRewriter.ts resolves pronouns against it, and
+       * the context-merged variant is built from the last user message.
+       * Omitting it disables both. */
       history?: ChatMessage[];
     } = {}
-  ): Promise<RetrievalChunk[]> {
+  ): Promise<RetrievalResult> {
     const topK = options.topK ?? DEFAULT_TOP_K;
     const minScore = options.minScore ?? DEFAULT_MIN_SCORE;
     const maxPerUrl = options.maxPerUrl ?? DEFAULT_MAX_PER_URL;
     const candidates = options.candidates ?? DEFAULT_CANDIDATES;
     const rerank = options.rerank ?? true;
 
-    const store = await this.store();
-
-    // Search with the question and, when it was translated, the English
-    // version too — same three-query strategy as retriever.py, same reason:
-    // a mistranslation should only ever add a missed match back in, never
-    // replace a correct query with a wrong one. The context-merged variant
-    // below is a fourth on the same terms, and rides on the same property:
-    // hits merge by best score per chunk, so an unhelpful variant costs one
-    // embedding pass instead of displacing a good query.
+    // Song song hoá, và đây là chỗ giấu được gần hết chi phí của bước rewrite:
+    // trên cold start, call LLM chạy trọn trong bóng của ~5s nạp BGE-M3 nên
+    // gần như miễn phí; trên instance đã nóng nó lộ ra ~1s — nhưng đó là ~1s
+    // thay cho ~20s của hai lần chạy model dịch trước đây. loadEmbedder() được
+    // gọi ở đây chỉ để hâm nóng song song: nó đã cache trên globalThis nên là
+    // no-op nếu instrumentation đã nạp, và kết quả không dùng tới ở đây.
     //
-    // Khôi phục dấu TRƯỚC mọi thứ khác, và thứ tự này quan trọng: Marian dịch
-    // "vien truong la ai" ra rác, dịch "viện trưởng là ai" mới đúng — nên đặt
-    // ở đây thì cả nhánh dịch lẫn nhánh dense đều được hưởng. Câu vốn đã có
-    // dấu đi thẳng qua, không bị đụng vào (xem needsRestoration).
-    // Đo qua /api/chat trên 21 câu hỏi vàng gõ không dấu: Recall@7 57% -> 86%.
-    // Biến thể ghép ngữ cảnh bên dưới cũng dựng từ `restored` vì cùng lý do:
-    // cổng ghép và mergeWithHistory đều khớp mẫu tiếng Việt CÓ dấu.
-    const restored = await restoreQuestion(question);
+    // rewriteQuery() nhận câu hỏi THÔ chứ không phải bản đã khôi phục dấu: nó
+    // tự xử lý được câu không dấu (xem REWRITE_SYSTEM_PROMPT), và nhận câu thô
+    // là thứ cho phép nó chạy song song với chính bước khôi phục dấu.
+    const [store, rewritten, restored] = await Promise.all([
+      this.store(),
+      rewriteQuery(question, options.history ?? []),
+      // Khôi phục dấu cho nhánh tiếng Việt, và câu vốn đã có dấu đi thẳng qua
+      // không bị đụng vào (xem needsRestoration). Đo qua /api/chat trên 21 câu
+      // hỏi vàng gõ không dấu: Recall@7 57% -> 86%. Biến thể ghép ngữ cảnh bên
+      // dưới cũng dựng từ `restored` vì cùng lý do: cổng ghép và
+      // mergeWithHistory đều khớp mẫu tiếng Việt CÓ dấu.
+      restoreQuestion(question),
+      loadEmbedder(),
+    ]);
 
+    // Vẫn tìm bằng CẢ câu tiếng Việt gốc, hai lý do và cả hai đều còn nguyên
+    // giá trị sau khi đổi từ dịch máy sang rewrite bằng LLM:
+    //   1. một bản viết lại sai chỉ được phép THÊM match, không bao giờ được
+    //      thay câu đúng bằng câu sai — hits gộp theo điểm tốt nhất mỗi chunk,
+    //      nên một biến thể vô ích tốn đúng một lượt nhúng chứ không đẩy được
+    //      query tốt ra ngoài;
+    //   2. nửa lexical của hybrid search cần token tiếng Việt. Chunk tiếng Việt
+    //      trong corpus không khớp gì với query tiếng Anh, nên bỏ câu gốc là tự
+    //      cắt một nửa tín hiệu TF-IDF.
+    // Biến thể ghép ngữ cảnh bên dưới là biến thể thứ ba, trên cùng điều kiện.
     const queries = [restored];
     // Per-query score multipliers, kept as a parallel array rather than
     // recording each hit's origin: the only thing the merge step needs to know
     // is which factor to apply, and a factor is cheaper to carry than
     // provenance nobody else reads.
     const weights = [1];
-    const expanded = expandSelfReference(restored);
-    if (expanded) {
-      queries.push(expanded);
-      weights.push(1);
-    }
-    const english = await toEnglish(expanded || restored);
-    if (english !== restored) {
-      queries.push(english);
+    if (rewritten.toLowerCase() !== restored.toLowerCase()) {
+      queries.push(rewritten);
       weights.push(1);
     }
 
@@ -181,20 +184,16 @@ export class Retriever {
     // appended in order and none of the base variants can follow them.
     const contextFrom = queries.length;
 
-    // Fourth variant: the question glued to the previous user turn, for
-    // follow-ups that dropped their subject ("Học phí bao nhiêu?"). Gated —
-    // see contextQuery.ts for why merging unconditionally is not safe.
+    // Biến thể cuối: câu hỏi dán sau lượt user trước, cho follow-up bị mất chủ
+    // đề ("Học phí bao nhiêu?"). Có cổng chặn — xem contextQuery.ts để biết vì
+    // sao ghép vô điều kiện là không an toàn. Không còn bản dịch của biến thể
+    // này (CHATBOT_CONTEXT_TRANSLATE cũ) vì bước rewrite đã đọc chính history
+    // đó rồi: nó giải đại từ ngay trong truy vấn tiếng Anh, đúng việc mà biến
+    // thể ghép-rồi-dịch cố làm bằng cách nối chuỗi.
     const contextual = mergeWithHistory(restored, options.history ?? []);
     if (contextual) {
       queries.push(contextual);
       weights.push(CONTEXT_QUERY_WEIGHT);
-      if (CONTEXT_TRANSLATE) {
-        const contextualEn = await toEnglish(contextual);
-        if (contextualEn !== contextual) {
-          queries.push(contextualEn);
-          weights.push(CONTEXT_QUERY_WEIGHT);
-        }
-      }
     }
 
     const hitsByIndex = new Map<number, RankedHit>();
@@ -273,7 +272,7 @@ export class Retriever {
         const docLexical = store.lexicalFor(hit.index);
         hit.dense_score = hit.score;
         // Best of both queries, same as retriever.py: the Vietnamese query
-        // shares tokens with Vietnamese content, the English one with
+        // shares tokens with Vietnamese content, the rewritten English one with
         // English pages — neither alone covers both halves of the corpus.
         // Note the context-merged variant is in `lexicals` too and is *not*
         // damped by CONTEXT_QUERY_WEIGHT, which by design only scales dense
@@ -303,6 +302,6 @@ export class Retriever {
       kept.push(hit);
       if (kept.length >= topK) break;
     }
-    return kept;
+    return { chunks: kept, searchQuery: rewritten };
   }
 }

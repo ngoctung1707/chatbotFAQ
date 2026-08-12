@@ -69,7 +69,7 @@ async function runTurn(sessionId: string, question: string): Promise<TurnResult>
     return { reply: NO_ANSWER, chunks: [], topDense: 0, reused: false, blocked: true }
   }
 
-  let chunks = await retriever.search(question, { history })
+  let chunks = (await retriever.search(question, { history })).chunks
   const topDense = topDenseScore(chunks)
   let reused = false
   if (shouldReusePreviousChunks(question, lastChunks.length > 0, topDense)) {

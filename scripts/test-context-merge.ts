@@ -150,7 +150,7 @@ async function runRetrievalCheck(): Promise<void> {
 
   const show = async (label: string, h: Msg[]) => {
     const t0 = Date.now();
-    const chunks = await retriever.search(question, { history: h });
+    const { chunks } = await retriever.search(question, { history: h });
     console.log(`\n--- ${label} (${Date.now() - t0}ms, ${chunks.length} đoạn) ---`);
     chunks.forEach((c, i) =>
       console.log(`${i + 1}  ${c.score.toFixed(4)}  ${c.collection}  ${c.url}`)
@@ -196,8 +196,8 @@ async function runRegression(): Promise<number> {
 
   let differed = 0;
   for (const c of CORE) {
-    const before = ids(await retriever.search(c.q, { history: [] }));
-    const after = ids(await retriever.search(c.q, { history: prior }));
+    const before = ids((await retriever.search(c.q, { history: [] })).chunks);
+    const after = ids((await retriever.search(c.q, { history: prior })).chunks);
     const merged = mergeWithHistory(c.q, prior);
     const same = before === after;
     if (!same) differed++;

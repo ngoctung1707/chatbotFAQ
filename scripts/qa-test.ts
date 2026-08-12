@@ -3,14 +3,14 @@
  * gọi thẳng vào src/lib/chatbot/* nên không cần dev server hay Mongo. Mỗi câu
  * là một lượt độc lập (history rỗng), giống lượt đầu của một session mới.
  *
- * Cùng lý do tồn tại như scripts/test-alias-expansion.ts: import thẳng code
- * đang chạy production thay vì chép lại, để bài test không trôi khỏi bản gốc.
+ * Import thẳng code đang chạy production thay vì chép lại, để bài test không
+ * trôi khỏi bản gốc.
  *
  * Chạy: pnpm tsx --env-file-if-exists=.env scripts/qa-test.ts [suite] > out.json
  * suite: "core" (mặc định, bộ hồi quy) hoặc "bkfintech" — xem qa-cases.ts.
  * (stderr in tiến độ, stdout in JSON kết quả để bước thống kê đọc lại)
  */
-import { Retriever } from "../src/lib/chatbot/retriever";
+import { Retriever, type RetrievalChunk } from "../src/lib/chatbot/retriever";
 import {
   answerStream,
   friendlyError,
@@ -78,15 +78,16 @@ async function main() {
 
   for (const c of CASES) {
     const t0 = Date.now();
-    let chunks: Awaited<ReturnType<Retriever["search"]>> = [];
+    let chunks: RetrievalChunk[] = [];
     let queryUsed = "";
     let retrievalMs = 0;
     let reply = "";
     let error: string | null = null;
 
     try {
-      queryUsed = await retriever.queryFor(c.q);
-      chunks = await retriever.search(c.q);
+      const result = await retriever.search(c.q);
+      chunks = result.chunks;
+      queryUsed = result.searchQuery;
       retrievalMs = Date.now() - t0;
 
       if (chunks.length === 0) {

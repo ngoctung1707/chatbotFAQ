@@ -106,12 +106,13 @@ export async function POST(req: NextRequest) {
   const question = message.trim().slice(0, MAX_QUESTION_CHARS)
 
   // History is read BEFORE retrieval, not alongside it, because search() needs
-  // it: the context-merged query variant is built from the last user turn (see
-  // contextQuery.ts). Do not "optimise" this into a Promise.all with the
-  // retrieval below — `history` would be undefined at the call, search() would
-  // run perfectly happily without the fourth variant, and the feature would be
-  // silently off with no error anywhere to trace. The cost is one findOne by
-  // _id on chat_sessions, a few ms against retrieval's tens of seconds.
+  // it twice over: the LLM rewrite step resolves pronouns against it (see
+  // queryRewriter.ts) and the context-merged query variant is built from the
+  // last user turn (see contextQuery.ts). Do not "optimise" this into a
+  // Promise.all with the retrieval below — `history` would be undefined at the
+  // call, search() would run perfectly happily without either, and both
+  // features would be silently off with no error anywhere to trace. The cost is
+  // one findOne by _id on chat_sessions, a few ms against retrieval's seconds.
   const {
     history,
     model: pinnedModel,
@@ -135,8 +136,12 @@ export async function POST(req: NextRequest) {
   let reusedPrevious = false
   try {
     const retriever = await getRetriever()
-    const queryUsed = await retriever.queryFor(question)
-    chunks = await retriever.search(question, { history })
+    // Một lời gọi duy nhất, và search() trả luôn query nó đã dùng. Trước đây
+    // đây là hai lời gọi (queryFor + search) cùng dựng query một cách độc lập,
+    // và đó chính là nguyên nhân gốc của bug gọi bước dịch hai lần: hai chuỗi
+    // hơi khác nhau nên miss cache cả hai lần, ~20s cho mỗi câu hỏi.
+    const result = await retriever.search(question, { history })
+    chunks = result.chunks
 
     // Reuse the previous turn's passages instead of these — but only when both
     // conditions hold, and they are deliberately independent:
@@ -164,7 +169,7 @@ export async function POST(req: NextRequest) {
 
     logRetrieval(
       question,
-      queryUsed,
+      result.searchQuery,
       chunks,
       mergeWithHistory(question, history),
       session_id,

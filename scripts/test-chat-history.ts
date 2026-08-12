@@ -218,10 +218,10 @@ async function testConversation(): Promise<void> {
     const merged = mergeWithHistory(c.q, history);
     if (merged) mergedTurns++;
 
-    const chunks = await retriever.search(c.q, { history });
+    const { chunks } = await retriever.search(c.q, { history });
     // Đường cơ sở: chính câu đó, không history — tức hành vi trước thay đổi
     // này. Khác nhau nghĩa là history đã đổi kết quả truy hồi của câu này.
-    const baseline = await retriever.search(c.q, { history: [] });
+    const { chunks: baseline } = await retriever.search(c.q, { history: [] });
     const same = ids(chunks) === ids(baseline);
     if (!same) {
       changedTopK++;
@@ -306,12 +306,12 @@ async function testFollowUp(): Promise<void> {
 
   const c1 = await retriever.search(turn1, { history: [] });
   await appendMessage(id, "user", turn1);
-  await appendMessage(id, "assistant", c1.map((c) => c.title).join("; "));
+  await appendMessage(id, "assistant", c1.chunks.map((c) => c.title).join("; "));
 
   const { history } = await getHistoryAndModel(id);
   const merged = mergeWithHistory(turn2, history);
-  const withHist = await retriever.search(turn2, { history });
-  const without = await retriever.search(turn2, { history: [] });
+  const { chunks: withHist } = await retriever.search(turn2, { history });
+  const { chunks: without } = await retriever.search(turn2, { history: [] });
 
   console.log(`  lượt 1: ${turn1}`);
   console.log(`  lượt 2: ${turn2}`);
