@@ -255,6 +255,44 @@ export const SPARSE_WEIGHT = Number(process.env.CHATBOT_SPARSE_WEIGHT || 0.3);
 export const INSTITUTE_ALIASES = ["viện", "trường"];
 export const INSTITUTE_FULL_NAME = "Viện Công nghệ và Kinh tế số BK Fintech";
 
+// --- Query rewriting ---
+//
+// Một lần gọi LLM dựng lại câu hỏi thành truy vấn tiếng Anh độc lập, thay cho
+// cặp expandSelfReference() + toEnglish() (opus-mt chạy local) trước đây. Xem
+// queryRewriter.ts để biết vì sao đánh đổi này là net win cả về độ trễ lẫn RAM.
+
+export const REWRITE_ENABLED = !["0", "false"].includes(
+  (process.env.CHATBOT_REWRITE || "1").toLowerCase()
+);
+
+/** Model dựng lại câu hỏi. Rỗng = dùng model đứng đầu rankModels().
+ * Đặt sang một model rẻ hơn model trả lời nếu muốn hai bước tiêu hai bucket
+ * RPM khác nhau — mỗi câu hỏi giờ tốn 2 request, nên rpm 15 thực chất chỉ
+ * còn ~7 câu/phút nếu cả hai bước dùng chung một model. */
+export const REWRITE_MODEL = process.env.CHATBOT_REWRITE_MODEL || "";
+
+/** Ngắn hơn TIMEOUT_MS rất nhiều vì đây là bước phụ trợ: quá hạn thì bỏ
+ * rewrite và đi tiếp với câu gốc, chứ không phải chờ tiếp. 2s đủ cho một
+ * call flash-lite sinh ≤64 token ở p95. */
+export const REWRITE_TIMEOUT_MS = Number(
+  process.env.CHATBOT_REWRITE_TIMEOUT_MS || 2000
+);
+
+/** Một truy vấn tìm kiếm dài nhất cũng chỉ vài chục token. Trần thấp là thứ
+ * giữ cho call này rẻ và nhanh; sanitize() lo phần model vẫn cố nói dài. */
+export const REWRITE_MAX_OUTPUT_TOKENS = 64;
+
+/** Số cặp hỏi-đáp cũ đưa vào prompt rewrite. Bằng HISTORY_MAX_MESSAGES/2, tức
+ * đúng bằng những gì model trả lời cũng nhìn thấy — hai bước giải đại từ trên
+ * cùng một lượng ngữ cảnh thì không lệch nhau được. */
+export const REWRITE_HISTORY_PAIRS = 3;
+
+/** Câu trả lời cũ bị cắt còn ngần này ký tự trong prompt rewrite. Để giải một
+ * đại từ, model chỉ cần biết lượt trước nói VỀ CÁI GÌ — chỗ tiết kiệm token
+ * lớn nhất của prompt này. */
+export const REWRITE_ANSWER_SNIPPET_CHARS = 150;
+
+
 // --- Câu hỏi phụ thuộc ngữ cảnh ---
 //
 // A follow-up like "Học phí bao nhiêu?" carries no term that says *which*

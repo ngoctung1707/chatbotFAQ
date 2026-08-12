@@ -259,8 +259,11 @@ function errorStatus(err: unknown): number | undefined {
 /** Everything text-ish about an error, for pattern matching. The status code
  * alone is not enough — a Gemini 429 says RESOURCE_EXHAUSTED in a JSON body the
  * SDK keeps in `responseBody`, and that body is also the only place retryDelay
- * appears. */
-function errorText(err: unknown): string {
+ * appears.
+ *
+ * Exported so queryRewriter.ts can log its own failures the same way rather
+ * than growing a second, shallower copy of this walk. */
+export function errorText(err: unknown): string {
   const parts: string[] = [];
   for (const link of errorChain(err)) {
     if (link instanceof Error) parts.push(link.name, link.message);
