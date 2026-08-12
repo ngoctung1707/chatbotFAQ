@@ -6,8 +6,6 @@
  * one source of truth is easier to keep in sync when porting.
  */
 
-import path from "path";
-
 // Reuses DATABASE_URI — the same connection string Payload already reads for
 // its own MongoDB — instead of inventing a second Mongo config that could
 // drift out of sync with it (same reasoning as chat_history.py on the Python
@@ -233,9 +231,17 @@ export const MOCK = !["", "0", "false"].includes(
 // Where the JS-built vector index lives (see scripts/build-index.ts). Not the
 // same directory as the Python faiss_index — different format, kept apart on
 // purpose so the two pipelines can't silently clobber each other's output.
+//
+// Ghép chuỗi chứ KHÔNG dùng path.join, và đây không phải chuyện thẩm mỹ: file
+// này bị kéo vào bundle EDGE qua instrumentation.ts -> instrumentation-node.ts
+// -> embedding.ts. Bundler đi theo cả `await import()` nằm sau cổng chặn
+// NEXT_RUNTIME (cổng đó là kiểm tra lúc CHẠY, không phải lúc build), nên một
+// `import path from "path"` ở đây thành "Module not found: Can't resolve 'path'"
+// trong bản dựng edge — và ở chế độ dev, một lỗi build còn treo khiến MỌI
+// request trả 500 với body rỗng, kể cả route đã biên dịch xong.
+// Node nhận dấu / trên Windows, nên chuỗi ghép tay chạy đúng ở cả hai hệ.
 export const INDEX_DIR =
-  process.env.CHATBOT_INDEX_DIR ||
-  path.join(process.cwd(), "data", "faiss_index_js");
+  process.env.CHATBOT_INDEX_DIR || `${process.cwd()}/data/faiss_index_js`;
 
 // Cosine floor. Same value as retriever.py's DEFAULT_MIN_SCORE — re-measure
 // on this corpus if the embedding model changes, since the number is tied to
