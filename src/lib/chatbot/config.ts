@@ -255,6 +255,228 @@ export const SPARSE_WEIGHT = Number(process.env.CHATBOT_SPARSE_WEIGHT || 0.3);
 export const INSTITUTE_ALIASES = ["viện", "trường"];
 export const INSTITUTE_FULL_NAME = "Viện Công nghệ và Kinh tế số BK Fintech";
 
+// --- Câu hỏi phụ thuộc ngữ cảnh ---
+//
+// A follow-up like "Học phí bao nhiêu?" carries no term that says *which*
+// course it is about, so embedding it verbatim retrieves nothing above
+// DEFAULT_MIN_SCORE and the model is forced to answer NOT_UPDATED for
+// information that *is* in the corpus. These knobs drive the fourth query
+// variant that pastes the previous user question in front of it — see
+// contextQuery.ts. JS-only; retriever.py has no equivalent.
+
+// TẮT mặc định. Bật bằng CHATBOT_CONTEXT_MERGE=1.
+//
+// Ban đầu định bật mặc định. Đổi lại sau khi đo, và đo thì không ủng hộ:
+//
+//   - Không ca nào cải thiện được CÂU TRẢ LỜI. Ca tưởng là điển hình —
+//     "cho tôi thông tin người thứ 2" sau một câu trả lời dạng danh sách —
+//     vẫn trả lời đúng khi cổng chặn TỪ CHỐI ghép, vì thứ giải quyết nó là
+//     history đi vào prompt qua buildMessages(), vốn đã có sẵn. Ca đó chưa
+//     bao giờ là bài toán của truy hồi.
+//   - Với đúng một câu follow-up thật ("Học phí bao nhiêu?" sau câu hỏi về
+//     khóa học), hai chunk query ghép chèn vào là một trang tin workshop và
+//     trang ban lãnh đạo — chiếm hai ô đầu, không cái nào là trang khóa học.
+//   - 3/15 câu độc lập trong bộ CORE bị chiếm mất ô trong top-7, và một ca
+//     production: sau "hoạt động của bkfintech vào 2026", câu "các khoá học."
+//     bị ghép và các chunk sự kiện của lượt trước chiếm chỗ trang khóa học.
+//
+// Tiêu chí nghiệm thu đặt ra từ đầu là top-K phải KHÔNG đổi với mọi câu hỏi
+// độc lập. Nó không đạt, và nguyên nhân không sửa được bằng cách siết cổng
+// chặn: cổng chỉ nhìn độ dài, mà "các khoá học" (tự đủ nghĩa) và "Học phí bao
+// nhiêu?" (mất chủ đề) là hai danh ngữ ngắn như nhau.
+//
+// Code, trần CONTEXT_MAX_HITS và bộ test (scripts/test-context-merge.ts) giữ
+// nguyên: bài toán follow-up mất chủ đề là có thật, chỉ là nối chuỗi không
+// giải được nó. Muốn thử lại thì bật cờ và chạy `--regression` trước.
+export const CONTEXT_MERGE_ENABLED = ["1", "true"].includes(
+  (process.env.CHATBOT_CONTEXT_MERGE || "").toLowerCase()
+);
+
+// Token count at or below which a question is treated as context-dependent.
+// A guess, not a measurement: context-dependent follow-ups are nearly always
+// short ("Học phí bao nhiêu?", "Khi nào khai giảng?", "Ở đâu?") while a
+// question that opens a new topic has to name that topic and so runs longer.
+// Re-check it against the length distribution of real logged follow-ups before
+// treating the number as tuned.
+//
+// 6, not the 8 this was first written with, because the counter splits on
+// /[\p{L}\p{N}]+/u and Vietnamese is written one syllable per space: "Viện có
+// những phòng lab nghiên cứu nào?" is six words to a reader but eight tokens
+// here, so 8 merged history into an obviously independent question. Roughly
+// 1.5x inflation against what a person would call a word, so the ceiling has to
+// sit that much lower. English questions count nearer to one token per word and
+// are the reason this is not lower still ("How much?" must still pass).
+export const CONTEXT_SHORT_QUESTION_WORDS = Number(
+  process.env.CHATBOT_CONTEXT_WORDS || 6
+);
+
+// How much of the previous question is pasted in front of the current one.
+// Capped because the merged text is embedded as one query: let the older turn
+// grow without limit and it out-weighs the question actually being asked. 200
+// chars comfortably holds a full question in either language, so in practice
+// this only ever truncates something pathological.
+export const CONTEXT_PREV_MAX_CHARS = 200;
+
+// Whether the merged query also gets a translated variant. OFF by default: the
+// translation model is the pipeline's biggest RAM and latency cost (measured —
+// it, not BGE-M3, is what dominates at real query lengths, and ONNX Runtime's
+// arena only ever grows), so a second translate call per follow-up is a price
+// to be measured before it is paid. Leaving it off is not free of signal: BGE-M3
+// is multilingual so the Vietnamese vector still matches English chunks
+// semantically, and the most useful part of the previous turn is usually a
+// proper noun ("Fintech Foundation", "BK Fintech") which survives both
+// languages unchanged and is picked up directly by the lexical branch.
+export const CONTEXT_TRANSLATE = ["1", "true"].includes(
+  (process.env.CHATBOT_CONTEXT_TRANSLATE || "").toLowerCase()
+);
+
+// Multiplier applied to the dense score of hits found *only* by the merged
+// query. 1.0 is a deliberate no-op: the knob exists so that if the merged query
+// turns out to displace correct chunks after deploy, the fix is one env var
+// rather than a logic change under time pressure.
+//
+// Not calibrated, but no longer entirely unmeasured. On the CORE suite with a
+// prior turn forced into every question (scripts/test-context-merge.ts
+// --regression), the questions whose top-7 moved were 3 at 1.0, 3 at 0.95, 2 at
+// 0.9. So it does what it claims and 0.9 is where it starts to bite — but it
+// does not close the gap on its own, because the leak it is damping is the
+// gate admitting a short *independent* question, not the merged query scoring
+// too high. Turn it down as a stopgap, tighten the gate as the fix.
+export const CONTEXT_QUERY_WEIGHT = Number(
+  process.env.CHATBOT_CONTEXT_WEIGHT || 1
+);
+
+// Từ chỉ thứ tự, dùng cùng CONTEXT_ANAPHORA để nhận ra tham chiếu TƯỜNG MINH
+// (xem hasExplicitReference trong contextQuery.ts). Tách khỏi CONTEXT_ANAPHORA
+// vì chúng khớp theo CẶP token ("thứ" + "hai") chứ không khớp một token đơn —
+// "hai" đứng một mình chỉ là số đếm, không phải tham chiếu.
+export const CONTEXT_ORDINAL_WORDS = [
+  "nhất",
+  "hai",
+  "ba",
+  "tư",
+  "bốn",
+  "năm",
+  "sáu",
+  "bảy",
+];
+
+// Tham chiếu thứ tự bằng tiếng Anh. Cần vì corpus song ngữ và SYSTEM_PROMPT
+// yêu cầu trả lời đúng ngôn ngữ câu hỏi, nên "tell me about the second one" là
+// câu hỏi hợp lệ hệt như "cho tôi thông tin người thứ 2" — mà bộ nhận diện
+// tiếng Việt không thấy nó (không có token "thứ").
+//
+// Khớp token đơn chứ không khớp cặp như bên tiếng Việt: tiếng Anh không có cấu
+// trúc "thứ + số", bản thân "second"/"third" đã mang nghĩa thứ tự. Rủi ro đổi
+// lại: một câu độc lập kiểu "What is the first course you offer?" cũng khớp.
+// Chấp nhận được vì điều kiện thứ hai — truy hồi phải YẾU — vẫn chặn: câu đó
+// tự nêu chủ đề nên truy hồi của nó sẽ tốt. Cố tình BỎ "it"/"they"/"that":
+// chúng quá phổ biến trong câu tiếng Anh bình thường.
+export const CONTEXT_ORDINAL_WORDS_EN = [
+  "first",
+  "second",
+  "third",
+  "fourth",
+  "fifth",
+  "sixth",
+  "last",
+  "former",
+  "latter",
+];
+
+// Dưới ngưỡng dense này thì coi như truy hồi KHÔNG neo được vào đâu, và mới
+// được phép dùng lại chunk của lượt trước (xem route.ts). Đây là vế "kiểm
+// duyệt": không đụng vào câu hỏi mà truy hồi vốn đã tốt.
+//
+// So `dense_score` (cosine thô) chứ KHÔNG so `score` — sau rerank, `score` đi
+// qua rescale() min-max trên đúng tập ứng viên nên đỉnh luôn ≈ DENSE_WEIGHT
+// bất kể câu hỏi tốt hay tệ; nó vô dụng làm thước đo tuyệt đối.
+//
+// Phân bố đo được (bộ CORE + 6 câu tham chiếu dựng tay):
+//   - câu độc lập TRONG phạm vi : 0.7502 .. 0.8903
+//   - câu chứa tham chiếu       : 0.6781 .. 0.7588
+//   - câu độc lập NGOÀI phạm vi : 0.6535 .. 0.6932  (giá vàng, nấu phở)
+//
+// 0.77, không phải 0.74 như lần đặt đầu. Lý do: ngưỡng này chỉ được xét SAU
+// KHI hasExplicitReference() đã đúng, nên phân bố cần tách không phải "mọi câu
+// hỏi" mà là "câu hỏi có tham chiếu" — dải đó tối đa 0.7588. Đặt 0.74 cắt
+// ngang chính dải cần phủ và bỏ sót phần trên của nó; đo được: 10/15 ở 0.74 so
+// với 12/15 ở 0.77 trên scripts/history-cases.ts, đối chứng câu độc lập vẫn
+// nguyên ở cả hai.
+//
+// Rủi ro còn lại: một câu VỪA tự đủ nghĩa VỪA chứa từ chỉ thứ tự ("Phòng lab
+// đầu tiên của viện là gì?") sẽ bị dùng lại chunk nếu điểm của nó dưới 0.77.
+// Loại câu đó thường đạt 0.83+ (xem dải trên) nên nằm ngoài, nhưng đây là chỗ
+// hỏng trước tiên nếu con số này bị nới thêm.
+export const CONTEXT_WEAK_DENSE = Number(
+  process.env.CHATBOT_CONTEXT_WEAK_DENSE || 0.77
+);
+
+// Bật/tắt việc dùng lại chunk của lượt trước. Khác với CONTEXT_MERGE_ENABLED
+// (nối chuỗi, đã tắt vì đo cho thấy có hại): nhánh này không sinh query mới,
+// không tốn embedding, và chỉ kích hoạt khi CẢ HAI điều kiện cùng đúng —
+// câu hỏi có tham chiếu tường minh, VÀ truy hồi hiện tại yếu.
+export const CONTEXT_FALLBACK_ENABLED = !["0", "false"].includes(
+  (process.env.CHATBOT_CONTEXT_FALLBACK || "1").toLowerCase()
+);
+
+// Trần cứng: nhiều nhất bao nhiêu ứng viên được phép đến từ RIÊNG query ghép
+// (chunk mà không query gốc nào tìm ra). Đây là lớp kiểm duyệt thứ hai, độc lập
+// với cổng chặn, và cần thiết vì cổng chặn về nguyên tắc không thể chính xác:
+// nó chỉ nhìn độ dài, mà "các khoá học" (tự đủ chủ đề) và "Học phí bao nhiêu?"
+// (mất chủ đề) đều là danh ngữ ngắn — không tách được bằng độ dài.
+//
+// Quan sát thực tế đã thúc đẩy con số này: sau câu "hoạt động của bkfintech vào
+// 2026", câu "các khoá học." bị ghép và top-7 bị các chunk sự kiện/tin tức của
+// lượt trước chiếm chỗ của chính các trang khóa học. Không có trần thì một cổng
+// chặn bắt nhầm sẽ định hình lại toàn bộ top-K; có trần thì thiệt hại luôn bị
+// chặn ở đúng ngần này ô, dù cổng chặn sai đến đâu.
+//
+// Đặt 0 = tắt hẳn đóng góp của query ghép (vẫn tốn một lượt embedding), tức
+// dùng CHATBOT_CONTEXT_MERGE=0 sẽ gọn hơn nếu muốn tắt hẳn tính năng.
+export const CONTEXT_MAX_HITS = Number(
+  process.env.CHATBOT_CONTEXT_MAX_HITS || 2
+);
+
+// Anaphora — words that point at something named in an earlier turn. Matched
+// against whole tokens, never substrings ("đó" must not fire on "đóng").
+//
+// Diacritics-only, and every entry hand-checked, for the same reason spelled
+// out over INSTITUTE_ALIASES: a wrong entry here silently pollutes every query
+// containing it. Undiacriticised spellings of the obvious candidates are all
+// common words in something this corpus contains — "no"/"the"/"do" are English
+// (nó/thế/đó) and half these pages are English.
+//
+// This list was first written with three bare-ASCII exceptions, "vay"/"day"/
+// "nay", on the grounds that they collide with no English word. They were
+// dropped: the check was run against the wrong language. Each one collides with
+// a high-frequency word in *this* corpus's own domain — "vay" is to borrow
+// (lãi suất cho vay, in a fintech corpus), "day" strips from "dạy" as in what a
+// course teaches (and is an English word after all), and "nay" is half of "hôm
+// nay". The regression run caught the last one live: "Giá vàng SJC hôm nay bao
+// nhiêu một lượng?" is nine tokens, way over the length gate, and merged
+// anyway purely on "nay". Undiacriticised questions stay covered by
+// CONTEXT_SHORT_QUESTION_WORDS, which does most of the work here regardless;
+// this list only has to catch the long-but-dependent case.
+// Hai entry đã bị gỡ sau khi đối chiếu với bộ câu hỏi thật, và cả hai đều là
+// đúng kiểu hỏng mà chú thích trên cảnh báo:
+//   - "thế" nằm trong "như thế nào", một trong những cách hỏi phổ biến nhất
+//     tiếng Việt. Nó làm "Cơ sở vật chất phục vụ học tập của Viện như thế
+//     nào?" — câu hoàn toàn độc lập — bị coi là có tham chiếu.
+//   - "chúng" hầu như luôn là "chúng tôi"/"chúng ta", tức ngôi thứ nhất, không
+//     trỏ về lượt trước. Dạng trỏ ngược thật sự là "chúng nó", mà "nó" đã có.
+// Nghĩa chỉ xuất của "thế" đã được "vậy" phủ, nên không mất gì.
+export const CONTEXT_ANAPHORA = [
+  "nó",
+  "đó",
+  "đấy",
+  "này",
+  "kia",
+  "ấy",
+  "vậy",
+  "họ",
+];
+
 // --- Models (transformers.js / ONNX) ---
 
 // Dense embedding model. Xenova/bge-m3 — the ONNX mirror of BAAI/bge-m3, same

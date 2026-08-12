@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   appendMessage,
   getHistoryAndModel,
+  setLastChunks,
   setSessionModel,
+  type ChatMessage,
+  type StoredChunkRef,
 } from '@/lib/chatbot/chatHistory'
-import { answerStream, friendlyError, isRefusal } from '@/lib/chatbot/llm'
+import { answerStream, friendlyError, isRefusal, NO_ANSWER } from '@/lib/chatbot/llm'
+import {
+  isOrphanReference,
+  mergeWithHistory,
+  shouldReusePreviousChunks,
+  topDenseScore,
+} from '@/lib/chatbot/contextQuery'
 import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
-import { MOCK } from '@/lib/chatbot/config'
+import { CONTEXT_WEAK_DENSE, MOCK } from '@/lib/chatbot/config'
 import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
 
 // Runs the retrieval + Gemini-answering pipeline in-process (ported from the
@@ -27,11 +36,41 @@ function getRetriever(): Promise<Retriever> {
   return retrieverPromise
 }
 
-function logRetrieval(question: string, queryUsed: string, chunks: RetrievalChunk[]) {
+function logRetrieval(
+  question: string,
+  queryUsed: string,
+  chunks: RetrievalChunk[],
+  contextQuery: string | null,
+  sessionId: string,
+  history: ChatMessage[],
+  followUp: { topDense: number; reusedPrevious: boolean },
+) {
   if (process.env.CHATBOT_LOG_CHUNKS === '0') return
   console.log('\n' + '='.repeat(96))
   console.log(`HỎI: ${question}`)
+  // Session + history size first, because three different failures all look
+  // identical from the answer alone: the session never carried history (a new
+  // session id every turn — the widget mints one per mount, so a remount or a
+  // dev hot-reload silently starts over), the gate declined to merge, or the
+  // merge happened and did not help. Without this line the first case is
+  // invisible, and it is the one that is not a retrieval bug at all.
+  console.log(
+    `     phiên ${sessionId.slice(0, 8)}… — history ${history.length} message` +
+      (history.length === 0 ? ' (lượt đầu HOẶC session mới)' : ''),
+  )
   if (queryUsed && queryUsed !== question) console.log(`     tìm bằng: ${queryUsed}`)
+  // Printed so the log says whether the context gate fired. Without it, a
+  // follow-up that retrieved badly gives no way to tell "the gate rejected it"
+  // apart from "it merged and the merge didn't help" — two different bugs.
+  if (contextQuery) console.log(`     ghép ngữ cảnh: ${contextQuery}`)
+  else if (history.length > 0) console.log('     ghép ngữ cảnh: KHÔNG (cổng chặn từ chối)')
+  // topDense là thước đo "truy hồi có neo được vào đâu không" — in kèm ngưỡng
+  // để đọc log biết ngay vì sao nhánh dùng lại chunk có/không kích hoạt, thay
+  // vì phải chạy lại mới biết.
+  console.log(
+    `     dense đỉnh=${followUp.topDense.toFixed(4)} (ngưỡng yếu ${CONTEXT_WEAK_DENSE})` +
+      (followUp.reusedPrevious ? ' → DÙNG LẠI chunk lượt trước' : ''),
+  )
   if (chunks.length === 0) {
     console.log('     (không đoạn nào vượt ngưỡng điểm)')
     console.log('='.repeat(96))
@@ -66,12 +105,72 @@ export async function POST(req: NextRequest) {
   }
   const question = message.trim().slice(0, MAX_QUESTION_CHARS)
 
+  // History is read BEFORE retrieval, not alongside it, because search() needs
+  // it: the context-merged query variant is built from the last user turn (see
+  // contextQuery.ts). Do not "optimise" this into a Promise.all with the
+  // retrieval below — `history` would be undefined at the call, search() would
+  // run perfectly happily without the fourth variant, and the feature would be
+  // silently off with no error anywhere to trace. The cost is one findOne by
+  // _id on chat_sessions, a few ms against retrieval's tens of seconds.
+  const {
+    history,
+    model: pinnedModel,
+    lastChunks,
+  } = MOCK
+    ? { history: [] as ChatMessage[], model: null, lastChunks: [] as StoredChunkRef[] }
+    : await getHistoryAndModel(session_id)
+
+  // Refers to something ("người thứ 2", "cái đó") with no earlier turn to
+  // resolve it against. Answered here rather than sent to the model, because
+  // measurement showed the model does not refuse in this situation — it picks
+  // whoever happens to be listed second in <data> and states it confidently.
+  // A wrong answer with no signal is worse than a refusal, and this also skips
+  // a retrieval plus a model call that could only produce one.
+  if (isOrphanReference(question, history.length)) {
+    console.log(`\nHỎI: ${question}\n     tham chiếu nhưng history rỗng → NO_ANSWER`)
+    return NextResponse.json({ reply: NO_ANSWER, sources: [] })
+  }
+
   let chunks: RetrievalChunk[]
+  let reusedPrevious = false
   try {
     const retriever = await getRetriever()
     const queryUsed = await retriever.queryFor(question)
-    chunks = await retriever.search(question)
-    logRetrieval(question, queryUsed, chunks)
+    chunks = await retriever.search(question, { history })
+
+    // Reuse the previous turn's passages instead of these — but only when both
+    // conditions hold, and they are deliberately independent:
+    //
+    //   1. the question carries an explicit reference (not merely "is short" —
+    //      that test is what pulled off-topic chunks into "các khoá học"), and
+    //   2. this turn's own retrieval found nothing anchored.
+    //
+    // Condition 2 is the vetting: a follow-up whose retrieval already works is
+    // left completely alone. Measured on this corpus, in-scope questions score
+    // 0.7502+ dense while referring questions sit at 0.6781–0.7588 — see
+    // CONTEXT_WEAK_DENSE.
+    //
+    // Replace, never blend: mixing the two sets was tried and turned a correct
+    // answer into a refusal, because candidates/rescale/maxPerUrl all key off
+    // this one list and a half-merged list satisfies none of them.
+    const topDense = topDenseScore(chunks)
+    if (shouldReusePreviousChunks(question, lastChunks.length > 0, topDense)) {
+      const previous = await retriever.chunksByIds(lastChunks)
+      if (previous.length > 0) {
+        chunks = previous
+        reusedPrevious = true
+      }
+    }
+
+    logRetrieval(
+      question,
+      queryUsed,
+      chunks,
+      mergeWithHistory(question, history),
+      session_id,
+      history,
+      { topDense, reusedPrevious },
+    )
   } catch (err) {
     // Most commonly: the vector index hasn't been built yet (no
     // data/faiss_index_js/store.json — see `npm run build-index`). Treated
@@ -101,10 +200,6 @@ export async function POST(req: NextRequest) {
       sources,
     })
   }
-
-  const { history, model: pinnedModel } = MOCK
-    ? { history: [], model: null }
-    : await getHistoryAndModel(session_id)
 
   // Held in an object rather than a bare `let` so the assignment inside the
   // callback and the read after the loop are plainly the same slot.
@@ -142,6 +237,18 @@ export async function POST(req: NextRequest) {
   if (!MOCK) {
     await appendMessage(session_id, 'user', question)
     await appendMessage(session_id, 'assistant', reply)
+    // Whatever actually grounded this answer becomes the context a follow-up
+    // may fall back to — including when this turn itself reused the previous
+    // set. That is what lets a three-turn chain work: the passages stay put
+    // until a turn retrieves something anchored of its own and replaces them.
+    //
+    // Not awaited for the same reason setSessionModel is not: the answer is
+    // already complete, and a failed write costs the next turn its fallback,
+    // never this turn its reply.
+    setLastChunks(
+      session_id,
+      chunks.map((c) => ({ id: c.chunk_id, score: c.score })),
+    ).catch((err) => console.error('    !! không ghi được chunk của lượt:', err))
   }
 
   // A refusal states that the passages did not answer the question, so the

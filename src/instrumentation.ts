@@ -14,36 +14,12 @@
  *
  * Next.js runs `register()` once per server process, before it starts
  * serving. `NEXT_RUNTIME` is checked because instrumentation also runs on the
- * edge runtime, where neither model can load at all.
+ * edge runtime, where neither model can load at all; the actual work sits in
+ * instrumentation-node.ts so that its Node APIs never reach the edge bundle.
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  const { loadEmbedder } = await import("@/lib/chatbot/embedding");
-  const { loadTranslator } = await import("@/lib/chatbot/translator");
-
-  const start = Date.now();
-  console.log("[chatbot] Đang preload model (BGE-M3 + model dịch)...");
-
-  // allSettled, not all: a corrupt model file or an unreadable cache dir
-  // should degrade the chatbot, not stop the whole site from booting. The
-  // promise caches in those two modules only memoize *successful* loads
-  // (a rejected promise is still cached, but the lazy path already treats a
-  // load failure as "answer without translation" / surfaces it per request),
-  // so a failed preload leaves the normal request path exactly as it was
-  // before this file existed.
-  const results = await Promise.allSettled([loadEmbedder(), loadTranslator()]);
-
-  results.forEach((result, i) => {
-    const name = i === 0 ? "BGE-M3" : "model dịch";
-    if (result.status === "rejected") {
-      console.error(`[chatbot] Preload ${name} THẤT BẠI:`, result.reason);
-    }
-  });
-
-  const rssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
-  console.log(
-    `[chatbot] Preload xong sau ${Date.now() - start}ms ` +
-      `(${process.uptime().toFixed(1)}s kể từ khi tiến trình khởi động, RSS ${rssMb}MB)`
-  );
+  const { registerNode } = await import("./instrumentation-node");
+  await registerNode();
 }

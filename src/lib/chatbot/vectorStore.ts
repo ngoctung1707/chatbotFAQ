@@ -121,4 +121,35 @@ export class VectorStore {
   lexicalFor(index: number): LexicalWeights {
     return this.lexicalCache[index];
   }
+
+  /** Look a chunk up by its stored id, for callers that already know which
+   * passage they want and are not searching for one — currently the follow-up
+   * path in route.ts, which reuses the chunks the previous turn was answered
+   * from. Index built on first use rather than in the constructor: every other
+   * caller goes through search() and would pay for a map it never reads. */
+  private idIndex: Map<string, number> | null = null;
+  chunkIdToIndex(chunkId: string): number | undefined {
+    if (!this.idIndex) {
+      this.idIndex = new Map(this.chunks.map((c, i) => [c.chunk_id, i]));
+    }
+    return this.idIndex.get(chunkId);
+  }
+
+  /** The stored record at `index`, shaped like a search hit but carrying the
+   * score the caller supplies — there is no query here to score against, so a
+   * score computed locally would be a fiction. */
+  hitAt(index: number, score: number): SearchHit {
+    const chunk = this.chunks[index];
+    return {
+      index,
+      score,
+      chunk_id: chunk.chunk_id,
+      url: chunk.url,
+      title: chunk.title,
+      published_at: chunk.published_at,
+      collection: chunk.collection,
+      raw: chunk.raw,
+      content: chunk.content,
+    };
+  }
 }

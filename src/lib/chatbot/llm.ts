@@ -128,7 +128,14 @@ kèm số nguồn xác nhận đối tượng. KHÔNG dùng câu "${NO_ANSWER}" 
 không xin lỗi vì điều đó.
 - Nguồn mâu thuẫn nhau → nêu cả hai, chỉ rõ khác biệt, không tự chọn một bên.
 - Lượt hỏi-đáp trước chỉ dùng khi câu hỏi hiện tại phụ thuộc ngữ cảnh (đại từ, \
-hỏi tiếp điều vừa nhắc). Chủ đề mới, độc lập → bỏ qua lượt trước.`;
+tham chiếu thứ tự như "người thứ 2"/"cái đầu tiên", hỏi tiếp điều vừa nhắc). \
+Chủ đề mới, độc lập → bỏ qua lượt trước.
+- Phân vai rõ: lượt trước chỉ để biết câu hỏi đang NHẮC TỚI AI/CÁI GÌ. Mọi dữ \
+kiện trả lời vẫn phải lấy từ <data>. Ví dụ "người thứ 2" → tra lượt trước để \
+biết đó là ai, rồi trả lời về người đó bằng <data>.
+- Câu hỏi nhắc tới thứ gì đó mà KHÔNG có lượt trước nào để tra → trả lời đúng \
+một câu: "${NO_ANSWER}". Tuyệt đối không đoán xem đang nói về ai/cái gì dựa \
+vào thứ tự xuất hiện trong <data>.`;
 
 export function formatSources(chunks: RetrievalChunk[]): string {
   return chunks

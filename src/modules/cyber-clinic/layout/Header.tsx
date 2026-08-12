@@ -8,8 +8,11 @@ import ArrowIconWhite from '../icons/ArrowIconWhite'
 import ACFLogo from '../imgs/logos/ACF.png'
 import HUSTLogo from '../imgs/logos/HUST.png'
 import BKFintechLogo from '../imgs/logos/BKFintech.png'
+import { BASE_PATH } from '../constants'
 
-export const BASE_PATH = '/research/r&d-funding-projects/cyber-clinic'
+// Re-export để mọi `import { BASE_PATH } from '.../Header'` sẵn có vẫn chạy;
+// định nghĩa thật đã dời sang ../constants/index.tsx (xem lý do trong file đó).
+export { BASE_PATH }
 
 const NAV_ITEMS = [
   { label: 'BK Fintech', href: '/' },

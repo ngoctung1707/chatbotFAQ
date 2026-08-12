@@ -18,6 +18,15 @@ export interface ChatMessage {
   content: string;
 }
 
+/** One passage the previous turn was answered from: which chunk, and what it
+ * scored *for that turn's question*. Only the id and the score are kept, not
+ * the text — the text is in the index already, and a copy in Mongo would be a
+ * second source of truth that goes stale the moment the index is rebuilt. */
+export interface StoredChunkRef {
+  id: string;
+  score: number;
+}
+
 // Cached across warm invocations of the same serverless instance — re-running
 // MongoClient.connect() per request would otherwise re-establish a TCP/TLS
 // handshake on every call. `global` survives module reloads in Next.js dev
@@ -128,18 +137,49 @@ export async function deleteSession(sessionId: string): Promise<void> {
  * lifetime of a session, so it should expire with one — a separate collection
  * would need its own TTL index kept in step with this one.
  */
-export async function getHistoryAndModel(
-  sessionId: string
-): Promise<{ history: ChatMessage[]; model: string | null }> {
+export async function getHistoryAndModel(sessionId: string): Promise<{
+  history: ChatMessage[];
+  model: string | null;
+  lastChunks: StoredChunkRef[];
+}> {
   const coll = await sessions();
   const doc = await coll.findOne(
     { _id: sessionId as unknown as Document["_id"] },
-    { projection: { messages: 1, model: 1 } }
+    { projection: { messages: 1, model: 1, last_chunks: 1 } }
   );
   return {
     history: (doc?.messages as ChatMessage[]) || [],
     model: (doc?.model as string) ?? null,
+    // Rides along on the same findOne for the same reason the pinned model
+    // does: it is read at the same point in the request and lives on the same
+    // document, so a second round-trip would fetch a field already on the wire.
+    lastChunks: (doc?.last_chunks as StoredChunkRef[]) || [],
   };
+}
+
+/** Remember which passages answered this turn, so a follow-up that refers back
+ * ("người thứ 2") can reuse them instead of searching with a question that has
+ * no subject left in it — see route.ts.
+ *
+ * Overwrites rather than appends: only the most recent turn is a candidate
+ * context, and keeping a history of chunk sets would just be a second, longer
+ * memory to expire. `updated_at` moves so this counts as activity for the TTL,
+ * matching setSessionModel.
+ */
+export async function setLastChunks(
+  sessionId: string,
+  chunks: StoredChunkRef[]
+): Promise<void> {
+  const coll = await sessions();
+  const now = new Date();
+  await coll.updateOne(
+    { _id: sessionId as unknown as Document["_id"] },
+    {
+      $set: { last_chunks: chunks, updated_at: now },
+      $setOnInsert: { created_at: now },
+    } as unknown as UpdateFilter<Document>,
+    { upsert: true }
+  );
 }
 
 /** Oldest-to-newest messages for this session, or [] for a new one. */
