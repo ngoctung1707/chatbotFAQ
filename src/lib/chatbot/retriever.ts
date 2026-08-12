@@ -80,6 +80,32 @@ export class Retriever {
     return toEnglish(await restoreQuestion(question));
   }
 
+  /**
+   * Các biến thể truy vấn để nhúng.
+   *
+   * Hai nguồn cho cùng một hình dạng đầu ra. `pre` là kết quả của một lượt LLM
+   * đã làm sẵn cả khôi phục dấu lẫn dịch (xem preprocessQuery trong llm.ts);
+   * không có nó thì chuỗi model cục bộ tự dựng — Viterbi khôi phục dấu rồi
+   * Marian dịch. Mở rộng alias chạy ở cả hai đường vì nó thuần luật chuỗi, một
+   * lượt LLM không thay được nó.
+   *
+   * Kiểu của `pre` để dạng cấu trúc thay vì import PreprocessedQuery từ llm.ts:
+   * llm.ts đã import kiểu từ file này rồi, và một vòng import chỉ để mô tả hai
+   * trường chuỗi là cái giá không đáng trả.
+   */
+  async buildQueries(
+    question: string,
+    pre?: { vi: string; en: string }
+  ): Promise<string[]> {
+    const restored = pre ? pre.vi : await restoreQuestion(question);
+    const queries = [restored];
+    const expanded = expandSelfReference(restored);
+    if (expanded) queries.push(expanded);
+    const english = pre ? pre.en : await toEnglish(expanded || restored);
+    if (english !== restored) queries.push(english);
+    return queries;
+  }
+
   async search(
     question: string,
     options: {
@@ -88,6 +114,8 @@ export class Retriever {
       maxPerUrl?: number;
       candidates?: number;
       rerank?: boolean;
+      /** Kết quả tiền xử lý bằng LLM. Thiếu thì dựng bằng chuỗi cục bộ. */
+      pre?: { vi: string; en: string };
     } = {}
   ): Promise<RetrievalChunk[]> {
     const topK = options.topK ?? DEFAULT_TOP_K;
@@ -107,13 +135,7 @@ export class Retriever {
     // ở đây thì cả nhánh dịch lẫn nhánh dense đều được hưởng. Câu vốn đã có
     // dấu đi thẳng qua, không bị đụng vào (xem needsRestoration).
     // Đo qua /api/chat trên 21 câu hỏi vàng gõ không dấu: Recall@7 57% -> 86%.
-    const restored = await restoreQuestion(question);
-
-    const queries = [restored];
-    const expanded = expandSelfReference(restored);
-    if (expanded) queries.push(expanded);
-    const english = await toEnglish(expanded || restored);
-    if (english !== restored) queries.push(english);
+    const queries = await this.buildQueries(question, options.pre);
 
     const hitsByIndex = new Map<number, RankedHit>();
     const lexicals: LexicalWeights[] = [];

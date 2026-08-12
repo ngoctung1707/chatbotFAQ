@@ -4,7 +4,12 @@ import {
   getHistoryAndModel,
   setSessionModel,
 } from '@/lib/chatbot/chatHistory'
-import { answerStream, friendlyError, isRefusal } from '@/lib/chatbot/llm'
+import {
+  answerStream,
+  friendlyError,
+  isRefusal,
+  preprocessQuery,
+} from '@/lib/chatbot/llm'
 import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
 import { MOCK } from '@/lib/chatbot/config'
 import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
@@ -27,11 +32,20 @@ function getRetriever(): Promise<Retriever> {
   return retrieverPromise
 }
 
-function logRetrieval(question: string, queryUsed: string, chunks: RetrievalChunk[]) {
+function logRetrieval(
+  question: string,
+  standalone: string,
+  queryUsed: string,
+  chunks: RetrievalChunk[],
+) {
   if (process.env.CHATBOT_LOG_CHUNKS === '0') return
   console.log('\n' + '='.repeat(96))
   console.log(`HỎI: ${question}`)
-  if (queryUsed && queryUsed !== question) console.log(`     tìm bằng: ${queryUsed}`)
+  // Chỉ in khi khác câu gốc, để log của một lượt hỏi độc lập không dài thêm ba
+  // dòng nói rằng không có gì xảy ra. Câu viết lại in trước câu dịch vì đó là
+  // thứ tự chúng chạy — bản dịch là dịch của câu viết lại, không phải câu gốc.
+  if (standalone !== question) console.log(`     viết lại: ${standalone}`)
+  if (queryUsed && queryUsed !== standalone) console.log(`     tìm bằng: ${queryUsed}`)
   if (chunks.length === 0) {
     console.log('     (không đoạn nào vượt ngưỡng điểm)')
     console.log('='.repeat(96))
@@ -66,12 +80,33 @@ export async function POST(req: NextRequest) {
   }
   const question = message.trim().slice(0, MAX_QUESTION_CHARS)
 
+  // Đọc trước truy hồi, không phải sau như trước đây: preprocessQuery() cần
+  // hội thoại để giải đại từ, và nó phải chạy xong TRƯỚC khi retriever nhìn
+  // thấy câu hỏi — cả bước khôi phục dấu lẫn bước dịch vi->en đều làm việc trên
+  // kết quả của nó. Cái giá của việc chuyển lên đây là một lượt đọc Mongo trên
+  // nhánh không truy hồi được đoạn nào, tức là một findOne cho một phiên vốn đã
+  // nằm sẵn trong bộ nhớ của cùng một connection pool.
+  const { history, model: pinnedModel } = MOCK
+    ? { history: [], model: null }
+    : await getHistoryAndModel(session_id)
+
+  // Một lượt LLM làm cả ba việc tiền xử lý: khôi phục dấu, viết lại thành câu
+  // độc lập theo hội thoại, và dịch sang tiếng Anh. `null` nghĩa là lượt gọi
+  // không dùng được (hết hạn mức, quá hạn, JSON vỡ, hoặc chế độ mock) — khi đó
+  // retriever tự dựng biến thể bằng chuỗi model cục bộ Viterbi + Marian, tức là
+  // đúng hành vi trước khi có bước này. Không có nhánh nào ở đây phải xử lý
+  // riêng cho trường hợp đó.
+  const pre = await preprocessQuery(question, history)
+  const standalone = pre?.vi ?? question
+
   let chunks: RetrievalChunk[]
   try {
     const retriever = await getRetriever()
-    const queryUsed = await retriever.queryFor(question)
-    chunks = await retriever.search(question)
-    logRetrieval(question, queryUsed, chunks)
+    // pre.en có sẵn rồi thì đừng bắt Marian dịch lại — queryFor() chạy nguyên
+    // chuỗi cục bộ, tốn thêm một lượt suy luận ONNX cho kết quả sẽ bị bỏ đi.
+    const queryUsed = pre ? pre.en : await retriever.queryFor(standalone)
+    chunks = await retriever.search(standalone, { pre: pre ?? undefined })
+    logRetrieval(question, standalone, queryUsed, chunks)
   } catch (err) {
     // Most commonly: the vector index hasn't been built yet (no
     // data/faiss_index_js/store.json — see `npm run build-index`). Treated
@@ -102,9 +137,23 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const { history, model: pinnedModel } = MOCK
-    ? { history: [], model: null }
-    : await getHistoryAndModel(session_id)
+  // Câu đã được viết lại thành độc lập thì lượt sinh câu trả lời không cần
+  // history nữa — đó chính là ý nghĩa của "độc lập", và mọi thứ cần thiết đã
+  // được nhấc vào trong câu hỏi rồi. Bỏ history đi ở đây trả lại phần token mà
+  // bước tiền xử lý vừa tiêu, và bỏ luôn cơ hội model bám vào một chủ đề cũ.
+  //
+  // Điều kiện là `!==` chứ không phải "pre khác null": khi model chép lại
+  // nguyên văn (quy tắc 2a/2b/2c của prompt) hoặc khi call hỏng và standalone
+  // rơi về câu gốc, hai trường hợp đó không phân biệt được từ đây và cũng không
+  // cần phân biệt — cả hai đều có nghĩa là chưa có gì được nhấc vào câu hỏi,
+  // nên history vẫn là thứ duy nhất giữ ngữ cảnh. Sai về phía giữ history chỉ
+  // tốn token; sai về phía bỏ nó thì mất hẳn khả năng trả lời.
+  //
+  // Một chỗ không chính xác đã biết: câu gõ KHÔNG dấu mà vốn đã độc lập cũng
+  // làm `!==` đúng, chỉ vì dấu được thêm vào. Nó bỏ history ở một lượt lẽ ra
+  // không cần bỏ — nhưng câu đó tự đủ nghĩa nên hậu quả chỉ là tiết kiệm thêm
+  // token, không phải mất ngữ cảnh.
+  const askHistory = standalone !== question ? [] : history
 
   // Held in an object rather than a bare `let` so the assignment inside the
   // callback and the read after the loop are plainly the same slot.
@@ -126,7 +175,7 @@ export async function POST(req: NextRequest) {
   const started = Date.now()
   const parts: string[] = []
   try {
-    for await (const text of answerStream(question, chunks, history, {
+    for await (const text of answerStream(standalone, chunks, askHistory, {
       pinnedModel,
       onModel,
     })) {

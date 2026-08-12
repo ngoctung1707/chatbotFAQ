@@ -90,7 +90,17 @@ const DEFAULT_MODEL_POOL: ModelLimits[] = [
     supportsSystemInstruction: true,
   },
   {
-    id: "gemma-3-27b-it",
+    // Đã đối chiếu ListModels trên key của dự án (2026-08-12): gemma-3-27b-it
+    // KHÔNG tồn tại và trả 404 — đúng cảnh báo ở khối chú thích trên. Key này
+    // có gemma-4-26b-a4b-it và gemma-4-31b-it. Một entry 404 là một suất bỏ
+    // không: pool rơi thẳng qua nó sang model kế tiếp và chỉ dòng log nói rằng
+    // lựa chọn thứ ba chưa bao giờ tồn tại.
+    //
+    // supportsSystemInstruction vẫn để false dù gemma-4 nhận được field đó:
+    // nhánh false (gộp SYSTEM_PROMPT vào lượt user đầu — xem buildCallShape)
+    // chạy đúng với mọi model, còn nhánh true thì không, nên nó là mặc định
+    // an toàn hơn cho một entry chưa ai đo chất lượng câu trả lời.
+    id: "gemma-4-31b-it",
     rpm: 30,
     tpm: 15000,
     rpd: 14400,
@@ -160,6 +170,43 @@ export const MODEL_POOL: ModelLimits[] = parseModelPool();
 // and scripts/qa-test.ts report "the model" as a single name.
 export const CHAT_MODEL =
   process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.1-flash-lite";
+
+// --- Tiền xử lý câu hỏi bằng LLM (preprocessQuery trong llm.ts) ---
+
+// Bật/tắt bước viết lại. Đây là knob duy nhất tắt được hẳn MỘT API call mỗi
+// lượt hỏi có ngữ cảnh, nên nó phải tồn tại: khi quota căng, thà mất khả năng
+// giải đại từ còn hơn mất luôn câu trả lời.
+export const CONDENSE_ENABLED = !["0", "false"].includes(
+  (process.env.CHATBOT_CONDENSE || "1").toLowerCase()
+);
+
+// Gemma chứ không phải Gemini, và không phải vì chất lượng. Viết lại câu hỏi là
+// việc dễ — chép lại một câu và thay đại từ bằng danh từ đã có sẵn trong hội
+// thoại — nên model yếu nhất pool cũng làm được. Cái quyết định là NGÂN SÁCH:
+// Gemma ở rpm 30 / rpd 14400 so với 15 / 1000 của hai model Gemini, tức là bước
+// này gần như không ăn vào hạn mức dành cho việc thực sự khó là sinh câu trả
+// lời. Đặt nó lên Gemini thì mỗi lượt hỏi có ngữ cảnh sẽ tiêu HAI trong 1000
+// request/ngày thay vì một.
+//
+// Cảnh báo giống hệt phần MODEL_POOL ở trên: id này chưa chắc tồn tại trên key
+// của bạn. Sai id thì call trả 404, preprocessQuery() nuốt lỗi rồi trả null, và
+// gốc — tức là tính năng im lặng không chạy, chỉ có dòng log nói ra. Đối chiếu
+// ListModels rồi set CHATBOT_CONDENSE_MODEL nếu lệch.
+export const CONDENSE_MODEL =
+  process.env.CHATBOT_CONDENSE_MODEL ||
+  MODEL_POOL.find((m) => /gemma/i.test(m.id))?.id ||
+  MODEL_POOL[MODEL_POOL.length - 1]?.id ||
+  "gemma-3-27b-it";
+
+// Ngắn hơn hẳn TIMEOUT_MS (10s) vì call này nằm CHẶN TRƯỚC mọi thứ khác: người
+// dùng chưa thấy một ký tự nào cho tới khi nó xong, rồi mới tới truy hồi và tới
+// lượt sinh câu trả lời với ngân sách TOTAL_BUDGET_MS riêng của nó. Một câu hỏi
+// viết lại chỉ dài vài chục token, nên 5s là rộng rãi; quá mốc đó thì gần như
+// chắc chắn là call hỏng chứ không phải call chậm, và bỏ qua nó rẻ hơn nhiều so
+// với cộng thêm 10s chờ vào trước mỗi câu trả lời.
+export const CONDENSE_TIMEOUT_MS = Number(
+  process.env.CHATBOT_CONDENSE_TIMEOUT_MS || 7000
+);
 
 // Fraction of each published limit the local counters will actually spend.
 // 0.8 because those counters and Google's disagree by construction: token

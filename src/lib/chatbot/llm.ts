@@ -10,10 +10,13 @@
  * *embedding* would just be noise for the model to quote back.
  */
 import { google } from "@ai-sdk/google";
-import { streamText, type ModelMessage } from "ai";
+import { generateText, streamText, type ModelMessage } from "ai";
 import type { ChatMessage } from "./chatHistory";
 import {
   CHAT_MODEL,
+  CONDENSE_ENABLED,
+  CONDENSE_MODEL,
+  CONDENSE_TIMEOUT_MS,
   MAX_OUTPUT_TOKENS,
   MAX_POINTS,
   MOCK,
@@ -23,6 +26,7 @@ import {
   TOTAL_BUDGET_MS,
   type ModelLimits,
 } from "./config";
+import { MAX_QUESTION_CHARS } from "./limits";
 import { markExhausted, rankModels, record, reconcile } from "./rateLimiter";
 import type { RetrievalChunk } from "./retriever";
 
@@ -348,6 +352,295 @@ export function estimateTokens(
   }
   for (const msg of history) chars += msg.content.length;
   return Math.ceil(chars / 3) + MAX_OUTPUT_TOKENS;
+}
+
+// --- Viết lại câu hỏi thành câu độc lập ---
+//
+// Vấn đề đang giải: retriever chỉ nhìn thấy câu hỏi hiện tại, không thấy lịch
+// sử. "Cho tôi thông tin về người thứ 2 trong danh sách" không có một từ nào
+// dẫn tới trang ban giám hiệu, nên bước truy hồi hỏng TRƯỚC khi model kịp nhìn
+// thấy history — đo được trên kịch bản "danh sách phó viện trưởng" -> "người
+// thứ 2": đoạn đúng tụt từ 0.844 xuống 0.475 và bị một báo cáo lạc đề vượt mặt.
+// Cho model nhiều history hơn ở bước sinh câu trả lời không cứu được, vì đoạn
+// văn chứa câu trả lời đã không nằm trong <data> ngay từ đầu.
+//
+// Nên bước này chạy TRƯỚC truy hồi và thay hẳn câu hỏi: hội thoại + câu hỏi
+// hiện tại -> một câu tự đủ nghĩa, rồi mọi thứ phía sau (khôi phục dấu, mở rộng
+// alias, dịch vi->en, dense, lexical) làm việc trên câu đó y như thể người dùng
+// vừa gõ nó ra ở lượt đầu tiên.
+
+/** Số message cuối được đưa vào prompt viết lại. 4 = 2 cặp hỏi-đáp.
+ *
+ * Ít hơn HISTORY_MAX_MESSAGES (6) có chủ ý: đại từ trong câu hỏi hầu như luôn
+ * trỏ về lượt liền trước, còn một cặp hỏi-đáp cũ hơn nữa chỉ làm tăng cơ hội
+ * model nhặt nhầm thực thể từ một chủ đề đã kết thúc. */
+const CONDENSE_HISTORY_MESSAGES = 4;
+
+/** Cắt mỗi message cũ còn bấy nhiêu ký tự khi dựng prompt viết lại.
+ *
+ * Câu trả lời của trợ lý có thể dài tới MAX_OUTPUT_TOKENS (2048), và gửi nguyên
+ * ba câu như thế đi chỉ để giải một đại từ là trả tiền token cho phần không ai
+ * đọc. Tên riêng và danh sách — thứ duy nhất bước này cần — luôn nằm ở đầu câu
+ * trả lời, sau đó mới tới phần diễn giải. */
+const CONDENSE_SNIPPET_CHARS = 400;
+
+/**
+ * Suy luận ở mức thấp nhất, cố định — KHÔNG đọc THINKING_LEVEL.
+ *
+ * Đây là knob quan trọng nhất của cả bước này, đo được trên cùng một prompt:
+ *
+ *   gemma-4-26b-a4b-it, mặc định      871 token,  19.3s
+ *   gemma-4-26b-a4b-it, minimal        13 token,   1.5s
+ *   gemma-4-31b-it,     mặc định      427 token,  13.0s
+ *   gemma-4-31b-it,     minimal        13 token,   1.4s
+ *
+ * Câu viết lại ra giống hệt nhau ở cả hai chế độ. Nói cách khác toàn bộ phần
+ * suy luận đó không mua thêm gì cho một việc cơ học là thay đại từ bằng danh từ
+ * đã nằm sẵn trong hội thoại — nó chỉ cộng 12–18 giây vào trước MỌI câu trả
+ * lời, vì bước này chặn ngang đường đi của câu trả lời chứ không chạy song song.
+ *
+ * Tách khỏi THINKING_LEVEL có chủ ý: đó là knob dành cho chất lượng CÂU TRẢ
+ * LỜI, và ai đó chỉnh nó lên "high" để câu trả lời sâu hơn thì không có lý do
+ * gì phải trả thêm 18 giây cho bước viết lại câu hỏi.
+ *
+ * Lưu ý cho người đổi CHATBOT_CONDENSE_MODEL: gemma-4 nhận thinkingLevel,
+ * nhưng thế hệ gemma-3 thì TỪ CHỐI field này (đó là lý do providerOptions() ở
+ * dưới chỉ gắn nó cho model gemini). Model nào từ chối thì call trả 400, rơi
+ * vào catch và dùng câu gốc — an toàn, nhưng tính năng sẽ không chạy.
+ * thinkingBudget: 0 không dùng được, API trả "Thinking budget is not supported
+ * for this model".
+ */
+const CONDENSE_THINKING = "minimal";
+
+/** Nhãn model hay tự thêm vào trước câu trả lời dù prompt đã cấm. */
+const CONDENSE_LABEL_RE =
+  /^\s*(?:c[âa]u h[ỏo]i(?:\s+(?:[đd][ộo]c l[ậa]p|ho[àa]n ch[ỉi]nh|vi[ếe]t l[ạa]i))?|standalone question|rewritten question|output|question)\s*[:：-]\s*/i;
+
+function condenseTranscript(history: ChatMessage[]): string {
+  return history
+    .slice(-CONDENSE_HISTORY_MESSAGES)
+    .map((msg) => {
+      const who = msg.role === "assistant" ? "Trợ lý" : "Người dùng";
+      const text =
+        msg.content.length > CONDENSE_SNIPPET_CHARS
+          ? `${msg.content.slice(0, CONDENSE_SNIPPET_CHARS)}…`
+          : msg.content;
+      return `${who}: ${text}`;
+    })
+    .join("\n");
+}
+
+/**
+ * Gạn câu hỏi ra khỏi đầu ra của model, hoặc null nếu không tin được.
+ *
+ * Trả null chứ không cố sửa: câu gốc luôn là phương án lùi hợp lệ, nên nghi ngờ
+ * thì bỏ. Một câu viết lại sai thì tệ hơn hẳn không viết lại — nó THAY câu hỏi
+ * cho cả pipeline phía sau, không phải chỉ thêm một biến thể như bước dịch.
+ */
+function sanitizeCondensed(raw: string, original: string): string | null {
+  const firstLine = raw
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
+  if (!firstLine) return null;
+
+  const out = firstLine
+    .replace(/\*\*/g, "")
+    .replace(CONDENSE_LABEL_RE, "")
+    .replace(/^["'“”‘’«»]+|["'“”‘’«»]+$/g, "")
+    .trim();
+
+  if (!out) return null;
+  // Trần của cả pipeline phía sau — MAX_QUESTION_CHARS là trần RAM của model
+  // dịch, không phải giới hạn thẩm mỹ (xem limits.ts).
+  if (out.length > MAX_QUESTION_CHARS) return null;
+  // Dài gấp bội câu gốc = model đang diễn giải hoặc đang trả lời. Hằng số cộng
+  // thêm để câu ngắn ("người thứ 2 là ai") vẫn có chỗ nhận đủ tên riêng thay
+  // vào; nhân đơn thuần sẽ loại oan đúng nhóm câu mà bước này sinh ra để cứu.
+  if (out.length > original.length * 4 + 120) return null;
+  return out;
+}
+
+// --- Tiền xử lý gộp: một call làm cả ba việc ---
+//
+// Hướng thay thế cho chuỗi Viterbi -> Marian -> condense. Lập luận: đã trả tiền
+// cho một call LLM ở bước viết lại rồi, thì khôi phục dấu và dịch đi ké call đó
+// KHÔNG tốn thêm request nào. Đổi lại, LLM có hai thứ mà hai model cục bộ kia
+// không có:
+//   - Ngữ cảnh. Viterbi chọn dấu bằng thống kê bigram trên corpus, không biết
+//     lượt trước đang nói về cái gì.
+//   - Khả năng được RA LỆNH giữ nguyên tên riêng. Marian dịch "Đỗ Bá Lâm"
+//     thành "Dr. Park" và "Nguyễn Thị Xuân Hoa" thành "Hsie City"; không có
+//     cách nào bảo nó đừng làm thế.
+//
+// Chuỗi cục bộ KHÔNG bị xoá: nó là phương án lùi khi call này hỏng, và là
+// đường duy nhất còn chạy được khi mất mạng hoặc hết hạn mức (xem buildQueries
+// trong retriever.ts).
+
+export interface PreprocessedQuery {
+  /** Câu hỏi tiếng Việt: đã đủ dấu, đã độc lập với hội thoại. */
+  vi: string;
+  /** Bản tiếng Anh của `vi`, tên riêng giữ nguyên (không dấu). */
+  en: string;
+}
+
+/** Trần đầu ra cho JSON hai trường.
+ *
+ * 160 chứ không phải một con số rộng rãi cho chắc: giá trị này được CỘNG THẲNG
+ * vào ước lượng token mà rateLimiter đặt chỗ trước mỗi call (xem record()), nên
+ * đặt nó quá cao là tự bóp hạn mức TPM của chính mình. Đo trên thực tế: một cặp
+ * {vi, en} tốn 13-60 token đầu ra, nên 160 vẫn còn gấp đôi mức tệ nhất từng
+ * thấy trong khi 512 thì đặt chỗ thừa gần 8 lần.
+ *
+ * Vẫn phải rộng hơn "vừa đủ" một quãng, vì thinkingLevel minimal chỉ giảm chứ
+ * không tắt hẳn phần suy luận, và cạn trần giữa chừng thì text về rỗng — hỏng
+ * im lặng, đúng cái bẫy đã dính một lần khi trần còn để 128. */
+const PREPROCESS_MAX_OUTPUT_TOKENS = 160;
+
+function buildPreprocessPrompt(
+  question: string,
+  history: ChatMessage[]
+): string {
+  const transcript = history.length
+    ? condenseTranscript(history)
+    : "(chưa có lượt nào)";
+  return `\
+Bạn là bộ tiền xử lý câu hỏi cho công cụ tìm kiếm tài liệu của Viện Công nghệ và Kinh tế số BK Fintech (ĐH Bách khoa Hà Nội).
+
+Làm ba việc trên CÂU HỎI MỚI, theo đúng thứ tự:
+
+1. KHÔI PHỤC DẤU. Câu gõ thiếu dấu tiếng Việt thì thêm dấu cho đúng ("vien truong la ai" -> "viện trưởng là ai"). Câu đã có dấu thì giữ nguyên từng chữ.
+2. VIẾT LẠI THÀNH CÂU ĐỘC LẬP. Thay đại từ và tham chiếu ("người đó", "nó", "cái thứ hai", "vừa nói") bằng tên hoặc danh từ cụ thể lấy từ HỘI THOẠI.
+   Số thứ tự LUÔN LUÔN là tham chiếu, phải thay bằng tên cụ thể kể cả khi câu đọc đã xuôi tai: "người thứ 2", "cái thứ hai", "khóa đầu tiên", "người cuối cùng", "người thứ 2 trong danh sách".
+   QUAN TRỌNG — bốn trường hợp phải GIỮ NGUYÊN VĂN, không thêm bớt một chữ:
+   a) Câu hỏi đã tự đủ nghĩa (không có đại từ, không số thứ tự, không tham chiếu lượt trước).
+   b) HỘI THOẠI trống.
+   c) HỘI THOẠI không chứa thứ được trỏ tới.
+   d) Tham chiếu khớp NHIỀU thứ trong HỘI THOẠI và không rõ cái nào — giữ nguyên, TUYỆT ĐỐI không gộp tất cả lại thành một câu.
+   Thà giữ nguyên một câu mơ hồ còn hơn đoán ra một câu hỏi khác. TUYỆT ĐỐI không tự nghĩ ra câu hỏi mới.
+3. DỊCH sang tiếng Anh kết quả của bước 2.
+   - Tên riêng (người, phòng lab, sản phẩm, sự kiện): GIỮ NGUYÊN, không dịch, không phiên âm. Tên tiếng Việt viết KHÔNG DẤU: "Đỗ Bá Lâm" -> "Do Ba Lam".
+   - Nhưng CHỨC DANH và HỌC HÀM thì PHẢI DỊCH: "Tiến sĩ" -> "Dr.", "Phó Giáo sư" -> "Assoc. Prof.", "Giáo sư" -> "Prof.", "Viện trưởng" -> "Dean", "Phó Viện trưởng" -> "Vice-Dean", "Hội đồng cố vấn" -> "Advisory Board", "khóa học" -> "course".
+   - CÂU HỎI MỚI vốn đã bằng tiếng Anh -> "en" chép y hệt "vi".
+
+Trả lời NGẮN GỌN, không suy nghĩ dài. In ra ĐÚNG một dòng JSON, không giải thích, không bọc markdown:
+{"vi":"<kết quả bước 2>","en":"<kết quả bước 3>"}
+
+Ví dụ:
+HỘI THOẠI: (trống)
+CÂU HỎI MỚI: khoa hoc Fintech keo dai bao nhieu gio?
+JSON: {"vi":"khóa học Fintech kéo dài bao nhiêu giờ?","en":"How many hours does the Fintech course last?"}
+
+HỘI THOẠI:
+Người dùng: Phó Viện trưởng gồm những ai?
+Trợ lý: Gồm Phó Giáo sư Nguyễn Thị Xuân Hoa và Tiến sĩ Đỗ Bá Lâm.
+CÂU HỎI MỚI: người thứ 2 trong danh sách là ai?
+JSON: {"vi":"Tiến sĩ Đỗ Bá Lâm là ai?","en":"Who is Dr. Do Ba Lam?"}
+
+HỘI THOẠI:
+Người dùng: V-Chain là gì?
+Trợ lý: V-Chain là nền tảng blockchain cho lập trình viên.
+CÂU HỎI MỚI: BK Fintech có những khóa học nào?
+JSON: {"vi":"BK Fintech có những khóa học nào?","en":"What courses does BK Fintech offer?"}
+
+HỘI THOẠI:
+Người dùng: Phó Viện trưởng gồm những ai?
+Trợ lý: Gồm Phó Giáo sư Nguyễn Thị Xuân Hoa và Tiến sĩ Đỗ Bá Lâm.
+CÂU HỎI MỚI: còn cái kia?
+JSON: {"vi":"còn cái kia?","en":"what about the other one?"}
+
+--- HỘI THOẠI ---
+${transcript}
+--- HẾT HỘI THOẠI ---
+
+CÂU HỎI MỚI: ${question}
+
+JSON:`;
+}
+
+/** JSON model trả về, hoặc null nếu không tin được.
+ *
+ * Chấp nhận cả trường hợp model bọc trong ```json — nó làm thế bất chấp prompt
+ * cấm, và một dấu ngoặc thừa không đáng để vứt cả lượt gọi. */
+function parsePreprocessed(
+  raw: string,
+  question: string
+): PreprocessedQuery | null {
+  const body = raw.replace(/```(?:json)?/gi, "").trim();
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+  const obj = parsed as { vi?: unknown; en?: unknown };
+  if (typeof obj.vi !== "string" || typeof obj.en !== "string") return null;
+  const vi = sanitizeCondensed(obj.vi, question);
+  const en = sanitizeCondensed(obj.en, question);
+  if (!vi || !en) return null;
+  return { vi, en };
+}
+
+/**
+ * Khôi phục dấu + viết lại độc lập + dịch, trong MỘT lượt gọi.
+ *
+ * Trả null khi không dùng được, chứ không tự lùi về câu gốc: người gọi còn cả
+ * chuỗi cục bộ (Viterbi + Marian) làm phương án lùi, và nó tốt hơn hẳn việc
+ * đưa nguyên câu chưa xử lý đi nhúng.
+ */
+export async function preprocessQuery(
+  question: string,
+  history: ChatMessage[]
+): Promise<PreprocessedQuery | null> {
+  if (!CONDENSE_ENABLED || MOCK) return null;
+
+  const prompt = buildPreprocessPrompt(question, history);
+  const estTokens = Math.ceil(prompt.length / 3) + PREPROCESS_MAX_OUTPUT_TOKENS;
+  const budget = rankModels(estTokens).find(
+    (r) => r.limits.id === CONDENSE_MODEL
+  )?.usage;
+  if (budget && (budget.cooldownMs > 0 || budget.load >= 1)) return null;
+
+  record(CONDENSE_MODEL, estTokens);
+  try {
+    const { text, usage, finishReason } = await generateText({
+      model: google(CONDENSE_MODEL),
+      prompt,
+      maxOutputTokens: PREPROCESS_MAX_OUTPUT_TOKENS,
+      providerOptions: {
+        google: { thinkingConfig: { thinkingLevel: CONDENSE_THINKING } },
+      },
+      abortSignal: AbortSignal.timeout(CONDENSE_TIMEOUT_MS),
+    });
+    reconcile(
+      CONDENSE_MODEL,
+      (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0)
+    );
+
+    // Cạn trần token mà chưa in được chữ nào: model tiêu sạch ngân sách vào
+    // suy luận nội bộ. Phải nói thẳng ra, vì nếu không thì nó biểu hiện y hệt
+    // mọi cách hỏng khác — trả null rồi lùi êm về chuỗi cục bộ — và người vận
+    // hành sẽ không bao giờ biết bước LLM đã ngừng chạy. Đây đúng là cách nó
+    // hỏng lần đầu khi trần còn để 128.
+    if (!text.trim() && finishReason === "length") {
+      console.warn(
+        `    !! ${CONDENSE_MODEL} cạn ${PREPROCESS_MAX_OUTPUT_TOKENS} token đầu ra ` +
+          `mà chưa in chữ nào — kiểm tra model có nhận thinkingLevel không.`
+      );
+      return null;
+    }
+    return parsePreprocessed(text, question);
+  } catch (err) {
+    if (isQuotaError(err)) markExhausted(CONDENSE_MODEL, retryDelayMs(err));
+    console.error(
+      `    !! tiền xử lý câu hỏi thất bại (${CONDENSE_MODEL}): ` +
+        errorText(err).slice(0, 160)
+    );
+    return null;
+  }
 }
 
 /** Provider-specific options for one call — the AI SDK equivalent of
