@@ -11,24 +11,22 @@
  */
 export async function registerNode() {
   const { loadEmbedder } = await import("@/lib/chatbot/embedding");
-  const { loadTranslator } = await import("@/lib/chatbot/translator");
 
   const start = Date.now();
-  console.log("[chatbot] Đang preload model (BGE-M3 + model dịch)...");
+  console.log("[chatbot] Đang preload model (BGE-M3)...");
 
   // allSettled, not all: a corrupt model file or an unreadable cache dir
   // should degrade the chatbot, not stop the whole site from booting. The
-  // promise caches in those two modules only memoize *successful* loads
-  // (a rejected promise is still cached, but the lazy path already treats a
-  // load failure as "answer without translation" / surfaces it per request),
-  // so a failed preload leaves the normal request path exactly as it was
-  // before this file existed.
-  const results = await Promise.allSettled([loadEmbedder(), loadTranslator()]);
+  // promise cache in embedding.ts only memoizes *successful* loads, so a failed
+  // preload leaves the normal request path exactly as it was before this file
+  // existed. Kept as allSettled with one entry rather than a bare try/catch
+  // because that property is what makes preload safe, not the number of models
+  // — it was two here until the Marian translator was removed.
+  const results = await Promise.allSettled([loadEmbedder()]);
 
-  results.forEach((result, i) => {
-    const name = i === 0 ? "BGE-M3" : "model dịch";
+  results.forEach((result) => {
     if (result.status === "rejected") {
-      console.error(`[chatbot] Preload ${name} THẤT BẠI:`, result.reason);
+      console.error("[chatbot] Preload BGE-M3 THẤT BẠI:", result.reason);
     }
   });
 

@@ -17,7 +17,7 @@ const CONTENT_SECURITY_POLICY = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   // @xenova/transformers loads native/WASM ONNX runtime binaries at runtime
-  // (used by src/lib/chatbot/{embedding,translator}.ts) — Next's default
+  // (used by src/lib/chatbot/embedding.ts) — Next's default
   // server bundling doesn't handle that well, so it's kept external instead
   // of bundled. Needed for both `next dev` and the `output: 'standalone'`
   // build to actually find those files at runtime.

@@ -13,15 +13,14 @@
  * corpus does contain. From the user's side that reads as the bot forgetting the
  * question it just answered.
  *
- * The fix is a fourth query variant, not a replacement: retriever.search()
+ * The fix is one more query variant, not a replacement: retriever.search()
  * merges hits by best score per chunk, so the merged query can only add
  * candidates the plain question missed. That also bounds the damage — a bad
  * merge costs one embedding pass, it never displaces a good query.
  *
- * Lives in its own file rather than next to expandSelfReference() in
- * retriever.ts: retriever.ts is long already, and these two change for
- * different reasons (one tracks the institute's names, this one tracks how
- * people phrase follow-ups).
+ * Lives in its own file rather than inside retriever.ts: retriever.ts is long
+ * already, and this tracks something of its own (how people phrase follow-ups)
+ * rather than anything about the search pipeline itself.
  *
  * Deliberately looks back exactly one turn. Three-turn chains
  * (A → "cái đó" → "còn cái kia") still break, and that is accepted: merging
@@ -169,10 +168,10 @@ export function shouldReusePreviousChunks(
 /**
  * The merged query, or null when there is nothing to merge.
  *
- * Returns null rather than the unchanged question for the same reason
- * expandSelfReference() does: the caller can tell "nothing to add" from "added
- * and it's a no-op" without a second check. Keeping the two contracts identical
- * is what lets search() read the same way for every query variant.
+ * Returns null rather than the unchanged question so the caller can tell
+ * "nothing to add" from "added and it's a no-op" without a second check — the
+ * variant is then pushed or not, and search() reads the same way for every
+ * query variant.
  *
  * Only the last *user* message is used, never an assistant one. Answers run to
  * MAX_OUTPUT_TOKENS (2048) — pasting one into a query would dilute the

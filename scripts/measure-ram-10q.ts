@@ -1,11 +1,12 @@
 /**
  * Đo RAM với 10 câu hỏi dài (~250 từ mỗi câu) đi qua ĐÚNG đường đi production:
- * Retriever.search() — dịch vi->en, nhúng tối đa 3 biến thể truy vấn, quét
- * cosine toàn corpus, rerank lexical.
+ * Retriever.search() — rewrite câu hỏi bằng LLM, nhúng tối đa 3 biến thể truy
+ * vấn, quét cosine toàn corpus, rerank lexical.
  *
  * Vì sao 250 từ là ca đáng đo riêng chứ không phải nội suy từ câu ngắn:
- *  1. retriever.ts nhúng tới 3 biến thể cho mỗi câu hỏi (gốc, mở rộng tên viện,
- *     bản dịch tiếng Anh), nên chi phí thực gấp ~3 lần một lần nhúng.
+ *  1. retriever.ts nhúng tới 3 biến thể cho mỗi câu hỏi (bản tiếng Việt, bản
+ *     rewrite tiếng Anh, biến thể ghép ngữ cảnh), nên chi phí thực gấp ~3 lần
+ *     một lần nhúng.
  *  2. Attention là O(n²) theo số token, và arena của ONNX Runtime chỉ nở chứ
  *     không co — nên thứ cần theo dõi là mức RAM nền có bị nâng vĩnh viễn
  *     sau mỗi câu hay không, chứ không chỉ đỉnh nhất thời.
@@ -95,7 +96,7 @@ async function main() {
 
   // Chạy lại đúng 10 câu đó: lần hai không còn phải nở arena, nên chênh lệch
   // giữa hai lượt cho biết phần nào là chi phí một lần và phần nào lặp lại.
-  console.log("\nLượt 2 (cùng 10 câu, arena đã nở sẵn, bản dịch đã có trong cache):");
+  console.log("\nLượt 2 (cùng 10 câu, arena đã nở sẵn, rewrite đã có trong cache):");
   const beforeR2 = await settle();
   const t2 = Date.now();
   for (const q of QUESTIONS) await retriever.search(q);

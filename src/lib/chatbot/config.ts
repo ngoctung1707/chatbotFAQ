@@ -249,12 +249,6 @@ export const DEFAULT_TOP_K = Number(process.env.CHATBOT_TOP_K || 7);
 export const DENSE_WEIGHT = Number(process.env.CHATBOT_DENSE_WEIGHT || 0.7);
 export const SPARSE_WEIGHT = Number(process.env.CHATBOT_SPARSE_WEIGHT || 0.3);
 
-// Same alias list as retriever.py — kept short and hand-reviewed rather than
-// inferred, because a wrong entry here silently pollutes every query that
-// contains it.
-export const INSTITUTE_ALIASES = ["viện", "trường"];
-export const INSTITUTE_FULL_NAME = "Viện Công nghệ và Kinh tế số BK Fintech";
-
 // --- Query rewriting ---
 //
 // Một lần gọi LLM dựng lại câu hỏi thành truy vấn tiếng Anh độc lập, thay cho
@@ -291,7 +285,6 @@ export const REWRITE_HISTORY_PAIRS = 3;
  * đại từ, model chỉ cần biết lượt trước nói VỀ CÁI GÌ — chỗ tiết kiệm token
  * lớn nhất của prompt này. */
 export const REWRITE_ANSWER_SNIPPET_CHARS = 150;
-
 
 // --- Câu hỏi phụ thuộc ngữ cảnh ---
 //
@@ -354,19 +347,6 @@ export const CONTEXT_SHORT_QUESTION_WORDS = Number(
 // chars comfortably holds a full question in either language, so in practice
 // this only ever truncates something pathological.
 export const CONTEXT_PREV_MAX_CHARS = 200;
-
-// Whether the merged query also gets a translated variant. OFF by default: the
-// translation model is the pipeline's biggest RAM and latency cost (measured —
-// it, not BGE-M3, is what dominates at real query lengths, and ONNX Runtime's
-// arena only ever grows), so a second translate call per follow-up is a price
-// to be measured before it is paid. Leaving it off is not free of signal: BGE-M3
-// is multilingual so the Vietnamese vector still matches English chunks
-// semantically, and the most useful part of the previous turn is usually a
-// proper noun ("Fintech Foundation", "BK Fintech") which survives both
-// languages unchanged and is picked up directly by the lexical branch.
-export const CONTEXT_TRANSLATE = ["1", "true"].includes(
-  (process.env.CHATBOT_CONTEXT_TRANSLATE || "").toLowerCase()
-);
 
 // Multiplier applied to the dense score of hits found *only* by the merged
 // query. 1.0 is a deliberate no-op: the knob exists so that if the merged query
@@ -479,9 +459,11 @@ export const CONTEXT_MAX_HITS = Number(
 // Anaphora — words that point at something named in an earlier turn. Matched
 // against whole tokens, never substrings ("đó" must not fire on "đóng").
 //
-// Diacritics-only, and every entry hand-checked, for the same reason spelled
-// out over INSTITUTE_ALIASES: a wrong entry here silently pollutes every query
-// containing it. Undiacriticised spellings of the obvious candidates are all
+// Diacritics-only, and every entry hand-checked, because a wrong entry here
+// silently pollutes every query containing it — the same reason the old
+// INSTITUTE_ALIASES list was kept short and hand-reviewed before the LLM
+// rewrite step replaced it (see queryRewriter.ts). Undiacriticised spellings of
+// the obvious candidates are all
 // common words in something this corpus contains — "no"/"the"/"do" are English
 // (nó/thế/đó) and half these pages are English.
 //
@@ -528,20 +510,8 @@ export const CONTEXT_ANAPHORA = [
 // quantization, or cosine scores are not comparable. Both go through
 // embedding.ts, so changing this value means rebuilding the index
 // (`pnpm build-index`) and re-checking DEFAULT_MIN_SCORE above.
+//
+// Đây giờ là model ONNX DUY NHẤT của tiến trình. Model dịch vi->en
+// (Xenova/opus-mt-vi-en) đã bị gỡ — xem queryRewriter.ts.
 export const EMBEDDING_MODEL_ID =
   process.env.CHATBOT_EMBEDDING_MODEL || "Xenova/bge-m3";
-
-// vi->en translation. transformers.js needs an ONNX build; Xenova's mirror of
-// Helsinki-NLP/opus-mt-vi-en is the closest match to the CTranslate2 model
-// the Python side used. Swap via env if a different ONNX export is preferred.
-export const TRANSLATE_MODEL_ID =
-  process.env.CHATBOT_TRANSLATE_MODEL || "Xenova/opus-mt-vi-en";
-
-export const TRANSLATE_ENABLED = !["0", "false"].includes(
-  (process.env.CHATBOT_TRANSLATE || "1").toLowerCase()
-);
-
-// Beam width for the vi->en query translation. 2 rather than the model's own
-// (wider) default, same as translator.py's BEAM_SIZE: measured identical
-// output on the questions that matter, and it finishes sooner.
-export const TRANSLATE_BEAM = Number(process.env.CHATBOT_TRANSLATE_BEAM || 2);

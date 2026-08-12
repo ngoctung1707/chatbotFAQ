@@ -10,7 +10,7 @@
  * Chạy:  npx tsx --expose-gc scripts/measure-ram.ts
  * (--expose-gc không bắt buộc; có thì số heap sạch hơn vì gọi được global.gc)
  */
-import { EMBEDDING_MODEL_ID, TRANSLATE_MODEL_ID } from "../src/lib/chatbot/config";
+import { EMBEDDING_MODEL_ID } from "../src/lib/chatbot/config";
 
 const MB = 1024 * 1024;
 
@@ -74,7 +74,6 @@ function report() {
 async function main() {
   console.log(`Node ${process.version} — ${process.platform}/${process.arch}`);
   console.log(`Embedding model: ${EMBEDDING_MODEL_ID}`);
-  console.log(`Translate model: ${TRANSLATE_MODEL_ID}`);
   console.log(`global.gc: ${typeof global.gc === "function" ? "có" : "không (chạy với --expose-gc để chính xác hơn)"}\n`);
 
   await snap("1. Node khởi động (mốc gốc)");
@@ -133,13 +132,10 @@ async function main() {
     await snap("7. (không nạp được vector index)");
   }
 
-  const translator = await pipeline("translation", TRANSLATE_MODEL_ID);
-  await snap("8. + tải model dịch vi->en");
-  await translator("Viện trưởng của BK Fintech là ai?", {
-    max_new_tokens: 72,
-    num_beams: 2,
-  });
-  await snap("9. + dịch 1 câu");
+  // Trước đây có bước 8 và 9 đo model dịch vi->en (Xenova/opus-mt-vi-en) chạy
+  // cạnh BGE-M3 trong cùng tiến trình. Model đó đã bị gỡ — bước dựng query giờ
+  // là một lần gọi LLM (queryRewriter.ts), không nạp trọng số nào — nên số của
+  // báo cáo này chính là toàn bộ RAM model của tiến trình phục vụ chat.
 
   report();
 

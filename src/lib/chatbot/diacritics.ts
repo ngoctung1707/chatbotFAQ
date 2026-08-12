@@ -262,7 +262,7 @@ export function restoreViterbi(text: string, t: Tables): string {
  *
  * Hỏng thì trả lại câu gốc chứ không ném lỗi: thiếu dấu chỉ làm giảm chất
  * lượng truy hồi, không đáng để làm sập cả lượt chat. Cùng lập trường với
- * toEnglish() khi model dịch hỏng.
+ * rewriteQuery() khi call LLM hỏng.
  */
 export async function restoreQuestion(question: string): Promise<string> {
   if (!needsRestoration(question)) return question;
