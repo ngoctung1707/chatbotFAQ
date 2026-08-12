@@ -3,7 +3,7 @@
  *
  *   A. Lưu trữ  — chatHistory.ts: append/trim/thứ tự/model ghim/xóa session.
  *   B. Prompt   — llm.ts buildMessages(): lượt cũ vào message list ra sao.
- *   C. Truy hồi — retriever.search({history}): query ghép ngữ cảnh (mới).
+ *   C. Truy hồi — retriever.search({history}): history đi vào bước rewrite.
  *
  * Ba tầng này hỏng theo ba kiểu khác nhau và không tầng nào bắt lỗi hộ tầng
  * nào, nên gộp chung một script: history ghi sai thứ tự thì cả B lẫn C cùng sai
@@ -16,8 +16,8 @@
  * qa-test.ts không đo: qa-test truyền history rỗng cho mọi câu nên với nó
  * history không tồn tại.
  *
- * Cùng lý do tồn tại như test-alias-expansion.ts và test-context-merge.ts:
- * import thẳng code production, không chép lại logic.
+ * Import thẳng code production, không chép lại logic — một bài test tự chấm
+ * theo bản sao của nó thì đang đo một sản phẩm khác với sản phẩm đang chạy.
  *
  * Chạy: pnpm test:history          (dùng LLM thật cho phần C)
  *       CHATBOT_MOCK=1 pnpm test:history   (không tốn quota Gemini; retrieval
@@ -37,16 +37,8 @@ import {
   type ChatMessage,
 } from "../src/lib/chatbot/chatHistory";
 import { buildCallShape, buildMessages } from "../src/lib/chatbot/llm";
-import { mergeWithHistory } from "../src/lib/chatbot/contextQuery";
 import { Retriever, type RetrievalChunk } from "../src/lib/chatbot/retriever";
-import {
-  CONTEXT_MERGE_ENABLED,
-  HISTORY_MAX_MESSAGES,
-  MOCK,
-} from "../src/lib/chatbot/config";
-// Ghi chú: file này KHÔNG tự bật CHATBOT_CONTEXT_MERGE như
-// test-context-merge.ts làm. Nó phải chạy đúng cấu hình production, vì thứ nó
-// kiểm là chat history — vốn hoạt động độc lập với tính năng ghép.
+import { HISTORY_MAX_MESSAGES, MOCK } from "../src/lib/chatbot/config";
 import { CORE } from "./qa-cases";
 
 let failures = 0;
@@ -198,7 +190,7 @@ function testPrompt(): void {
 
 async function testConversation(): Promise<void> {
   console.log("\n=== C. 15 câu CORE chạy như MỘT hội thoại (Mongo + retrieval thật) ===");
-  console.log(`    MOCK=${MOCK}  CONTEXT_MERGE_ENABLED=${CONTEXT_MERGE_ENABLED}`);
+  console.log(`    MOCK=${MOCK}`);
 
   const { answerStream } = await import("../src/lib/chatbot/llm");
   const retriever = new Retriever();
@@ -206,7 +198,6 @@ async function testConversation(): Promise<void> {
   const ids = (cs: RetrievalChunk[]) => cs.map((c) => c.chunk_id).join(" | ");
 
   let overCap = 0;
-  let mergedTurns = 0;
   let changedTopK = 0;
   const changed: string[] = [];
 
@@ -215,12 +206,11 @@ async function testConversation(): Promise<void> {
     const { history, model: pinnedModel } = await getHistoryAndModel(id);
     if (history.length > HISTORY_MAX_MESSAGES) overCap++;
 
-    const merged = mergeWithHistory(c.q, history);
-    if (merged) mergedTurns++;
-
     const { chunks } = await retriever.search(c.q, { history });
-    // Đường cơ sở: chính câu đó, không history — tức hành vi trước thay đổi
-    // này. Khác nhau nghĩa là history đã đổi kết quả truy hồi của câu này.
+    // Đường cơ sở: chính câu đó, KHÔNG history. Khác nhau nghĩa là history đã
+    // đổi kết quả truy hồi — giờ chỉ còn đúng một đường để điều đó xảy ra:
+    // bước rewrite nhìn thấy lượt trước và viết ra truy vấn khác. Với 15 câu
+    // CORE (đều độc lập, tự nêu chủ đề) thì con số này nên ở mức thấp.
     const { chunks: baseline } = await retriever.search(c.q, { history: [] });
     const same = ids(chunks) === ids(baseline);
     if (!same) {
@@ -244,9 +234,10 @@ async function testConversation(): Promise<void> {
     console.log(
       `  [${String(c.id).padStart(2)}] hist=${String(history.length).padStart(
         2
-      )} ${merged ? "ghép" : "    "} ${same ? "==" : "!!"} chunks=${String(
-        chunks.length
-      ).padStart(2)}  ${c.q.slice(0, 44)}`
+      )} ${same ? "==" : "!!"} chunks=${String(chunks.length).padStart(2)}  ${c.q.slice(
+        0,
+        44
+      )}`
     );
 
     if (chunks.length > 0) {
@@ -275,8 +266,8 @@ async function testConversation(): Promise<void> {
     "history chứa cả hai vai"
   );
   console.log(
-    `  --  ${mergedTurns}/${CORE.length} lượt kích hoạt ghép ngữ cảnh, ` +
-      `${changedTopK} lượt bị history làm đổi top-K`
+    `  --  ${changedTopK}/${CORE.length} lượt bị history làm đổi top-K ` +
+      `(qua bước rewrite)`
   );
   for (const q of changed) console.log(`      đổi: ${q}`);
 
@@ -287,14 +278,15 @@ async function testConversation(): Promise<void> {
 
 async function testFollowUp(): Promise<void> {
   console.log("\n=== D. Follow-up thật: history CÓ cứu được câu hỏi mất chủ đề không ===");
-  // Phần này kiểm tính năng ghép ngữ cảnh, hiện TẮT mặc định (xem config.ts).
-  // Bỏ qua chứ không báo hỏng: ba tầng A/B/C vẫn là chat history và vẫn phải
-  // đúng khi cờ tắt; còn tính năng ghép có script riêng
-  // (scripts/test-context-merge.ts) tự bật cờ cho mình.
-  if (!CONTEXT_MERGE_ENABLED) {
+  // Phần này từng kiểm tính năng ghép ngữ cảnh (nối câu hỏi trước vào trước câu
+  // hiện tại). Tính năng đó đã bị xoá; bài toán thì vẫn y nguyên, chỉ đổi cơ
+  // chế giải — giờ là queryRewriter.ts. Nên bài test được trỏ sang cơ chế mới
+  // chứ không xoá theo: thứ cần bảo vệ là HÀNH VI ("lượt 2 phải biết lượt 1 nói
+  // về cái gì"), không phải cách cài đặt.
+  if (MOCK) {
     console.log(
-      "  -- BỎ QUA: CHATBOT_CONTEXT_MERGE đang tắt (mặc định).\n" +
-        "     Chạy `CHATBOT_CONTEXT_MERGE=1` nếu muốn đo lại tính năng ghép."
+      "  -- BỎ QUA: CHATBOT_MOCK đang bật nên rewriteQuery() không gọi LLM.\n" +
+        "     Chạy lại với CHATBOT_MOCK=0 để đo phần này."
     );
     return;
   }
@@ -309,24 +301,34 @@ async function testFollowUp(): Promise<void> {
   await appendMessage(id, "assistant", c1.chunks.map((c) => c.title).join("; "));
 
   const { history } = await getHistoryAndModel(id);
-  const merged = mergeWithHistory(turn2, history);
-  const { chunks: withHist } = await retriever.search(turn2, { history });
-  const { chunks: without } = await retriever.search(turn2, { history: [] });
+  const withHist = await retriever.search(turn2, { history });
+  const without = await retriever.search(turn2, { history: [] });
 
   console.log(`  lượt 1: ${turn1}`);
   console.log(`  lượt 2: ${turn2}`);
-  console.log(`  query ghép: ${merged ?? "(không ghép)"}`);
+  console.log(`  query CÓ history:    ${withHist.searchQuery}`);
+  console.log(`  query KHÔNG history: ${without.searchQuery}`);
   check(history.length === 2, "lượt 1 đã vào history trước khi lượt 2 chạy");
-  check(merged !== null, "cổng chặn kích hoạt cho câu follow-up mất chủ đề");
+  // Điều kiện cốt lõi: history phải làm ĐỔI truy vấn. Nếu hai chuỗi bằng nhau
+  // thì bước rewrite đã không đọc lượt trước, và cả tính năng coi như chết —
+  // đúng kiểu hỏng mà nhìn câu trả lời không thấy được.
   check(
-    merged?.startsWith(turn1) === true,
-    "câu hỏi trước đứng TRƯỚC trong query ghép"
+    withHist.searchQuery !== without.searchQuery,
+    "history làm đổi truy vấn tìm kiếm của lượt 2"
+  );
+  check(
+    withHist.searchQuery.toLowerCase() !== turn2.toLowerCase(),
+    "truy vấn lượt 2 không còn là câu hỏi trần mất chủ đề"
   );
 
   const url = (cs: RetrievalChunk[]) => new Set(cs.map((c) => c.url));
-  const gained = [...url(withHist)].filter((u) => !url(without).has(u));
-  console.log(`  top-K không history: ${without.length} đoạn, ${url(without).size} url`);
-  console.log(`  top-K có history:    ${withHist.length} đoạn, ${url(withHist).size} url`);
+  const gained = [...url(withHist.chunks)].filter((u) => !url(without.chunks).has(u));
+  console.log(
+    `  top-K không history: ${without.chunks.length} đoạn, ${url(without.chunks).size} url`
+  );
+  console.log(
+    `  top-K có history:    ${withHist.chunks.length} đoạn, ${url(withHist.chunks).size} url`
+  );
   for (const u of gained) console.log(`      + ${u}`);
   check(gained.length > 0, "history kéo về được trang mà câu hỏi trần không tìm ra");
 

@@ -154,8 +154,10 @@ export const MODEL_POOL: ModelLimits[] = parseModelPool();
 // Gemini model id via @ai-sdk/google. Now the *first* entry of MODEL_POOL
 // rather than a standalone default — streamAnswer() picks per request out of
 // the pool, so this is only what the pool would be asked for first at zero
-// load. Still exported and still honours CHATBOT_MODEL because buildRequest()
-// and scripts/qa-test.ts report "the model" as a single name.
+// load. Còn được export và còn tôn trọng CHATBOT_MODEL vì scripts/qa-test.ts
+// cần in ra "model" như một cái tên đơn lẻ trong báo cáo của nó. KHÔNG dùng nó
+// cho một call thật — streamAnswer() chọn theo từng request từ pool, và
+// buildCallShape() mới là chỗ dựng cấu hình cho đúng model được chọn.
 export const CHAT_MODEL =
   process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.1-flash-lite";
 
@@ -210,10 +212,6 @@ export const MAX_OUTPUT_TOKENS = 2048;
 // same question, so a slow call and a dead one look identical from the
 // client; only a hard deadline tells them apart.
 export const TIMEOUT_MS = Number(process.env.CHATBOT_TIMEOUT_MS || 10000);
-
-// Free-tier requests/minute for CHAT_MODEL — quoted only so the 429 message
-// tells the user a number that matches their plan. Nothing here enforces it.
-export const FREE_TIER_RPM = Number(process.env.CHATBOT_RPM || 15);
 
 // Bullets the answer may use. Kept small on purpose: the failure mode of a
 // grounded assistant is padding thin retrieval into a full-looking answer.
@@ -294,81 +292,16 @@ export const REWRITE_ANSWER_SNIPPET_CHARS = 150;
 
 // --- Câu hỏi phụ thuộc ngữ cảnh ---
 //
-// A follow-up like "Học phí bao nhiêu?" carries no term that says *which*
-// course it is about, so embedding it verbatim retrieves nothing above
-// DEFAULT_MIN_SCORE and the model is forced to answer NOT_UPDATED for
-// information that *is* in the corpus. These knobs drive the fourth query
-// variant that pastes the previous user question in front of it — see
-// contextQuery.ts. JS-only; retriever.py has no equivalent.
-
-// TẮT mặc định. Bật bằng CHATBOT_CONTEXT_MERGE=1.
+// Câu hỏi trỏ ngược về lượt trước ("cho tôi thông tin người thứ 2") không tự
+// nêu ra mình đang nói về ai, nên truy hồi của chính nó không neo được vào đâu.
+// Các knob dưới đây điều khiển hai nhánh xử lý cho việc đó — chặn câu trỏ vào
+// hư không, và dùng lại chunk của lượt trước — xem contextQuery.ts. JS-only;
+// retriever.py không có gì tương ứng.
 //
-// Ban đầu định bật mặc định. Đổi lại sau khi đo, và đo thì không ủng hộ:
-//
-//   - Không ca nào cải thiện được CÂU TRẢ LỜI. Ca tưởng là điển hình —
-//     "cho tôi thông tin người thứ 2" sau một câu trả lời dạng danh sách —
-//     vẫn trả lời đúng khi cổng chặn TỪ CHỐI ghép, vì thứ giải quyết nó là
-//     history đi vào prompt qua buildMessages(), vốn đã có sẵn. Ca đó chưa
-//     bao giờ là bài toán của truy hồi.
-//   - Với đúng một câu follow-up thật ("Học phí bao nhiêu?" sau câu hỏi về
-//     khóa học), hai chunk query ghép chèn vào là một trang tin workshop và
-//     trang ban lãnh đạo — chiếm hai ô đầu, không cái nào là trang khóa học.
-//   - 3/15 câu độc lập trong bộ CORE bị chiếm mất ô trong top-7, và một ca
-//     production: sau "hoạt động của bkfintech vào 2026", câu "các khoá học."
-//     bị ghép và các chunk sự kiện của lượt trước chiếm chỗ trang khóa học.
-//
-// Tiêu chí nghiệm thu đặt ra từ đầu là top-K phải KHÔNG đổi với mọi câu hỏi
-// độc lập. Nó không đạt, và nguyên nhân không sửa được bằng cách siết cổng
-// chặn: cổng chỉ nhìn độ dài, mà "các khoá học" (tự đủ nghĩa) và "Học phí bao
-// nhiêu?" (mất chủ đề) là hai danh ngữ ngắn như nhau.
-//
-// Code, trần CONTEXT_MAX_HITS và bộ test (scripts/test-context-merge.ts) giữ
-// nguyên: bài toán follow-up mất chủ đề là có thật, chỉ là nối chuỗi không
-// giải được nó. Muốn thử lại thì bật cờ và chạy `--regression` trước.
-export const CONTEXT_MERGE_ENABLED = ["1", "true"].includes(
-  (process.env.CHATBOT_CONTEXT_MERGE || "").toLowerCase()
-);
-
-// Token count at or below which a question is treated as context-dependent.
-// A guess, not a measurement: context-dependent follow-ups are nearly always
-// short ("Học phí bao nhiêu?", "Khi nào khai giảng?", "Ở đâu?") while a
-// question that opens a new topic has to name that topic and so runs longer.
-// Re-check it against the length distribution of real logged follow-ups before
-// treating the number as tuned.
-//
-// 6, not the 8 this was first written with, because the counter splits on
-// /[\p{L}\p{N}]+/u and Vietnamese is written one syllable per space: "Viện có
-// những phòng lab nghiên cứu nào?" is six words to a reader but eight tokens
-// here, so 8 merged history into an obviously independent question. Roughly
-// 1.5x inflation against what a person would call a word, so the ceiling has to
-// sit that much lower. English questions count nearer to one token per word and
-// are the reason this is not lower still ("How much?" must still pass).
-export const CONTEXT_SHORT_QUESTION_WORDS = Number(
-  process.env.CHATBOT_CONTEXT_WORDS || 6
-);
-
-// How much of the previous question is pasted in front of the current one.
-// Capped because the merged text is embedded as one query: let the older turn
-// grow without limit and it out-weighs the question actually being asked. 200
-// chars comfortably holds a full question in either language, so in practice
-// this only ever truncates something pathological.
-export const CONTEXT_PREV_MAX_CHARS = 200;
-
-// Multiplier applied to the dense score of hits found *only* by the merged
-// query. 1.0 is a deliberate no-op: the knob exists so that if the merged query
-// turns out to displace correct chunks after deploy, the fix is one env var
-// rather than a logic change under time pressure.
-//
-// Not calibrated, but no longer entirely unmeasured. On the CORE suite with a
-// prior turn forced into every question (scripts/test-context-merge.ts
-// --regression), the questions whose top-7 moved were 3 at 1.0, 3 at 0.95, 2 at
-// 0.9. So it does what it claims and 0.9 is where it starts to bite — but it
-// does not close the gap on its own, because the leak it is damping is the
-// gate admitting a short *independent* question, not the merged query scoring
-// too high. Turn it down as a stopgap, tighten the gate as the fix.
-export const CONTEXT_QUERY_WEIGHT = Number(
-  process.env.CHATBOT_CONTEXT_WEIGHT || 1
-);
+// Nhóm knob thứ ba (CONTEXT_MERGE_ENABLED, CONTEXT_SHORT_QUESTION_WORDS,
+// CONTEXT_PREV_MAX_CHARS, CONTEXT_QUERY_WEIGHT, CONTEXT_MAX_HITS) đã bị xoá
+// cùng với query ghép ngữ cảnh mà chúng phục vụ — đo được là có hại, tắt mặc
+// định từ lâu, và queryRewriter.ts giải đúng bài toán đó tốt hơn.
 
 // Từ chỉ thứ tự, dùng cùng CONTEXT_ANAPHORA để nhận ra tham chiếu TƯỜNG MINH
 // (xem hasExplicitReference trong contextQuery.ts). Tách khỏi CONTEXT_ANAPHORA
@@ -436,30 +369,13 @@ export const CONTEXT_WEAK_DENSE = Number(
   process.env.CHATBOT_CONTEXT_WEAK_DENSE || 0.77
 );
 
-// Bật/tắt việc dùng lại chunk của lượt trước. Khác với CONTEXT_MERGE_ENABLED
-// (nối chuỗi, đã tắt vì đo cho thấy có hại): nhánh này không sinh query mới,
-// không tốn embedding, và chỉ kích hoạt khi CẢ HAI điều kiện cùng đúng —
-// câu hỏi có tham chiếu tường minh, VÀ truy hồi hiện tại yếu.
+// Bật/tắt việc dùng lại chunk của lượt trước. Nhánh này không sinh query mới,
+// không tốn embedding, và chỉ kích hoạt khi CẢ HAI điều kiện cùng đúng — câu
+// hỏi có tham chiếu tường minh, VÀ truy hồi hiện tại yếu. Đó là khác biệt so
+// với query ghép ngữ cảnh (đã xoá): cái kia đụng vào MỌI câu qua được cổng
+// chặn, còn cái này chỉ đụng vào câu mà truy hồi vốn đã hỏng.
 export const CONTEXT_FALLBACK_ENABLED = !["0", "false"].includes(
   (process.env.CHATBOT_CONTEXT_FALLBACK || "1").toLowerCase()
-);
-
-// Trần cứng: nhiều nhất bao nhiêu ứng viên được phép đến từ RIÊNG query ghép
-// (chunk mà không query gốc nào tìm ra). Đây là lớp kiểm duyệt thứ hai, độc lập
-// với cổng chặn, và cần thiết vì cổng chặn về nguyên tắc không thể chính xác:
-// nó chỉ nhìn độ dài, mà "các khoá học" (tự đủ chủ đề) và "Học phí bao nhiêu?"
-// (mất chủ đề) đều là danh ngữ ngắn — không tách được bằng độ dài.
-//
-// Quan sát thực tế đã thúc đẩy con số này: sau câu "hoạt động của bkfintech vào
-// 2026", câu "các khoá học." bị ghép và top-7 bị các chunk sự kiện/tin tức của
-// lượt trước chiếm chỗ của chính các trang khóa học. Không có trần thì một cổng
-// chặn bắt nhầm sẽ định hình lại toàn bộ top-K; có trần thì thiệt hại luôn bị
-// chặn ở đúng ngần này ô, dù cổng chặn sai đến đâu.
-//
-// Đặt 0 = tắt hẳn đóng góp của query ghép (vẫn tốn một lượt embedding), tức
-// dùng CHATBOT_CONTEXT_MERGE=0 sẽ gọn hơn nếu muốn tắt hẳn tính năng.
-export const CONTEXT_MAX_HITS = Number(
-  process.env.CHATBOT_CONTEXT_MAX_HITS || 2
 );
 
 // Anaphora — words that point at something named in an earlier turn. Matched
@@ -481,9 +397,8 @@ export const CONTEXT_MAX_HITS = Number(
 // course teaches (and is an English word after all), and "nay" is half of "hôm
 // nay". The regression run caught the last one live: "Giá vàng SJC hôm nay bao
 // nhiêu một lượng?" is nine tokens, way over the length gate, and merged
-// anyway purely on "nay". Undiacriticised questions stay covered by
-// CONTEXT_SHORT_QUESTION_WORDS, which does most of the work here regardless;
-// this list only has to catch the long-but-dependent case.
+// anyway purely on "nay". Undiacriticised questions are covered a layer
+// earlier: diacritics.ts restores the accents before this list is consulted.
 // Hai entry đã bị gỡ sau khi đối chiếu với bộ câu hỏi thật, và cả hai đều là
 // đúng kiểu hỏng mà chú thích trên cảnh báo:
 //   - "thế" nằm trong "như thế nào", một trong những cách hỏi phổ biến nhất

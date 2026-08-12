@@ -14,7 +14,6 @@
     "payload-gen-types": "payload generate:types",
     "build-index": "tsx --env-file-if-exists=.env scripts/build-index.ts",
     "test:rewrite": "tsx --env-file-if-exists=.env scripts/test-rewrite.ts",
-    "test:context": "tsx --env-file-if-exists=.env scripts/test-context-merge.ts",
     "test:history": "tsx --env-file-if-exists=.env scripts/test-chat-history.ts",
     "test:followup": "tsx --env-file-if-exists=.env scripts/test-history-followup.ts",
     "measure-preload": "tsx --env-file-if-exists=.env scripts/measure-preload.ts",

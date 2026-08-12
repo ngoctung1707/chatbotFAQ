@@ -10,7 +10,6 @@ import {
 import { answerStream, friendlyError, isRefusal, NO_ANSWER } from '@/lib/chatbot/llm'
 import {
   isOrphanReference,
-  mergeWithHistory,
   shouldReusePreviousChunks,
   topDenseScore,
 } from '@/lib/chatbot/contextQuery'
@@ -40,7 +39,6 @@ function logRetrieval(
   question: string,
   queryUsed: string,
   chunks: RetrievalChunk[],
-  contextQuery: string | null,
   sessionId: string,
   history: ChatMessage[],
   followUp: { topDense: number; reusedPrevious: boolean },
@@ -58,12 +56,11 @@ function logRetrieval(
     `     phiên ${sessionId.slice(0, 8)}… — history ${history.length} message` +
       (history.length === 0 ? ' (lượt đầu HOẶC session mới)' : ''),
   )
+  // Bằng nhau nghĩa là bước rewrite đã bị bỏ qua hoặc thất bại và truy hồi
+  // chạy bằng chính câu người dùng gõ — đúng thứ cần biết đầu tiên khi một câu
+  // hỏi truy hồi ra kết quả lạ.
   if (queryUsed && queryUsed !== question) console.log(`     tìm bằng: ${queryUsed}`)
-  // Printed so the log says whether the context gate fired. Without it, a
-  // follow-up that retrieved badly gives no way to tell "the gate rejected it"
-  // apart from "it merged and the merge didn't help" — two different bugs.
-  if (contextQuery) console.log(`     ghép ngữ cảnh: ${contextQuery}`)
-  else if (history.length > 0) console.log('     ghép ngữ cảnh: KHÔNG (cổng chặn từ chối)')
+  else console.log('     tìm bằng: (câu gốc — rewrite bị bỏ qua hoặc thất bại)')
   // topDense là thước đo "truy hồi có neo được vào đâu không" — in kèm ngưỡng
   // để đọc log biết ngay vì sao nhánh dùng lại chunk có/không kích hoạt, thay
   // vì phải chạy lại mới biết.
@@ -167,15 +164,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    logRetrieval(
-      question,
-      result.searchQuery,
-      chunks,
-      mergeWithHistory(question, history),
-      session_id,
-      history,
-      { topDense, reusedPrevious },
-    )
+    logRetrieval(question, result.searchQuery, chunks, session_id, history, {
+      topDense,
+      reusedPrevious,
+    })
   } catch (err) {
     // Most commonly: the vector index hasn't been built yet (no
     // data/faiss_index_js/store.json — see `npm run build-index`). Treated

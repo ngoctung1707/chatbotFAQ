@@ -1,40 +1,33 @@
 /**
- * Build a search query for a question that only makes sense given the previous
- * turn — "Học phí bao nhiêu?" after "Khóa Fintech Foundation dạy gì?".
+ * Nhận ra câu hỏi trỏ ngược về lượt trước ("người thứ 2", "cái đó"), và quyết
+ * định hai nhánh xử lý dựa trên đó: chặn câu trỏ vào hư không, và dùng lại
+ * chunk của lượt trước khi truy hồi lượt này không neo được vào đâu.
  *
- * This has no counterpart in retriever.py; it is JS-only, so the reasoning is
- * written out here rather than referred to.
+ * Không có bản tương ứng bên retriever.py; đây là phần JS-only nên lý do được
+ * ghi thẳng ở đây thay vì trỏ sang.
  *
- * The problem: history only ever reached the *answering* prompt, never
- * retrieval. A follow-up was embedded verbatim, and with the subject dropped
- * there is nothing left in it to match on — the hits either fall under
- * DEFAULT_MIN_SCORE or come from an unrelated page, so <data> arrives empty and
- * SYSTEM_PROMPT correctly makes the model say NOT_UPDATED about information the
- * corpus does contain. From the user's side that reads as the bot forgetting the
- * question it just answered.
+ * LỊCH SỬ — file này từng chứa một cơ chế thứ ba, query ghép ngữ cảnh: dán câu
+ * hỏi trước vào trước câu hiện tại rồi nhúng cả cụm, để cứu follow-up mất chủ
+ * đề ("Học phí bao nhiêu?"). Nó đã bị xoá, vì hai lý do cộng lại:
  *
- * The fix is one more query variant, not a replacement: retriever.search()
- * merges hits by best score per chunk, so the merged query can only add
- * candidates the plain question missed. That also bounds the damage — a bad
- * merge costs one embedding pass, it never displaces a good query.
+ *   - Đo được là có hại và đã tắt mặc định từ trước khi bị xoá. Cổng chặn chỉ
+ *     nhìn ĐỘ DÀI, mà "các khoá học" (tự đủ nghĩa) và "Học phí bao nhiêu?"
+ *     (mất chủ đề) là hai danh ngữ ngắn như nhau — không tách được. Trên
+ *     production, sau "hoạt động của bkfintech vào 2026" thì câu "các khoá
+ *     học." bị ghép và chunk sự kiện của lượt trước chiếm chỗ trang khóa học.
+ *   - queryRewriter.ts giải đúng bài toán đó, ở tầng ngữ nghĩa: nó đọc history
+ *     rồi VIẾT RA một truy vấn tự đủ nghĩa, thay vì nối chuỗi và hy vọng vector
+ *     đi đúng hướng.
  *
- * Lives in its own file rather than inside retriever.ts: retriever.ts is long
- * already, and this tracks something of its own (how people phrase follow-ups)
- * rather than anything about the search pipeline itself.
- *
- * Deliberately looks back exactly one turn. Three-turn chains
- * (A → "cái đó" → "còn cái kia") still break, and that is accepted: merging
- * more turns merges more noise, and there is no evidence yet that such chains
- * are frequent enough to pay for.
+ * Hai cơ chế còn lại KHÔNG thừa theo cùng lập luận đó, và đây là chỗ dễ nhầm:
+ * rewriteQuery() là best-effort — hỏng thì trả về câu gốc (timeout, hết quota,
+ * hoặc CHATBOT_REWRITE=0). Đúng những lượt đó là lúc cần lưới an toàn ở dưới.
  */
 import {
   CONTEXT_ANAPHORA,
   CONTEXT_FALLBACK_ENABLED,
-  CONTEXT_MERGE_ENABLED,
   CONTEXT_ORDINAL_WORDS,
   CONTEXT_ORDINAL_WORDS_EN,
-  CONTEXT_PREV_MAX_CHARS,
-  CONTEXT_SHORT_QUESTION_WORDS,
   CONTEXT_WEAK_DENSE,
 } from "./config";
 
@@ -47,39 +40,19 @@ function tokenize(text: string): string[] {
 }
 
 /**
- * Does this question look like it depends on the previous turn?
- *
- * Exported separately from mergeWithHistory() so the gate can be tested without
- * a history fixture — it is the part that has to be right. Merging
- * unconditionally is not an option: it would pollute genuinely independent
- * questions (ask about a course, then about the labs, and the merged query
- * drags course chunks into the candidate set).
- *
- * That risk is real rather than theoretical, and the reason is subtler than
- * "merging by max score only adds, never removes". True of the hit *set*, false
- * of the final *ranking*: hits are cut to `candidates` (20) before rerank,
- * rescale() is a min-max over exactly that set, and maxPerUrl + topK trim again
- * at the end. Adding a candidate moves all three. A chunk found only by the
- * merged query can absolutely push a correct chunk out of the top-7.
- *
- * So the gate is required, and the default is tight on purpose: missing a
- * follow-up is cheaper than damaging an independent question.
- */
-/**
  * Câu hỏi có chứa tham chiếu TƯỜNG MINH tới lượt trước hay không —
  * từ chỉ xuất ("nó", "đó") hoặc tham chiếu thứ tự ("người thứ 2",
  * "cái đầu tiên").
  *
- * Chặt hơn hẳn isContextDependent(): KHÔNG dùng ngưỡng độ dài. Đó là điểm mấu
- * chốt. Ngưỡng độ dài không phân biệt được "các khoá học" (tự đủ nghĩa) với
- * "Học phí bao nhiêu?" (mất chủ đề) — cả hai đều là danh ngữ ngắn — và chính
- * chỗ đó đã kéo chunk lạc đề vào top-7 trên production. Hai nhánh xử lý mạnh
- * tay (bỏ qua LLM ở route, và dùng lại chunk lượt trước) đều dựa vào hàm này
- * chứ không dựa vào độ dài: một câu chứa "thứ 2" thì gần như chắc chắn đang
- * trỏ về đâu đó, còn một câu chỉ ngắn thì không suy ra được gì.
+ * KHÔNG dùng ngưỡng độ dài, và đó là điểm mấu chốt — nó chính là thứ đã làm
+ * hỏng cơ chế ghép ngữ cảnh cũ (xem docblock đầu file). Độ dài không phân biệt
+ * được "các khoá học" (tự đủ nghĩa) với "Học phí bao nhiêu?" (mất chủ đề). Hai
+ * nhánh xử lý mạnh tay bên dưới đều dựa vào hàm này chứ không dựa vào độ dài:
+ * một câu chứa "thứ 2" thì gần như chắc chắn đang trỏ về đâu đó, còn một câu
+ * chỉ ngắn thì không suy ra được gì.
  *
- * Đánh đổi có chủ đích: "Học phí bao nhiêu?" KHÔNG khớp hàm này. Thà bỏ sót
- * còn hơn lại làm hỏng câu hỏi độc lập — cùng nguyên tắc D2.
+ * Đánh đổi có chủ đích: "Học phí bao nhiêu?" KHÔNG khớp hàm này. Thà bỏ sót còn
+ * hơn làm hỏng câu hỏi độc lập — và ca đó giờ đã có queryRewriter.ts lo.
  */
 export function hasExplicitReference(question: string): boolean {
   const tokens = tokenize(question);
@@ -98,13 +71,6 @@ export function hasExplicitReference(question: string): boolean {
     if (a === "cuối" && b === "cùng") return true;
   }
   return false;
-}
-
-export function isContextDependent(question: string): boolean {
-  const tokens = tokenize(question);
-  if (tokens.length === 0) return false;
-  if (tokens.length <= CONTEXT_SHORT_QUESTION_WORDS) return true;
-  return tokens.some((t) => CONTEXT_ANAPHORA.includes(t));
 }
 
 /** Điểm dense cao nhất trong tập chunk — thước đo "truy hồi có neo được vào
@@ -163,41 +129,4 @@ export function shouldReusePreviousChunks(
     hasExplicitReference(question) &&
     topDense < CONTEXT_WEAK_DENSE
   );
-}
-
-/**
- * The merged query, or null when there is nothing to merge.
- *
- * Returns null rather than the unchanged question so the caller can tell
- * "nothing to add" from "added and it's a no-op" without a second check — the
- * variant is then pushed or not, and search() reads the same way for every
- * query variant.
- *
- * Only the last *user* message is used, never an assistant one. Answers run to
- * MAX_OUTPUT_TOKENS (2048) — pasting one into a query would dilute the
- * embedding until the actual question stopped influencing it at all.
- */
-export function mergeWithHistory(
-  question: string,
-  history: { role: string; content: string }[]
-): string | null {
-  if (!CONTEXT_MERGE_ENABLED) return null;
-  if (!history.length) return null;
-  if (!isContextDependent(question)) return null;
-
-  let prev = "";
-  for (let i = history.length - 1; i >= 0; i--) {
-    if (history[i].role === "user") {
-      prev = (history[i].content || "").trim();
-      break;
-    }
-  }
-  if (!prev) return null;
-
-  // Previous question first: in that order the result reads like one complete
-  // question ("Khóa Fintech Foundation dạy gì? Học phí bao nhiêu?") rather than
-  // a fragment with context bolted on the end. Order shifts a dense embedding
-  // only slightly and means nothing at all to the lexical branch, so the tie is
-  // broken on which form is easier to read in a retrieval log.
-  return `${prev.slice(0, CONTEXT_PREV_MAX_CHARS)} ${question}`;
 }

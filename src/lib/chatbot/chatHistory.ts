@@ -187,14 +187,6 @@ export async function getHistory(sessionId: string): Promise<ChatMessage[]> {
   return (await getHistoryAndModel(sessionId)).history;
 }
 
-/** Which model answered this session's earlier turns, or null for a new
- * session / one that only ever got mock answers. */
-export async function getSessionModel(
-  sessionId: string
-): Promise<string | null> {
-  return (await getHistoryAndModel(sessionId)).model;
-}
-
 /** Remember which model answered, so the next question in this session goes to
  * the same one (see STICKY_SESSION).
  *
