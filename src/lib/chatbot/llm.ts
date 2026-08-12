@@ -483,56 +483,32 @@ function buildPreprocessPrompt(
     ? condenseTranscript(history)
     : "(chưa có lượt nào)";
   return `\
-Bạn là bộ tiền xử lý câu hỏi cho công cụ tìm kiếm tài liệu của Viện Công nghệ và Kinh tế số BK Fintech (ĐH Bách khoa Hà Nội).
+Tiền xử lý câu hỏi cho công cụ tìm tài liệu Viện BK Fintech (ĐH Bách khoa Hà Nội).
+In ĐÚNG một dòng JSON, không giải thích, không markdown:
+{"vi":"<câu hỏi tiếng Việt, đủ dấu, tự đứng độc lập>","en":"<bản dịch tiếng Anh>"}
 
-Làm ba việc trên CÂU HỎI MỚI, theo đúng thứ tự:
+vi — sửa CÂU HỎI thành câu đọc là hiểu, không cần xem HỘI THOẠI:
+- Thêm dấu nếu gõ thiếu; giữ chữ "đ". Giãn viết tắt: sđt→số điện thoại, đc→địa chỉ, hp→học phí, ttin→thông tin.
+- Điền đối tượng lấy từ HỘI THOẠI vào 3 dạng thiếu: đại từ (nó, người đó, ông ấy) · số thứ tự (người thứ 2, khóa đầu tiên, người cuối cùng) · BỎ HẲN đối tượng, câu đọc vẫn xuôi nhưng không nói CỦA AI / CỦA CÁI GÌ ("cho tôi xin sđt" ngay sau khi nói về Viện trưởng = xin sđt của Viện trưởng).
+- HỘI THOẠI trống · không chứa thứ được trỏ tới · hoặc khớp nhiều thứ không rõ cái nào → chép NGUYÊN VĂN. Không bịa, không gộp nhiều đối tượng vào một câu.
 
-1. KHÔI PHỤC DẤU. Câu gõ thiếu dấu tiếng Việt thì thêm dấu cho đúng ("vien truong la ai" -> "viện trưởng là ai"). Câu đã có dấu thì giữ nguyên từng chữ.
-2. VIẾT LẠI THÀNH CÂU ĐỘC LẬP. Thay đại từ và tham chiếu ("người đó", "nó", "cái thứ hai", "vừa nói") bằng tên hoặc danh từ cụ thể lấy từ HỘI THOẠI.
-   Số thứ tự LUÔN LUÔN là tham chiếu, phải thay bằng tên cụ thể kể cả khi câu đọc đã xuôi tai: "người thứ 2", "cái thứ hai", "khóa đầu tiên", "người cuối cùng", "người thứ 2 trong danh sách".
-   QUAN TRỌNG — bốn trường hợp phải GIỮ NGUYÊN VĂN, không thêm bớt một chữ:
-   a) Câu hỏi đã tự đủ nghĩa (không có đại từ, không số thứ tự, không tham chiếu lượt trước).
-   b) HỘI THOẠI trống.
-   c) HỘI THOẠI không chứa thứ được trỏ tới.
-   d) Tham chiếu khớp NHIỀU thứ trong HỘI THOẠI và không rõ cái nào — giữ nguyên, TUYỆT ĐỐI không gộp tất cả lại thành một câu.
-   Thà giữ nguyên một câu mơ hồ còn hơn đoán ra một câu hỏi khác. TUYỆT ĐỐI không tự nghĩ ra câu hỏi mới.
-3. DỊCH sang tiếng Anh kết quả của bước 2.
-   - Tên riêng (người, phòng lab, sản phẩm, sự kiện): GIỮ NGUYÊN, không dịch, không phiên âm. Tên tiếng Việt viết KHÔNG DẤU: "Đỗ Bá Lâm" -> "Do Ba Lam".
-   - Nhưng CHỨC DANH và HỌC HÀM thì PHẢI DỊCH: "Tiến sĩ" -> "Dr.", "Phó Giáo sư" -> "Assoc. Prof.", "Giáo sư" -> "Prof.", "Viện trưởng" -> "Dean", "Phó Viện trưởng" -> "Vice-Dean", "Hội đồng cố vấn" -> "Advisory Board", "khóa học" -> "course".
-   - CÂU HỎI MỚI vốn đã bằng tiếng Anh -> "en" chép y hệt "vi".
+en — dịch "vi":
+- Tên riêng giữ nguyên, bỏ dấu: Đỗ Bá Lâm→Do Ba Lam.
+- Chức danh thì DỊCH: Tiến sĩ→Dr. · Phó Giáo sư→Assoc. Prof. · Viện trưởng→Dean · Phó Viện trưởng→Vice-Dean · Hội đồng cố vấn→Advisory Board · khóa học→course.
+- CÂU HỎI vốn bằng tiếng Anh → en giống hệt vi.
 
-Trả lời NGẮN GỌN, không suy nghĩ dài. In ra ĐÚNG một dòng JSON, không giải thích, không bọc markdown:
-{"vi":"<kết quả bước 2>","en":"<kết quả bước 3>"}
+VD1, HỘI THOẠI = [Hỏi: Viện trưởng là ai? · Đáp: Phó Giáo sư Nguyễn Bình Minh.]
+cho tôi xin sđt liên hệ → {"vi":"số điện thoại liên hệ của Viện trưởng Nguyễn Bình Minh là gì?","en":"What is the contact phone number of Dean Nguyen Binh Minh?"}
+khoa hoc Fintech may gio? → {"vi":"khóa học Fintech mấy giờ?","en":"How many hours is the Fintech course?"}
 
-Ví dụ:
-HỘI THOẠI: (trống)
-CÂU HỎI MỚI: khoa hoc Fintech keo dai bao nhieu gio?
-JSON: {"vi":"khóa học Fintech kéo dài bao nhiêu giờ?","en":"How many hours does the Fintech course last?"}
+VD2, HỘI THOẠI = [Hỏi: Phó Viện trưởng gồm những ai? · Đáp: PGS Nguyễn Thị Xuân Hoa và TS Đỗ Bá Lâm.]
+người thứ 2 là ai? → {"vi":"Tiến sĩ Đỗ Bá Lâm là ai?","en":"Who is Dr. Do Ba Lam?"}
+còn cái kia? → {"vi":"còn cái kia?","en":"what about the other one?"}
 
 HỘI THOẠI:
-Người dùng: Phó Viện trưởng gồm những ai?
-Trợ lý: Gồm Phó Giáo sư Nguyễn Thị Xuân Hoa và Tiến sĩ Đỗ Bá Lâm.
-CÂU HỎI MỚI: người thứ 2 trong danh sách là ai?
-JSON: {"vi":"Tiến sĩ Đỗ Bá Lâm là ai?","en":"Who is Dr. Do Ba Lam?"}
-
-HỘI THOẠI:
-Người dùng: V-Chain là gì?
-Trợ lý: V-Chain là nền tảng blockchain cho lập trình viên.
-CÂU HỎI MỚI: BK Fintech có những khóa học nào?
-JSON: {"vi":"BK Fintech có những khóa học nào?","en":"What courses does BK Fintech offer?"}
-
-HỘI THOẠI:
-Người dùng: Phó Viện trưởng gồm những ai?
-Trợ lý: Gồm Phó Giáo sư Nguyễn Thị Xuân Hoa và Tiến sĩ Đỗ Bá Lâm.
-CÂU HỎI MỚI: còn cái kia?
-JSON: {"vi":"còn cái kia?","en":"what about the other one?"}
-
---- HỘI THOẠI ---
 ${transcript}
---- HẾT HỘI THOẠI ---
 
-CÂU HỎI MỚI: ${question}
-
+CÂU HỎI: ${question}
 JSON:`;
 }
 
