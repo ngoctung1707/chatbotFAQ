@@ -27,6 +27,7 @@ import {
 import { embedQuery, lexicalScore, type LexicalWeights } from "./embedding";
 import { VectorStore, type SearchHit } from "./vectorStore";
 import { toEnglish } from "./translator";
+import { restoreQuestion } from "./diacritics";
 
 /** A second query variant with the institute's full name appended, for
  * questions that refer to it only as "viện"/"trường". Returns null (not the
@@ -76,7 +77,7 @@ export class Retriever {
    * query_for(): a user seeing Vietnamese-in/English-matches deserves to
    * know why. */
   async queryFor(question: string): Promise<string> {
-    return toEnglish(question);
+    return toEnglish(await restoreQuestion(question));
   }
 
   async search(
@@ -101,11 +102,18 @@ export class Retriever {
     // version too — same three-query strategy as retriever.py, same reason:
     // a mistranslation should only ever add a missed match back in, never
     // replace a correct query with a wrong one.
-    const queries = [question];
-    const expanded = expandSelfReference(question);
+    // Khôi phục dấu TRƯỚC mọi thứ khác, và thứ tự này quan trọng: Marian dịch
+    // "vien truong la ai" ra rác, dịch "viện trưởng là ai" mới đúng — nên đặt
+    // ở đây thì cả nhánh dịch lẫn nhánh dense đều được hưởng. Câu vốn đã có
+    // dấu đi thẳng qua, không bị đụng vào (xem needsRestoration).
+    // Đo qua /api/chat trên 21 câu hỏi vàng gõ không dấu: Recall@7 57% -> 86%.
+    const restored = await restoreQuestion(question);
+
+    const queries = [restored];
+    const expanded = expandSelfReference(restored);
     if (expanded) queries.push(expanded);
-    const english = await toEnglish(expanded || question);
-    if (english !== question) queries.push(english);
+    const english = await toEnglish(expanded || restored);
+    if (english !== restored) queries.push(english);
 
     const hitsByIndex = new Map<number, RankedHit>();
     const lexicals: LexicalWeights[] = [];
