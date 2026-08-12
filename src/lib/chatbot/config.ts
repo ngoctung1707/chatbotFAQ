@@ -6,8 +6,13 @@
  * one source of truth is easier to keep in sync when porting.
  */
 
-import path from "path";
-
+// KHÔNG `import path from "path"` ở đây. File này nằm trong đồ thị bundle của
+// instrumentation.ts (qua embedding.ts / translator.ts), mà Next biên dịch
+// instrumentation cho CẢ edge runtime — nơi không có module "path" của Node.
+// Lỗi không dừng ở instrumentation: nó làm hỏng luôn bản dịch của /api/chat và
+// endpoint trả 500 "Module not found: Can't resolve 'path'". Đã dựng lại được
+// trên HEAD nguyên bản nên đây là bug có sẵn, không phải hệ quả của thay đổi
+// nào gần đây. Nối chuỗi thủ công là đủ: Node nhận dấu / trên cả Windows.
 // Reuses DATABASE_URI — the same connection string Payload already reads for
 // its own MongoDB — instead of inventing a second Mongo config that could
 // drift out of sync with it (same reasoning as chat_history.py on the Python
@@ -166,8 +171,8 @@ export const MODEL_POOL: ModelLimits[] = parseModelPool();
 // Gemini model id via @ai-sdk/google. Now the *first* entry of MODEL_POOL
 // rather than a standalone default — streamAnswer() picks per request out of
 // the pool, so this is only what the pool would be asked for first at zero
-// load. Still exported and still honours CHATBOT_MODEL because buildRequest()
-// and scripts/qa-test.ts report "the model" as a single name.
+// load. Still exported and still honours CHATBOT_MODEL because
+// scripts/qa-test.ts reports "the model" as a single name.
 export const CHAT_MODEL =
   process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.1-flash-lite";
 
@@ -281,8 +286,7 @@ export const MOCK = !["", "0", "false"].includes(
 // same directory as the Python faiss_index — different format, kept apart on
 // purpose so the two pipelines can't silently clobber each other's output.
 export const INDEX_DIR =
-  process.env.CHATBOT_INDEX_DIR ||
-  path.join(process.cwd(), "data", "faiss_index_js");
+  process.env.CHATBOT_INDEX_DIR || `${process.cwd()}/data/faiss_index_js`;
 
 // Cosine floor. Same value as retriever.py's DEFAULT_MIN_SCORE — re-measure
 // on this corpus if the embedding model changes, since the number is tied to

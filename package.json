@@ -13,8 +13,7 @@
     "prepare": "husky",
     "payload-gen-types": "payload generate:types",
     "build-index": "tsx --env-file-if-exists=.env scripts/build-index.ts",
-    "test:alias": "tsx --env-file-if-exists=.env scripts/test-alias-expansion.ts",
-    "measure-preload": "tsx --env-file-if-exists=.env scripts/measure-preload.ts"
+    "test:alias": "tsx --env-file-if-exists=.env scripts/test-alias-expansion.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.37",

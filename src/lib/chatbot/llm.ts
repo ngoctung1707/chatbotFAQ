@@ -13,7 +13,6 @@ import { google } from "@ai-sdk/google";
 import { generateText, streamText, type ModelMessage } from "ai";
 import type { ChatMessage } from "./chatHistory";
 import {
-  CHAT_MODEL,
   CONDENSE_ENABLED,
   CONDENSE_MODEL,
   CONDENSE_TIMEOUT_MS,
@@ -173,27 +172,6 @@ export function buildMessages(
   }));
   turns.push({ role: "user", content: buildUserMessage(question, chunks) });
   return turns;
-}
-
-/** What would be sent to the model, as a plain object — port of llm.py's
- * build_request(). Kept separate from the call itself for the same reason as
- * on the Python side: the prompt can be inspected without constructing SDK
- * objects or holding an API key. */
-export function buildRequest(
-  question: string,
-  chunks: RetrievalChunk[],
-  history: ChatMessage[] = []
-) {
-  const config: Record<string, unknown> = {
-    maxOutputTokens: MAX_OUTPUT_TOKENS,
-  };
-  if (CHAT_MODEL.startsWith("gemini")) config.thinkingLevel = THINKING_LEVEL;
-  return {
-    model: CHAT_MODEL,
-    system: SYSTEM_PROMPT,
-    messages: buildMessages(question, chunks, history),
-    config,
-  };
 }
 
 export class AnswerTimeout extends Error {}

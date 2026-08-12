@@ -19,6 +19,23 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
+  // PHẢI nạp sharp TRƯỚC @xenova/transformers, và thứ tự này là bắt buộc trên
+  // Windows chứ không phải sở thích. Hai gói đều kéo theo DLL native, và
+  // onnxruntime (đi kèm transformers) nạp bộ GLib che mất thứ libvips của sharp
+  // cần: sau đó mọi lần require("sharp") trong cùng tiến trình đều ném
+  // ERR_DLOPEN_FAILED "The specified procedure could not be found". Đảo lại thứ
+  // tự thì cả hai cùng sống. Đã dựng lại được ngoài Next: nạp sharp trước →
+  // chạy; nạp transformers trước → hỏng.
+  //
+  // Vì sao nó biểu hiện ở ĐÂY: file này chạy lúc server khởi động, trước mọi
+  // request. payload.config.ts import sharp, nên khi register() đã nạp
+  // transformers xong thì trang Payload đầu tiên trả 500 và cả site sập trong
+  // khi /api/chat vẫn chạy — triệu chứng rất dễ đổ nhầm cho Payload hoặc Mongo.
+  await import("sharp").catch(() => {
+    // Không có sharp cũng không sao đối với chatbot; Payload sẽ tự than phiền
+    // nếu nó thực sự cần. Nuốt lỗi ở đây để một lần nạp hỏng không chặn preload.
+  });
+
   const { loadEmbedder } = await import("@/lib/chatbot/embedding");
   const { loadTranslator } = await import("@/lib/chatbot/translator");
 
