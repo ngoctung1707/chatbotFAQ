@@ -40,7 +40,7 @@ import {
 } from "./embedding";
 import { VectorStore, type SearchHit } from "./vectorStore";
 import { rewriteQuery } from "./queryRewriter";
-import { restoreQuestion } from "./diacritics";
+import { needsRestoration, restoreQuestion } from "./diacritics";
 // `import type`, not a value import, and it has to stay that way: TS erases it
 // completely at compile time, so the mongodb driver chatHistory.ts pulls in
 // stays out of this module's runtime import graph. Turn it into a plain import
@@ -144,15 +144,34 @@ export class Retriever {
     // rewriteQuery() nhận câu hỏi THÔ chứ không phải bản đã khôi phục dấu: nó
     // tự xử lý được câu không dấu (xem REWRITE_SYSTEM_PROMPT), và nhận câu thô
     // là thứ cho phép nó chạy song song với chính bước khôi phục dấu.
-    const [store, rewritten, restored] = await Promise.all([
+    const [store, rewritten, viterbi] = await Promise.all([
       this.store(),
       rewriteQuery(question, options.history ?? []),
-      // Khôi phục dấu cho nhánh tiếng Việt, và câu vốn đã có dấu đi thẳng qua
-      // không bị đụng vào (xem needsRestoration). Đo qua /api/chat trên 21 câu
-      // hỏi vàng gõ không dấu: Recall@7 57% -> 86%.
+      // Khôi phục dấu bằng Viterbi. Vẫn chạy song song vô điều kiện dù bước
+      // rewrite thường cho kết quả tốt hơn, vì nó là NGUỒN DUY NHẤT không phụ
+      // thuộc mạng: ~0.5ms, không bao giờ hỏng. Câu vốn đã có dấu đi thẳng qua
+      // không bị đụng vào (xem needsRestoration).
       restoreQuestion(question),
       loadEmbedder(),
     ]);
+
+    // Dấu do LLM khôi phục thắng Viterbi khi có. Đo trên 29 câu tiếng Việt của
+    // qa-cases (bỏ dấu rồi khôi phục, so với chính câu gốc): Viterbi 51.7% đúng
+    // cả câu, LLM 93.1%. Quan trọng hơn con số tổng là KIỂU sai của Viterbi —
+    // nó biến "khóa học" thành "khoa học" ở 4/29 câu, mà corpus này có cả trang
+    // khóa học lẫn trang nghiên cứu khoa học, nên đó là lái truy vấn sang đúng
+    // collection sai. Bảng bigram không cứu được: "khoa học" phổ biến hơn hẳn
+    // trong chính corpus, tức thống kê corpus phản lại người dùng ở đúng chỗ đó.
+    //
+    // Chỉ áp dụng khi needsRestoration() đúng — tức đúng lúc Viterbi vốn sẽ
+    // chạy. Câu người dùng đã tự gõ dấu thì không ai đoán hộ, giữ nguyên lập
+    // trường đã ghi trong diacritics.ts. (Câu gõ lẫn lộn vẫn nằm ngoài, y như
+    // trước.) Dòng VI đã qua kiểm tra chuỗi từ ở parseRewrite(), nên tới đây nó
+    // chắc chắn là cùng những chữ đó theo cùng thứ tự đó.
+    const restored =
+      rewritten.vietnamese && needsRestoration(question)
+        ? rewritten.vietnamese
+        : viterbi;
 
     // Vẫn tìm bằng CẢ câu tiếng Việt gốc, hai lý do và cả hai đều còn nguyên
     // giá trị sau khi đổi từ dịch máy sang rewrite bằng LLM:
@@ -164,8 +183,8 @@ export class Retriever {
     //      trong corpus không khớp gì với query tiếng Anh, nên bỏ câu gốc là tự
     //      cắt một nửa tín hiệu TF-IDF.
     const queries = [restored];
-    if (rewritten.toLowerCase() !== restored.toLowerCase()) {
-      queries.push(rewritten);
+    if (rewritten.english.toLowerCase() !== restored.toLowerCase()) {
+      queries.push(rewritten.english);
     }
 
     const hitsByIndex = new Map<number, RankedHit>();
@@ -218,6 +237,6 @@ export class Retriever {
       kept.push(hit);
       if (kept.length >= topK) break;
     }
-    return { chunks: kept, searchQuery: rewritten };
+    return { chunks: kept, searchQuery: rewritten.english };
   }
 }

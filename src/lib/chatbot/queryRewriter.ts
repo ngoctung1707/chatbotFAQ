@@ -32,6 +32,7 @@ import {
   REWRITE_TIMEOUT_MS,
   type ModelLimits,
 } from "./config";
+import { stripDiacritics } from "./diacritics";
 import { errorText, isQuotaError, retryDelayMs } from "./llm";
 import { markExhausted, rankModels, record, reconcile } from "./rateLimiter";
 
@@ -88,8 +89,13 @@ Technology).
   học phần -> course. nghiên cứu khoa học -> scientific research.
   sản phẩm -> product.
 - If the latest message starts a new topic, ignore the history entirely.
-- Output the query only. One line, at most 25 words. No quotes, no
-  explanation, no "Search query:" prefix.`;
+
+Output exactly one or two lines, nothing else. No quotes, no explanation.
+EN: the standalone search query, in English, at most 25 words.
+VI: the user's latest message rewritten with correct Vietnamese diacritics —
+    the SAME words in the SAME order, only spelling fixed. Do not translate it,
+    do not rephrase it, do not resolve pronouns on this line. Omit this line
+    entirely if the latest message is not Vietnamese.`;
 
 /**
  * Lượt user duy nhất gửi lên: history đã cắt gọn, rồi câu hỏi hiện tại.
@@ -126,7 +132,7 @@ function buildRewriteInput(question: string, history: ChatMessage[]): string {
 // LRU thô, giống hệt cách translator.ts làm. Đây là lưới an toàn thứ hai cho
 // bug gọi hai lần; lưới thứ nhất là việc retriever.ts chỉ còn một đường dựng
 // query (search() trả luôn query đã dùng, không còn queryFor() dựng lại).
-const cache = new Map<string, string>();
+const cache = new Map<string, RewriteResult>();
 const CACHE_MAX = 256;
 
 /** Khoá phải gồm cả history, vì cùng một câu hỏi với history khác nhau cho ra
@@ -141,7 +147,7 @@ function cacheKey(question: string, history: ChatMessage[]): string {
   ].join("\n");
 }
 
-function remember(key: string, value: string): void {
+function remember(key: string, value: RewriteResult): void {
   if (cache.size >= CACHE_MAX) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);
@@ -187,21 +193,75 @@ function pickRewriteModel(estTokens: number): ModelLimits | null {
   return first && usable(first) ? first.limits : null;
 }
 
+export interface RewriteResult {
+  /** Truy vấn tiếng Anh độc lập, hoặc chính câu hỏi nếu bỏ qua/thất bại. */
+  english: string;
+  /** Câu hỏi với dấu tiếng Việt đã sửa, hoặc null nếu model không trả dòng đó
+   * (câu không phải tiếng Việt) hoặc dòng đó không qua được kiểm tra. Người gọi
+   * lùi về restoreQuestion() của diacritics.ts khi null. */
+  vietnamese: string | null;
+}
+
+/** Gọt một dòng truy vấn: bỏ nhãn thừa, bỏ nháy bao ngoài. */
+function clean(line: string): string {
+  return (line || "")
+    .trim()
+    .replace(/^(search\s+)?query\s*:\s*/i, "")
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .trim();
+}
+
+/** Chuỗi từ đã bỏ dấu, bỏ hoa/thường và dấu câu — dùng để so "có phải cùng
+ * những chữ đó, cùng thứ tự đó" mà không quan tâm phần dấu đang được sửa. */
+function wordSkeleton(text: string): string {
+  return (stripDiacritics(text).toLowerCase().match(/[a-z0-9]+/g) ?? []).join(" ");
+}
+
 /**
- * Cắt output về đúng một dòng truy vấn, hoặc trả lại câu gốc.
+ * Tách hai dòng EN/VI từ output của model.
  *
- * Trần 300 ký tự: prompt yêu cầu ≤25 từ, nên bất cứ thứ gì dài hơn thế là dấu
- * hiệu model đã đi giải thích thay vì trả query — và câu gốc bao giờ cũng là
- * lựa chọn an toàn hơn một đoạn văn lạc đề đem đi nhúng.
+ * Dòng VI bị KIỂM TRA chứ không tin: chỉ nhận khi bỏ dấu đi thì nó trùng khít
+ * chuỗi từ của câu hỏi gốc. Đây là chỗ chặn đúng thứ đắt nhất có thể xảy ra —
+ * model "tiện tay" dịch, diễn đạt lại, hoặc giải đại từ ngay trên dòng đó, và
+ * ta đem thứ đó đi nhúng như thể nó là câu người dùng vừa gõ. Không qua được
+ * thì trả null và người gọi lùi về Viterbi, tức đúng hành vi trước đây.
+ *
+ * Kiểm tra này chặt hơn mức cần thiết ở vài ca vô hại ("BK Fintech" ->
+ * "BKFintech" bị loại vì chuỗi từ đổi), và như vậy là đúng hướng: cái giá của
+ * việc loại nhầm là quay về Viterbi, còn cái giá của việc nhận nhầm là một
+ * truy vấn tiếng Việt bịa ra.
  */
-function sanitize(raw: string, fallback: string): string {
-  let out = (raw || "").trim();
-  out = out.split("\n")[0].trim();
-  out = out.replace(/^(search\s+)?query\s*:\s*/i, "");
-  out = out.replace(/^["'`]+|["'`]+$/g, "").trim();
-  if (!out) return fallback;
-  if (out.length > 300) return fallback;
-  return out;
+function parseRewrite(raw: string, question: string): RewriteResult {
+  const lines = (raw || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  let english = "";
+  let vietnamese: string | null = null;
+  for (const line of lines) {
+    const en = /^EN\s*[:-]\s*(.+)$/i.exec(line);
+    if (en && !english) {
+      english = clean(en[1]);
+      continue;
+    }
+    const vi = /^VI\s*[:-]\s*(.+)$/i.exec(line);
+    if (vi && vietnamese === null) vietnamese = clean(vi[1]);
+  }
+
+  // Model bỏ nhãn hẳn: coi dòng đầu là truy vấn tiếng Anh, đúng như hợp đồng
+  // một dòng trước đây. Rẻ hơn nhiều so với vứt cả câu trả lời đi.
+  if (!english && lines.length > 0) english = clean(lines[0]);
+
+  // Trần 300 ký tự: prompt yêu cầu ≤25 từ, nên dài hơn thế là dấu hiệu model đã
+  // đi giải thích thay vì trả query — câu gốc an toàn hơn một đoạn văn lạc đề.
+  if (!english || english.length > 300) english = question;
+
+  if (vietnamese && wordSkeleton(vietnamese) !== wordSkeleton(question)) {
+    vietnamese = null;
+  }
+
+  return { english, vietnamese };
 }
 
 /**
@@ -214,17 +274,20 @@ function sanitize(raw: string, fallback: string): string {
 export async function rewriteQuery(
   question: string,
   history: ChatMessage[] = []
-): Promise<string> {
-  if (!REWRITE_ENABLED) return question;
+): Promise<RewriteResult> {
+  const skip: RewriteResult = { english: question, vietnamese: null };
+
+  if (!REWRITE_ENABLED) return skip;
   // MOCK tồn tại để chạy được UI + truy hồi mà không tốn API key hay token;
   // rewrite cũng là một call thật, nên nó phải nằm trong phạm vi của công tắc đó.
-  if (MOCK) return question;
-  if (!question.trim()) return question;
+  if (MOCK) return skip;
+  if (!question.trim()) return skip;
   // Lượt đầu + đã là tiếng Anh: không có đại từ nào để giải, không có gì để
-  // dịch. Có history thì LUÔN gọi, kể cả câu tiếng Anh — lúc đó việc cần làm là
-  // giải đại từ chứ không phải dịch. Cố ý không viết heuristic đoán "câu này có
-  // phụ thuộc ngữ cảnh không": đó đúng là việc đang trả tiền cho LLM làm.
-  if (history.length === 0 && !looksVietnamese(question)) return question;
+  // dịch, không có dấu nào để khôi phục. Có history thì LUÔN gọi, kể cả câu
+  // tiếng Anh — lúc đó việc cần làm là giải đại từ. Cố ý không viết heuristic
+  // đoán "câu này có phụ thuộc ngữ cảnh không": đó đúng là việc đang trả tiền
+  // cho LLM làm.
+  if (history.length === 0 && !looksVietnamese(question)) return skip;
 
   const key = cacheKey(question, history);
   const cached = cache.get(key);
@@ -233,7 +296,7 @@ export async function rewriteQuery(
   const input = buildRewriteInput(question, history);
   const estTokens = estimateRewriteTokens(input);
   const limits = pickRewriteModel(estTokens);
-  if (!limits) return question;
+  if (!limits) return skip;
 
   // system + prompt là một lượt user duy nhất. Gemma qua Gemini API không nhận
   // system_instruction, nên với những model đó chỉ dẫn được gộp thẳng vào lượt
@@ -275,11 +338,12 @@ export async function rewriteQuery(
     const usage = await result.usage;
     reconcile(limits.id, (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0));
 
-    const rewritten = sanitize(result.text, question);
+    const rewritten = parseRewrite(result.text, question);
     remember(key, rewritten);
     console.log(
       `    → rewrite (${limits.id}, ${Date.now() - started}ms): ` +
-        `"${question}" -> "${rewritten}"`
+        `"${question}" -> "${rewritten.english}"` +
+        (rewritten.vietnamese ? `\n      dấu: "${rewritten.vietnamese}"` : "")
     );
     return rewritten;
   } catch (err) {
@@ -293,6 +357,6 @@ export async function rewriteQuery(
       `    !! rewrite thất bại (${limits.id}): ` +
         `${errorText(err).slice(0, 120)} — dùng câu gốc`
     );
-    return question;
+    return skip;
   }
 }

@@ -277,8 +277,13 @@ export const REWRITE_TIMEOUT_MS = Number(
 );
 
 /** Một truy vấn tìm kiếm dài nhất cũng chỉ vài chục token. Trần thấp là thứ
- * giữ cho call này rẻ và nhanh; sanitize() lo phần model vẫn cố nói dài. */
-export const REWRITE_MAX_OUTPUT_TOKENS = 64;
+ * giữ cho call này rẻ và nhanh; parseRewrite() lo phần model vẫn cố nói dài.
+ *
+ * 128 chứ không phải 64: output giờ có HAI dòng — truy vấn tiếng Anh, và câu
+ * hỏi đã khôi phục dấu tiếng Việt. Cắt cụt dòng thứ hai thì nó trượt bài kiểm
+ * tra chuỗi từ trong parseRewrite() và bị bỏ, tức trả tiền cho token mà không
+ * lấy được gì. */
+export const REWRITE_MAX_OUTPUT_TOKENS = 128;
 
 /** Số cặp hỏi-đáp cũ đưa vào prompt rewrite. Bằng HISTORY_MAX_MESSAGES/2, tức
  * đúng bằng những gì model trả lời cũng nhìn thấy — hai bước giải đại từ trên

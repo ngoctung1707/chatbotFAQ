@@ -25,7 +25,7 @@
 import { Retriever } from "../src/lib/chatbot/retriever";
 import { VectorStore } from "../src/lib/chatbot/vectorStore";
 import { embedQuery } from "../src/lib/chatbot/embedding";
-import { restoreQuestion } from "../src/lib/chatbot/diacritics";
+import { needsRestoration, restoreQuestion } from "../src/lib/chatbot/diacritics";
 import { rewriteQuery } from "../src/lib/chatbot/queryRewriter";
 import {
   DEFAULT_CANDIDATES,
@@ -108,9 +108,14 @@ async function main() {
 
     // Dựng lại đúng danh sách biến thể mà search() dùng, để cột n_q khớp với
     // thứ thật sự được nhúng thay vì một con số giả định.
-    const restored = await restoreQuestion(q);
+    const restored =
+      rewritten.vietnamese && needsRestoration(q)
+        ? rewritten.vietnamese
+        : await restoreQuestion(q);
     const variants = [restored];
-    if (rewritten.toLowerCase() !== restored.toLowerCase()) variants.push(rewritten);
+    if (rewritten.english.toLowerCase() !== restored.toLowerCase()) {
+      variants.push(rewritten.english);
+    }
 
     let tEmbed = 0;
     let tSearch = 0;

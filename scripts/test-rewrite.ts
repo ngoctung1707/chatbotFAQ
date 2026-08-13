@@ -94,13 +94,17 @@ async function run(q: string, history: ChatMessage[], watch?: string) {
   const t0 = Date.now();
   const out = await rewriteQuery(q, history);
   const ms = Date.now() - t0;
-  const skipped = out === q;
+  const skipped = out.english === q;
   console.log(`\n  hỏi   : ${q}`);
   if (history.length) {
     console.log(`  history: ${history.length} message (lượt cuối: ${history[history.length - 1].content.slice(0, 60)}…)`);
   }
   console.log(`  vi?   : ${looksVietnamese(q) ? "có" : "không"}`);
-  console.log(`  ra    : ${out}${skipped ? "   ← KHÔNG đổi (bỏ qua hoặc thất bại)" : ""}`);
+  console.log(`  EN    : ${out.english}${skipped ? "   ← KHÔNG đổi (bỏ qua hoặc thất bại)" : ""}`);
+  // null ở đây có hai nghĩa và phải phân biệt được khi đọc log: model không trả
+  // dòng VI (câu không phải tiếng Việt), hoặc dòng đó trượt kiểm tra chuỗi từ
+  // trong parseRewrite() — trường hợp sau là thứ cần soi.
+  console.log(`  VI    : ${out.vietnamese ?? "(không có / bị loại → lùi về Viterbi)"}`);
   console.log(`  ${ms}ms`);
   if (watch) console.log(`  soi   : ${watch}`);
 }
