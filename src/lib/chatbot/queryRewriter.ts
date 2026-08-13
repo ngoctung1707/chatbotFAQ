@@ -30,11 +30,12 @@ import {
   REWRITE_MAX_OUTPUT_TOKENS,
   REWRITE_MODEL,
   REWRITE_TIMEOUT_MS,
+  supportsThinkingConfig,
   type ModelLimits,
 } from "./config";
 import { stripDiacritics } from "./diacritics";
 import { errorText, isQuotaError, retryDelayMs } from "./llm";
-import { markExhausted, rankModels, record, reconcile } from "./rateLimiter";
+import { markExhausted, rankModels, reconcile, record } from "./rateLimiter";
 
 // ───────────────────────── Nhận diện tiếng Việt ─────────────────────────
 //
@@ -85,10 +86,10 @@ Technology).
   then translate.
 - Keep proper nouns, acronyms, course codes, dates and numbers verbatim.
 - Terms: viện / trường / nhà trường -> BKFintech Institute. viện trưởng ->
-  institute director. bộ môn -> department. đề tài -> research project.
-  học phần -> course. nghiên cứu khoa học -> scientific research.
-  sản phẩm -> product.
+  institute director/ dean / Nguyen Binh Minh/ Nguyễn Bình Minh. bộ môn -> department. đề tài -> research project.
+  học phần -> course. câu lạc bộ bkfintech -> Fintech club (doesn't include "bk"). câu lạc bộ -> club.
 - If the latest message starts a new topic, ignore the history entirely.
+
 
 Output exactly one or two lines, nothing else. No quotes, no explanation.
 EN: the standalone search query, in English, at most 25 words.
@@ -175,22 +176,30 @@ function estimateRewriteTokens(input: string): number {
 /**
  * Model cho bước rewrite, hoặc null nếu không nên gọi.
  *
+ * MỘT model duy nhất — REWRITE_MODEL — chứ không phải "ưu tiên nó rồi lùi về
+ * đầu bảng". Trước đây có nhánh lùi đó, và nó vô hiệu hoá chính mục đích của
+ * việc ghim: đúng lúc model ghim hết budget là lúc bước rewrite tràn sang
+ * bucket của câu trả lời, tức là lúc nó gây hại nhất. Ghim mà lùi được thì
+ * không phải ghim.
+ *
  * Một lần thử duy nhất, KHÔNG có vòng fallback như streamAnswer(). Khác biệt
  * then chốt: ở đó "nothing is ever dropped from the list" là đúng vì đó là call
- * bắt buộc — không có nó thì không có câu trả lời. Ở đây, khi pool gần cạn thì
- * lượt request cuối cùng phải để dành cho CÂU TRẢ LỜI, không phải cho bước phụ
+ * bắt buộc — không có nó thì không có câu trả lời. Ở đây, khi model ghim cạn
+ * budget thì lượt request phải để dành cho CÂU TRẢ LỜI, không phải cho bước phụ
  * trợ này. Nên hết budget là bỏ rewrite, không tiêu nốt lượt cuối.
+ *
+ * Trả null khi REWRITE_MODEL không có trong MODEL_POOL. Im lặng bỏ rewrite là
+ * đúng: nó best-effort theo thiết kế, và không có ModelLimits thì cũng không có
+ * hạn mức nào để rateLimiter đếm.
  */
 function pickRewriteModel(estTokens: number): ModelLimits | null {
-  const ranked = rankModels(estTokens);
-  const usable = (r: (typeof ranked)[number]) =>
-    r.usage.load < 1 && r.usage.cooldownMs === 0;
-  if (REWRITE_MODEL) {
-    const pinned = ranked.find((r) => r.limits.id === REWRITE_MODEL);
-    if (pinned && usable(pinned)) return pinned.limits;
-  }
-  const first = ranked[0];
-  return first && usable(first) ? first.limits : null;
+  const pinned = rankModels(estTokens).find(
+    (r) => r.limits.id === REWRITE_MODEL
+  );
+  if (!pinned) return null;
+  return pinned.usage.load < 1 && pinned.usage.cooldownMs === 0
+    ? pinned.limits
+    : null;
 }
 
 export interface RewriteResult {
@@ -310,7 +319,7 @@ export async function rewriteQuery(
   // Book trước khi gọi, không phải sau — cùng lý do như record() trong
   // streamAnswer(). Bỏ bước này thì counter nói dối đúng một nửa: mỗi câu hỏi
   // giờ tốn 2 request chứ không phải 1.
-  record(limits.id, estTokens);
+  record(limits.id, estTokens, "rewrite");
   try {
     const result = await generateText({
       model: google(limits.id),
@@ -318,8 +327,14 @@ export async function rewriteQuery(
       // "minimal" cứng, KHÔNG đọc THINKING_LEVEL từ config: viết lại một câu
       // hỏi không cần suy luận, mà mức thinking lại là biến số ảnh hưởng độ trễ
       // lớn nhất của call này (đo bên llm.py: 2.0s ở MINIMAL so với 148.8s ở
-      // LOW cho cùng một câu). Gemma không có thinking và từ chối field này.
-      providerOptions: limits.id.startsWith("gemini")
+      // LOW cho cùng một câu).
+      //
+      // Cùng một cổng gate với llm.ts, xem supportsThinkingConfig(). Ở call này
+      // nó còn quan trọng hơn: REWRITE_MAX_OUTPUT_TOKENS chỉ có 128, nên một
+      // model tiêu vài chục tới vài trăm token cho suy luận sẽ hết sạch trần
+      // trước khi kịp in ra dòng EN — và một rewrite rỗng thì parseRewrite() lùi
+      // về câu gốc, tức trả tiền cho một call không thu lại gì.
+      providerOptions: supportsThinkingConfig(limits.id)
         ? { google: { thinkingConfig: { thinkingLevel: "minimal" } } }
         : undefined,
       // Ngắn hơn TIMEOUT_MS rất nhiều vì đây là bước phụ trợ: quá hạn thì bỏ

@@ -159,16 +159,22 @@ function testPrompt(): void {
     "lượt cũ không bị chèn thêm chunk"
   );
 
-  // Nhánh Gemma: không nhận system_instruction nên rules phải chèn vào user
-  // turn ĐẦU TIÊN. Có history thì messages[0] vẫn là user, nhưng nếu history
-  // mở đầu bằng assistant (session bị cắt giữa chừng) thì messages[0] là
-  // assistant — đó là lý do buildCallShape dùng findIndex chứ không dùng [0].
+  // Nhánh model KHÔNG nhận system_instruction: rules phải chèn vào user turn
+  // ĐẦU TIÊN. Có history thì messages[0] vẫn là user, nhưng nếu history mở đầu
+  // bằng assistant (session bị cắt giữa chừng) thì messages[0] là assistant —
+  // đó là lý do buildCallShape dùng findIndex chứ không dùng [0].
+  //
+  // ModelLimits dựng tay với một id giả, KHÔNG lấy từ MODEL_POOL: pool mặc định
+  // hiện không còn entry nào đặt cờ này thành false (gemma-4-31b-it nhận được
+  // system_instruction), nhưng nhánh vẫn sống vì CHATBOT_MODEL_POOL có thể bật
+  // lại nó bất cứ lúc nào. Buộc test vào pool sẽ khiến nó lặng lẽ ngừng kiểm tra
+  // gì cả đúng vào lúc pool đổi.
   const withAssistantFirst: ChatMessage[] = [
     { role: "assistant", content: "Xin chào" },
     ...history,
   ];
   const gemma = buildCallShape(
-    { id: "gemma-3-27b-it", rpm: 1, tpm: 1, rpd: 1, tier: 0, supportsSystemInstruction: false },
+    { id: "test-no-system-instruction", rpm: 1, tpm: 1, rpd: 1, tier: 0, supportsSystemInstruction: false },
     "Học phí bao nhiêu?",
     chunks,
     withAssistantFirst

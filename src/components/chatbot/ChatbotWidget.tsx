@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styles from './ChatbotWidget.module.css'
 import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
+import { SUGGESTED_QUESTIONS, type SuggestedQA } from '@/lib/chatbot/suggestedQuestions'
 
 // Shape returned by /api/chat alongside `reply` — one entry per retrieved
 // passage, already ranked. `n` is what the answer's [n] markers refer to.
@@ -79,7 +80,11 @@ const CITATION_MARKER_RE = new RegExp(
 // handling needed here: this one only collects the numbers, so each bracket
 // can be matched on its own.
 const CITATION_NUMBER_RE = /\[\s*(\d+(?:\s*,\s*\d+)*)\s*\](?!\()/g
-const LINK_RE = /\[([^[\]]+)\]\((https?:\/\/[^\s()]+)\)/g
+// Nhánh thứ hai ("/..." ) là cho câu trả lời gợi ý trong suggestedQuestions.ts:
+// chúng trỏ vào chính site này, nên viết đường dẫn tương đối thay vì đóng cứng
+// tên miền — bản dev ở localhost sẽ không văng người dùng sang production. Câu
+// trả lời từ model đi qua đúng nhánh cũ; nó luôn trả về URL tuyệt đối.
+const LINK_RE = /\[([^[\]]+)\]\((https?:\/\/[^\s()]+|\/[^\s()]*)\)/g
 
 // At most two links under an answer. The backend returns every passage it
 // retrieved (7 by default) and the model routinely cites four of them, which
@@ -155,8 +160,17 @@ function renderMessageContent(content: string): React.ReactNode[] {
   LINK_RE.lastIndex = 0
   while ((match = LINK_RE.exec(cleaned)) !== null) {
     if (match.index > lastIndex) nodes.push(cleaned.slice(lastIndex, match.index))
+    // Chỉ link ra ngoài mới mở tab mới. Link nội bộ mở ngay trong tab hiện tại
+    // là hành vi người dùng chờ đợi, và quan trọng hơn: mở tab mới sẽ bỏ lại
+    // popup chat cùng cả đoạn hội thoại ở tab cũ.
+    const isExternal = match[2].startsWith('http')
     nodes.push(
-      <a key={key++} href={match[2]} target="_blank" rel="noopener noreferrer">
+      <a
+        key={key++}
+        href={match[2]}
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noopener noreferrer' : undefined}
+      >
         {match[1]}
       </a>,
     )
@@ -277,6 +291,43 @@ export default function ChatbotWidget() {
     }
   }
 
+  /**
+   * Bấm một câu hỏi gợi ý: hiện câu trả lời ngay, ghi history ở nền.
+   *
+   * Không setLoading và không await gì trước khi render — câu trả lời đã nằm
+   * sẵn trong bundle, nên hiện "đang gõ..." rồi mới hiện nó ra chỉ là giả vờ có
+   * độ trễ. Việc ghi xuống DB chỉ phục vụ lượt hỏi TIẾP THEO (xem
+   * /api/chat/suggested), nên nó không được đứng chắn trước màn hình.
+   */
+  const handleSuggestionClick = (qa: SuggestedQA) => {
+    if (loading) return
+    setMessages((prev) => [
+      ...prev,
+      { id: nextId(), role: 'user', content: qa.question },
+      { id: nextId(), role: 'bot', content: qa.answer },
+    ])
+
+    const sessionId = sessionIdRef.current
+    if (!sessionId) return
+    // Đánh dấu TRƯỚC khi fetch xong, không phải trong .then: nếu tab đóng lúc
+    // request còn bay thì bản ghi vẫn có thể đã nằm trong DB mà pagehide lại bỏ
+    // qua việc xoá, và transcript ở lại tới khi TTL dọn. Xoá nhầm một session
+    // chưa từng tồn tại là no-op — lệch về phía dọn dẹp mới đúng.
+    persistedRef.current = true
+    fetch('/api/chat/suggested', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, id: qa.id }),
+      // Sống sót qua điều hướng: người dùng bấm gợi ý rồi bấm luôn link trong
+      // câu trả lời là một chuỗi thao tác rất thường, và fetch thường sẽ bị huỷ
+      // giữa chừng ở đúng lúc đó.
+      keepalive: true,
+    }).catch(() => {
+      // Không có gì để nói với người dùng: câu trả lời đã ở trên màn hình. Hậu
+      // quả duy nhất là lượt sau không có ngữ cảnh của lượt này.
+    })
+  }
+
   return (
     <div className={styles.container}>
       {isOpen && (
@@ -325,6 +376,28 @@ export default function ChatbotWidget() {
                 </div>
               </div>
             ))}
+
+            {/* Chỉ hiện khi lời chào còn là tin nhắn duy nhất. Đây là gợi ý cho
+                câu hỏi ĐẦU TIÊN — sau khi hội thoại đã bắt đầu thì một danh sách
+                câu hỏi cố định vừa không liên quan tới điều đang nói, vừa đẩy
+                phần trả lời thật lên khỏi tầm nhìn. Suy ra từ messages thay vì
+                giữ thêm một state riêng: một khi có lượt hỏi đầu tiên, dù bấm
+                gợi ý hay tự gõ, điều kiện này tự sai vĩnh viễn. */}
+            {messages.length === 1 && (
+              <div className={styles.suggestions}>
+                <p className={styles.suggestionsLabel}>Câu hỏi thường gặp</p>
+                {SUGGESTED_QUESTIONS.map((qa) => (
+                  <button
+                    key={qa.id}
+                    type="button"
+                    className={styles.suggestionBtn}
+                    onClick={() => handleSuggestionClick(qa)}
+                  >
+                    {qa.question}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {loading && (
               <div className={`${styles.messageRow} ${styles.bot}`}>

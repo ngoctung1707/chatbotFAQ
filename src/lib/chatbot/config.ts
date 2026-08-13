@@ -57,19 +57,23 @@ export interface ModelLimits {
 // what stands between a wrong guess and a wall of 429s.
 //
 // The model *ids* need the same treatment. Which ones a key can call varies by
-// project: gemma-3-27b-it below answers 404 NOT_FOUND on the key this was
-// developed against (that project has gemma-4-31b-it and gemma-4-26b-a4b-it
-// instead), and a 404 entry is a silently wasted slot — the pool falls straight
-// past it to the next model, so nothing but the log says the third choice never
-// existed. Check against ListModels, and re-check supportsSystemInstruction
-// while doing so: gemma-4-31b-it accepts a system_instruction through
-// @ai-sdk/google, unlike the Gemma generation this flag was written for.
+// project, and a 404 entry is a silently wasted slot — the pool falls straight
+// past it to the next model, so nothing but the log says that choice never
+// existed. The third slot was exactly that until now: it held gemma-3-27b-it,
+// which answers 404 NOT_FOUND on the key this was developed against, and has
+// been swapped for gemma-4-31b-it, which that project does serve. Check against
+// ListModels before changing it again.
 //
 // The order is the fallback order at zero load: quality first (tier), not
-// round-robin — see rankModels(). Gemma sits last because it is the only one
-// that cannot take a system_instruction, so its answers go through a different
-// prompt shape (see buildCallShape) and are the least like the ones the prompt
-// was tuned against.
+// round-robin — see rankModels(). Gemma still sits last, but no longer for the
+// reason it used to: gemma-4-31b-it DOES accept a system_instruction through
+// @ai-sdk/google — unlike the generation supportsSystemInstruction was written
+// for — so it now takes the same prompt shape as the Gemini entries and
+// buildCallShape's second branch is currently unused by the default pool. What
+// keeps it last is that it is the one model here the prompt was not tuned
+// against, and that it spends over a thousand tokens on reasoning before its
+// first character of text (see EmptyAnswer in llm.ts) — the entry most likely
+// to hit TIMEOUT_MS with nothing to show for it.
 const DEFAULT_MODEL_POOL: ModelLimits[] = [
   {
     id: "gemini-3.1-flash-lite",
@@ -88,12 +92,18 @@ const DEFAULT_MODEL_POOL: ModelLimits[] = [
     supportsSystemInstruction: true,
   },
   {
-    id: "gemma-3-27b-it",
+    id: "gemma-4-31b-it",
+    // Ba con số này được mang nguyên từ entry gemma-3-27b-it trước đó và CHƯA
+    // đối chiếu với quota thật của gemma-4-31b-it — chúng chỉ là placeholder,
+    // giống mọi hạn mức khác trong pool này (xem ghi chú ở trên). Đáng ngờ nhất
+    // là tpm 15000: model này đốt hơn một nghìn token suy luận cho mỗi câu trả
+    // lời, nên nếu hạn mức thật thấp hơn con số này thì rateLimiter sẽ tưởng
+    // còn budget trong khi Google đã trả 429.
     rpm: 30,
     tpm: 15000,
     rpd: 14400,
     tier: 2,
-    supportsSystemInstruction: false,
+    supportsSystemInstruction: true,
   },
 ];
 
@@ -204,6 +214,31 @@ export const THINKING_LEVEL = (
   process.env.CHATBOT_THINKING || "minimal"
 ).toLowerCase() as "minimal" | "low" | "medium" | "high";
 
+/**
+ * Model này có nhận `thinkingConfig` không.
+ *
+ * KHÔNG còn là "chỉ Gemini", và đây là kết quả đo chứ không phải suy đoán: gọi
+ * thẳng generativelanguage.googleapis.com, gemma-4-31b-it nhận field này (HTTP
+ * 200) và TUÂN THEO nó — cùng một prompt cho thoughtsTokenCount 37 khi không
+ * gửi, và 0 khi gửi thinkingLevel "minimal". Thế hệ Gemma mà quy tắc cũ được
+ * viết cho (gemma-3 trở về trước) thì từ chối field, nên vẫn phải gate.
+ *
+ * Bỏ sót field này KHÔNG phải no-op vô hại: model bỏ qua trần suy luận và tiêu
+ * hơn một nghìn token trước ký tự đầu tiên của câu trả lời (xem EmptyAnswer
+ * trong llm.ts), nên entry Gemma trong pool sẽ hay chạm TIMEOUT_MS mà không sinh
+ * được gì — đúng lúc nó được gọi tới, tức là lúc hai model trên đã hết budget.
+ *
+ * Sống ở config.ts vì cả llm.ts (call trả lời) và queryRewriter.ts (call viết
+ * lại) đều cần đúng một quy tắc này. Trước đây mỗi file tự viết
+ * `id.startsWith("gemini")` riêng, và hai bản sao của một luật thì chỉ cần sửa
+ * một chỗ là lệch.
+ */
+export function supportsThinkingConfig(modelId: string): boolean {
+  if (modelId.startsWith("gemini")) return true;
+  const gemma = /^gemma-(\d+)/.exec(modelId);
+  return gemma !== null && Number(gemma[1]) >= 4;
+}
+
 export const MAX_OUTPUT_TOKENS = 2048;
 
 // Give up rather than leave the browser watching a stream that will never
@@ -263,17 +298,49 @@ export const REWRITE_ENABLED = !["0", "false"].includes(
   (process.env.CHATBOT_REWRITE || "1").toLowerCase()
 );
 
-/** Model dựng lại câu hỏi. Rỗng = dùng model đứng đầu rankModels().
- * Đặt sang một model rẻ hơn model trả lời nếu muốn hai bước tiêu hai bucket
- * RPM khác nhau — mỗi câu hỏi giờ tốn 2 request, nên rpm 15 thực chất chỉ
- * còn ~7 câu/phút nếu cả hai bước dùng chung một model. */
-export const REWRITE_MODEL = process.env.CHATBOT_REWRITE_MODEL || "";
+/**
+ * Model dựng lại câu hỏi — GHIM CỐ ĐỊNH, không đi theo rankModels().
+ *
+ * Ghim vào gemma-4-31b-it chứ không để rỗng (nghĩa cũ: "lấy model đầu bảng"),
+ * và lý do chính là tách bucket: mỗi câu hỏi tiêu HAI request, nên khi cả hai
+ * bước dùng chung gemini-3.1-flash-lite thì rpm 15 thực chất chỉ còn ~7 câu mỗi
+ * phút, và bước phụ trợ này ăn tranh quota của chính câu trả lời. Gemma nằm ở
+ * bucket riêng với rpm cao hơn hẳn (30 so với 15) và tier thấp nhất, tức là
+ * model mà câu trả lời ít cần tới nhất.
+ *
+ * Đánh đổi đã cân nhắc: gemma-4 là model duy nhất trong pool mà prompt không
+ * được tinh chỉnh theo, nên chất lượng viết lại có thể kém hơn flash-lite. Chấp
+ * nhận được vì rewriteQuery() không bao giờ ném lỗi — bản viết lại tệ chỉ làm
+ * truy hồi kém đi một chút, còn parseRewrite() đã có sẵn hai lớp chặn (trần 300
+ * ký tự cho dòng EN, kiểm tra chuỗi từ cho dòng VI).
+ *
+ * Vẫn đọc được từ CHATBOT_REWRITE_MODEL để đổi mà không cần deploy; đặt rỗng
+ * tường minh (CHATBOT_REWRITE_MODEL=" ") KHÔNG trả về hành vi "đầu bảng" cũ —
+ * xem pickRewriteModel(), giờ nó không thay model khác vào nữa.
+ */
+export const REWRITE_MODEL =
+  process.env.CHATBOT_REWRITE_MODEL || "gemma-4-31b-it";
 
-/** Ngắn hơn TIMEOUT_MS rất nhiều vì đây là bước phụ trợ: quá hạn thì bỏ
- * rewrite và đi tiếp với câu gốc, chứ không phải chờ tiếp. 2s đủ cho một
- * call flash-lite sinh ≤64 token ở p95. */
+/**
+ * Ngắn hơn TIMEOUT_MS rất nhiều vì đây là bước phụ trợ: quá hạn thì bỏ rewrite
+ * và đi tiếp với câu gốc, chứ không phải chờ tiếp.
+ *
+ * 4s, không còn là 2s. Con số 2s được hiệu chỉnh cho flash-lite ("đủ cho một
+ * call sinh ≤64 token ở p95") và không còn đúng sau khi REWRITE_MODEL ghim sang
+ * gemma-4-31b-it. Đo 8 câu hỏi thật, gọi thẳng generateText để timeout không
+ * cắt: min 1617ms, p50 1768ms, max 3566ms — output chỉ 18–26 token, nên đây
+ * thuần là độ trễ chứ không phải model nói dài. Giữ 2s thì khoảng 1/4 số câu bị
+ * cắt, tức ghim model xong mà một phần tư số lượt vẫn chạy bằng câu gốc.
+ *
+ * Cái giá của việc nới: thêm tối đa ~2s cho câu chậm nhất. Đáng, vì bỏ rewrite
+ * không phải là hoà — nó có nghĩa là đem nguyên câu tiếng Việt đi nhúng, biến
+ * thể truy hồi kém hơn hẳn. Vẫn thấp hơn nhiều TIMEOUT_MS=10000 của call trả
+ * lời, nên trần chuỗi fallback không bị ảnh hưởng.
+ *
+ * n=8, đo từ một vị trí mạng duy nhất — mẫu nhỏ. Đo lại nếu đổi REWRITE_MODEL.
+ */
 export const REWRITE_TIMEOUT_MS = Number(
-  process.env.CHATBOT_REWRITE_TIMEOUT_MS || 2000
+  process.env.CHATBOT_REWRITE_TIMEOUT_MS || 4000
 );
 
 /** Một truy vấn tìm kiếm dài nhất cũng chỉ vài chục token. Trần thấp là thứ

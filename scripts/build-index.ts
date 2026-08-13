@@ -41,9 +41,15 @@ import type {
 } from "../src/lib/chatbot/vectorStore";
 import { INDEX_DIR } from "../src/lib/chatbot/config";
 
+// data/chunks_all.jsonl, KHÔNG phải data/processed/chunks.json như trước. File
+// kia không tồn tại trong repo — `npm run build-index` chạy trần luôn chết ngay
+// ở readFile với ENOENT, và cách duy nhất để build được là tự set
+// CHATBOT_CHUNKS_PATH, một bước không ghi ở đâu cả. Mặc định phải là file thật
+// mà crawler đang sinh ra; parseChunks() bên dưới vốn đã đọc được JSONL nên
+// không cần đổi gì thêm. Env var vẫn còn để trỏ sang file khác khi cần.
 const CHUNKS_PATH =
   process.env.CHATBOT_CHUNKS_PATH ||
-  path.join(process.cwd(), "data", "processed", "chunks.json");
+  path.join(process.cwd(), "data", "chunks_all.jsonl");
 
 interface RawChunk {
   chunk_id?: string;
@@ -58,7 +64,12 @@ interface RawChunk {
 }
 
 function toChunkRecord(raw: RawChunk, fallbackIndex: number): ChunkRecord {
-  const text = raw.raw ?? raw.content ?? raw.text ?? "";
+  // `||`, not `??`: the crawler emits `raw: ""` (not a missing key) on chunks
+  // whose text never got a context header — 6 of them as of this run. `??`
+  // would take the empty string and trip the guard below, aborting the build.
+  // Falling through to `content` reproduces exactly what these chunks held in
+  // the previous index, where raw and content were the same string.
+  const text = raw.raw || raw.content || raw.text || "";
   if (!text) {
     throw new Error(
       `Chunk #${fallbackIndex} (url=${raw.url}) has no raw/content/text field — ` +
@@ -110,6 +121,7 @@ const COLLECTION_LABEL: Record<string, string> = {
   publication: "Công bố khoa học · Publication",
   report: "Báo cáo · Report",
   research: "Nghiên cứu · Research",
+  researchers: "Nhà nghiên cứu · Researcher · Giảng viên · Tiến sĩ",
   solutions: "Giải pháp · Solution",
   static: "Giới thiệu · About",
   workshop: "Workshop · Chuỗi hội thảo",

@@ -101,15 +101,99 @@ function stateFor(model: string, now: number): ModelState {
   return state;
 }
 
+// ─────────────────────── Log mỗi lượt gọi model ───────────────────────
+
+/** Bước nào của pipeline đang tiêu lượt request này. Thuần để đọc log: mỗi câu
+ * hỏi tiêu HAI lượt (viết lại + trả lời) trên cùng một bucket RPM, và nếu không
+ * phân biệt được thì "rpm 14/15" trông như 14 người dùng trong khi thực tế mới
+ * có 7. */
+export type CallPurpose = "answer" | "rewrite";
+
+const PURPOSE_LABEL: Record<CallPurpose, string> = {
+  answer: "trả lời",
+  rewrite: "viết lại",
+};
+
+// Cùng quy ước với CHATBOT_LOG_CHUNKS bên route.ts: mặc định BẬT, đặt "0" để
+// tắt. Log này in một dòng cho mỗi lượt gọi model, nên nó là thứ đầu tiên người
+// ta muốn tắt khi chạy một script đo hàng loạt.
+const LOG_CALLS = process.env.CHATBOT_LOG_CALLS !== "0";
+
+/** 12400 -> "12.4k". Giữ dòng log đủ ngắn để mắt bắt được cả ba cặp số cùng
+ * lúc — TPM là con số duy nhất ở đây có sáu chữ số. */
+function compact(n: number): string {
+  if (n < 1000) return String(n);
+  const k = n / 1000;
+  return `${k < 100 ? k.toFixed(1) : Math.round(k)}k`;
+}
+
+/**
+ * Một dòng cho một lượt gọi model, in NGAY SAU khi đã book.
+ *
+ * In sau chứ không phải trước, và đó là chủ đích: các con số phải đã bao gồm
+ * chính lượt request này. Một dòng ghi "rpm 14/15" rồi ngay sau đó là 429 thì
+ * đọc như một mâu thuẫn, trong khi thực ra nó là lượt thứ 15.
+ *
+ * Token là ƯỚC LƯỢNG tại thời điểm này — reconcile() thay bằng số thật của
+ * provider sau khi stream xong, nên con số tpm ở dòng sau có thể nhỏ hơn dòng
+ * trước cho cùng một model. Đó không phải lỗi.
+ *
+ * `console.log` chứ không phải một logger thật vì cả file này lẫn route.ts đều
+ * dùng vậy; đổi thì đổi cả cụm, không đổi lẻ một chỗ.
+ */
+function logCall(
+  model: string,
+  purpose: CallPurpose | undefined,
+  state: ModelState,
+  now: number
+): void {
+  const limits = MODEL_POOL.find((m) => m.id === model);
+  const rpmUsed = state.calls.length;
+  const tpmUsed = state.calls.reduce((sum, c) => sum + c.tokens, 0);
+  const cooling = Math.max(0, state.cooldownUntil - now);
+
+  // Model không nằm trong pool (id truyền tay từ script test) thì không có trần
+  // để so — in số đã dùng thôi, còn hơn là bịa ra mẫu số.
+  const quota = limits
+    ? `rpm ${rpmUsed}/${limits.rpm} · tpm ${compact(tpmUsed)}/${compact(limits.tpm)} · rpd ${state.dayCalls}/${limits.rpd}`
+    : `rpm ${rpmUsed} · tpm ${compact(tpmUsed)} · rpd ${state.dayCalls} (ngoài pool)`;
+
+  // load lặp lại đúng công thức của usageFor() nhưng KHÔNG cộng thêm lượt nào:
+  // ở đó nó trả lời "lượt tiếp theo có lọt không", ở đây là "đã tiêu bao nhiêu
+  // phần quota". Cộng thêm một lượt nữa sẽ đếm đúp chính lượt vừa book.
+  const load = limits
+    ? Math.max(
+        rpmUsed / (limits.rpm * BUDGET_HEADROOM),
+        tpmUsed / (limits.tpm * BUDGET_HEADROOM),
+        state.dayCalls / (limits.rpd * BUDGET_HEADROOM)
+      )
+    : 0;
+
+  console.log(
+    `    ⇢ gọi ${model}` +
+      (purpose ? ` · ${PURPOSE_LABEL[purpose]}` : "") +
+      ` · ${quota}` +
+      (limits ? ` · đã tiêu ${(load * 100).toFixed(0)}% ngân sách` : "") +
+      (cooling > 0 ? ` · CÒN COOLDOWN ${Math.ceil(cooling / 1000)}s` : "")
+  );
+}
+
 /** Book a request against a model. Called *before* the request goes out, not
  * after it comes back: two questions arriving together would otherwise both
  * read an empty budget and both fire, which is exactly the burst the limit
- * exists to stop. The token figure is an estimate; reconcile() corrects it. */
-export function record(model: string, tokens: number): void {
+ * exists to stop. The token figure is an estimate; reconcile() corrects it.
+ *
+ * `purpose` chỉ đi vào log, không ảnh hưởng gì tới bộ đếm — xem logCall(). */
+export function record(
+  model: string,
+  tokens: number,
+  purpose?: CallPurpose
+): void {
   const now = Date.now();
   const state = stateFor(model, now);
   state.calls.push({ ts: now, tokens: Math.max(0, Math.round(tokens)) });
   state.dayCalls += 1;
+  if (LOG_CALLS) logCall(model, purpose, state, now);
 }
 
 /** Replace the estimate booked by record() with the count the provider

@@ -226,6 +226,51 @@
   max-width: 100%;
 }
 
+/* Danh sách câu hỏi gợi ý dưới lời chào. Căn trái theo bong bóng của bot vì nó
+   là lời mời từ phía bot, không phải tin nhắn của người dùng. */
+.suggestions {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 92%;
+  min-width: 0;
+}
+
+.suggestionsLabel {
+  margin: 0 0 2px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a8a8a;
+}
+
+.suggestionBtn {
+  text-align: left;
+  padding: 8px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  font-family: inherit;
+  color: var(--tg-theme-primary, #f7a400);
+  background: #fff;
+  border: 1px solid var(--tg-theme-primary, #f7a400);
+  border-radius: 14px;
+  cursor: pointer;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.suggestionBtn:hover,
+.suggestionBtn:focus-visible {
+  background: var(--tg-theme-primary, #f7a400);
+  color: #fff;
+}
+
 .typingDots {
   display: inline-flex;
   gap: 4px;

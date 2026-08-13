@@ -17,12 +17,13 @@ import {
   MAX_POINTS,
   MOCK,
   STICKY_SESSION,
+  supportsThinkingConfig,
   THINKING_LEVEL,
   TIMEOUT_MS,
   TOTAL_BUDGET_MS,
   type ModelLimits,
 } from "./config";
-import { markExhausted, rankModels, record, reconcile } from "./rateLimiter";
+import { markExhausted, rankModels, reconcile, record } from "./rateLimiter";
 import type { RetrievalChunk } from "./retriever";
 
 // The exact string the model must return when the passages don't answer the
@@ -108,7 +109,7 @@ ngoài, không suy luận thêm những gì văn bản không nói.
 Văn phong — CHỈ áp dụng khi câu hỏi bằng tiếng Việt. Câu hỏi bằng tiếng Anh \
 (hay ngôn ngữ khác) → trả lời HOÀN TOÀN bằng ngôn ngữ đó, bỏ cả ba gạch đầu \
 dòng dưới đây: không "Dạ,", không xưng "mình", không gọi "bạn".
-- Xưng "mình", gọi người dùng là "bạn";
+- Gọi người dùng là "bạn";
 - Nói như trò chuyện. Mở đầu ngắn ("Dạ,") được; câu dẫn thủ tục \
 ("Dựa trên thông tin được cung cấp…", "Theo tài liệu…") không.
 - Không chấm than, không nịnh, không xin lỗi dài dòng.
@@ -341,17 +342,18 @@ export function estimateTokens(
 /** Provider-specific options for one call — the AI SDK equivalent of
  * llm.py's build_config().
  *
- * Gated on the model name for the same reason the Python side gates it:
- * thinking is a Gemini-only feature and Gemma rejects the field outright, so
- * a call that lands on a Gemma id must not send it. Returning undefined rather
- * than an empty object keeps that a no-op instead of an empty `google: {}`
- * block in the request.
+ * Gated on the model, because the older Gemma generations reject the field
+ * outright. The gate itself lives in config.ts — it is no longer the "Gemini
+ * only" rule the Python side used, since gemma-4 does accept and honour
+ * thinkingConfig, and queryRewriter.ts needs the same answer. Returning
+ * undefined rather than an empty object keeps the negative case a no-op instead
+ * of an empty `google: {}` block in the request.
  *
  * Takes the model as an argument now that one process talks to several: reading
  * the module-level CHAT_MODEL would attach thinking config based on whichever
  * model is *first in the pool*, not the one actually being called. */
 function providerOptions(model: string) {
-  if (!model.startsWith("gemini")) return undefined;
+  if (!supportsThinkingConfig(model)) return undefined;
   return { google: { thinkingConfig: { thinkingLevel: THINKING_LEVEL } } };
 }
 
@@ -460,7 +462,7 @@ export async function* streamAnswer(
     const deadline = Date.now() + perCall;
     // Booked before the call, not after it — see record()'s note on concurrent
     // requests both reading an empty budget.
-    record(limits.id, estTokens);
+    record(limits.id, estTokens, "answer");
 
     // True from the instant the first token reaches the caller. Everything
     // after that point is unrecoverable by design: bytes already in the
