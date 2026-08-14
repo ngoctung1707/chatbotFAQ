@@ -74,6 +74,30 @@ const CITATION_MARKER_RE = new RegExp(
   String.raw`\s*${ONE_MARKER}(?:\s*[,;]?\s*${ONE_MARKER})*`,
   'g',
 )
+// Bỏ marker xong vẫn còn phần nhãn chữ mà model tự viết quanh chúng:
+// "(Nguồn: [1], [4])" → "(Nguồn:)". Regex trên chỉ nhận ra dấu ngoặc vuông,
+// còn "(Nguồn:" và ")" là văn bản thường nên đi thẳng ra màn hình. Nguồn gốc
+// nằm ở luật NOT_UPDATED trong SYSTEM_PROMPT (xem chú thích tại đó); prompt đã
+// được ghim định dạng để không sinh ra dạng này nữa, nên đây là lưới đỡ cho
+// những biến thể model tự nghĩ ra — "(Source: [2])", "[Xem: [1]]" — chứ không
+// phải cách sửa chính.
+//
+// Chỉ xoá đúng cái vỏ đã rỗng: bên trong ngoặc không được còn gì ngoài một nhãn
+// tuỳ chọn và dấu câu. Chính ràng buộc đó giữ lại mọi ngoặc hợp lệ — "(2024)"
+// có chữ số, "(Viện Công nghệ và Kinh tế số)" có chữ ngoài danh sách nhãn — nên
+// không cái nào khớp được. Dạng không ngoặc ("...chi tiết. Nguồn: [1]") chỉ cắt
+// khi nhãn đứng cuối chuỗi, để một chữ "Nguồn:" giữa câu không bị mất oan.
+const SOURCE_LABEL = String.raw`(?:nguồn|nguon|source|sources|tham khảo|xem)`
+const EMPTY_CITATION_SHELL_RE = new RegExp(
+  [
+    String.raw`\(\s*${SOURCE_LABEL}?\s*[:：]?\s*[,;.]*\s*\)`,
+    String.raw`\[\s*${SOURCE_LABEL}\s*[:：]?\s*[,;.]*\s*\]`,
+    String.raw`${SOURCE_LABEL}\s*[:：]\s*$`,
+  ]
+    .map((branch) => String.raw`\s*(?:${branch})`)
+    .join('|'),
+  'gi',
+)
 // Same negative lookahead so a genuine markdown link "[x](url)" is never
 // mistaken for a citation — it also keeps a numeric link label like
 // "[2024](https://…)" intact, which the digits alone would not. No separator
@@ -152,7 +176,12 @@ function sourceLabel(source: Source): string {
 }
 
 function renderMessageContent(content: string): React.ReactNode[] {
-  const cleaned = content.replace(CITATION_MARKER_RE, '')
+  // Thứ tự bắt buộc: bỏ marker trước, rồi mới tới cái vỏ vừa rỗng ra. Và cả
+  // hai chỉ được chạy ở tầng hiển thị — citedSources đọc `content` thô để biết
+  // nguồn nào được trích, nên dọn số sớm hơn sẽ làm rỗng luôn "Nguồn tham khảo".
+  const cleaned = content
+    .replace(CITATION_MARKER_RE, '')
+    .replace(EMPTY_CITATION_SHELL_RE, '')
   const nodes: React.ReactNode[] = []
   let lastIndex = 0
   let key = 0

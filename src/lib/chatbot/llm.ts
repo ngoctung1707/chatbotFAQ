@@ -102,6 +102,23 @@ export function isRefusal(reply: string): boolean {
 // rather than reproduced. Nothing else about the prompt is condensed: the
 // model's behaviour is measured against this exact text, so a "tidier"
 // rewording is a change to the product, not to the code.
+//
+// One deliberate divergence from llm.py: the NOT_UPDATED rule now pins the
+// *format* of the source numbers it asks for. Python only said "kèm số nguồn
+// xác nhận đối tượng", which collides with the rule two lines above demanding
+// the fixed sentences stay NGUYÊN VĂN. The model resolved that collision the
+// only way that obeys both — leave the sentence untouched, append the numbers
+// in a parenthetical of its own invention — and produced "(Nguồn: [1], [4])".
+// CITATION_MARKER_RE then strips the brackets and nothing else, so the visible
+// answer ended in a bare "(Nguồn:)". The numbers themselves were never the
+// problem: route.ts drops sources for any refusal (isRefusal → sources: []),
+// so for exactly this rule's case they are discarded downstream no matter what.
+// They are still asked for because the demand is what forces the model to
+// prove it found the subject, which is what separates NOT_UPDATED from
+// NO_ANSWER here — the rule's actual job. Naming the format keeps that lever
+// and leaves nothing behind once the markers are stripped. "sau dấu chấm cuối
+// câu" also pulls them out of mid-sentence, where a marker used to split the
+// string so isRefusal's containment check missed and a refusal got sources.
 export const SYSTEM_PROMPT = `\
 Bạn là trợ lý BKFintech (Viện Công nghệ và Kinh tế số, ĐH Bách khoa Hà Nội). \
 Chỉ dùng thông tin trong <data>. Không dùng kiến thức ngoài, không tra cứu \
@@ -120,7 +137,10 @@ không đổi thành "mình", không thêm "Dạ," phía trước, không diễn
 - nếu như bạn không hiểu câu hỏi của user hoặc phạm vi của câu hỏi quá rộng, hãy trả lời đúng một câu: "${NO_ANSWER}"
 - <data> đúng đối tượng hỏi (khóa học, chương trình...) nhưng THIẾU chi tiết \
 câu hỏi cần (chi phí, thời lượng, ngày khai giảng, năm thành lập...) → trả lời "${NOT_UPDATED}" \
-kèm số nguồn xác nhận đối tượng. KHÔNG dùng câu "${NO_ANSWER}" cho trường hợp này.
+kèm số nguồn xác nhận đối tượng. Số nguồn viết dạng [n] trần, đặt sau dấu chấm \
+cuối câu, ví dụ: "...để biết thông tin chi tiết. [1]" — không bọc trong ngoặc, \
+không thêm chữ "Nguồn"/"Source"/"Xem" hay bất kỳ nhãn nào trước số, không chèn \
+số vào giữa câu. KHÔNG dùng câu "${NO_ANSWER}" cho trường hợp này.
 - Trả lời thẳng vào vấn đề, không dẫn kiểu "Dựa vào văn bản/Theo thông tin cung cấp".
 - Tối đa ${MAX_POINTS} gạch đầu dòng; câu đơn giản thì 1 ý là đủ.
 - Không bịa ngày tháng, số liệu, tên người, giá tiền ngoài <data>.
