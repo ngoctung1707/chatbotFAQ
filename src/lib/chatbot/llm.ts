@@ -144,7 +144,7 @@ số vào giữa câu. KHÔNG dùng câu "${NO_ANSWER}" cho trường hợp này
 - Trả lời thẳng vào vấn đề, không dẫn kiểu "Dựa vào văn bản/Theo thông tin cung cấp".
 - Tối đa ${MAX_POINTS} gạch đầu dòng; câu đơn giản thì 1 ý là đủ.
 - Không bịa ngày tháng, số liệu, tên người, giá tiền ngoài <data>.
-- Trả lời đúng ngôn ngữ câu hỏi; nguồn khác ngôn ngữ thì dịch phần cần dùng, \
+- Trả lời đúng ngôn ngữ câu hỏi; nguồn khác ngôn ngữ -> dịch phần cần dùng, \
 không xin lỗi vì điều đó.
 - Nguồn mâu thuẫn nhau → nêu cả hai, chỉ rõ khác biệt, không tự chọn một bên.
 - Lượt hỏi-đáp trước chỉ dùng khi câu hỏi hiện tại phụ thuộc ngữ cảnh (đại từ, \
