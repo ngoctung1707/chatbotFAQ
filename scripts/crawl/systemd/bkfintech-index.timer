@@ -1,0 +1,28 @@
+[Unit]
+Description=Chay job cap nhat chi muc chatbot luc 2h sang chu nhat (gio Viet Nam)
+
+[Timer]
+# MUC 6.1 — MAY CHU DANG CHAY UTC.
+#
+# Day la cho de sai nhat cua ca ke hoach. `OnCalendar=Sun 02:00` tren mot may
+# UTC se chay luc 2h sang UTC = 9h SANG CHU NHAT gio Viet Nam, giua luc website
+# co nguoi doc.
+#
+# `Timezone=` giai quyet triet de: systemd tu quy doi, va dong nay TU NO noi ro
+# y dinh. Khong dung `OnCalendar=Sat 19:00` (gio UTC tuong duong) vi con so 19
+# khong noi len dieu gi, va nguoi doc sau se tuong la co ai do go nham.
+#
+# Viet Nam khong co gio mua he nen quy doi la co dinh UTC+7, nhung van khai
+# Timezone chu khong hardcode, de neu may chu doi cau hinh thi lich khong troi.
+OnCalendar=Sun *-*-* 02:00:00
+Timezone=Asia/Ho_Chi_Minh
+
+# May tat luc den gio thi chay bu khi bat len, thay vi bo qua ca tuan.
+Persistent=true
+
+# Lech ngau nhien toi 5 phut: neu sau nay co job khac cung dat 2h sang thi chung
+# khong cung luc gianh RAM.
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

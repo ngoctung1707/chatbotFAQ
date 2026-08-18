@@ -1,6 +1,10 @@
 .container {
   position: fixed;
-  bottom: 24px;
+  /* Mặc định 24px như cũ. Biến chỉ được đặt trên những trang vốn đã có chatbot
+     riêng ở cùng góc — xem SiteChatbot.tsx. Làm bằng biến CSS thay vì prop để
+     ChatbotWidget không phải biết gì về routing, đúng như lý do tách
+     SiteChatbot thành component riêng. */
+  bottom: var(--site-chatbot-bottom, 24px);
   right: 24px;
   z-index: 9999;
   font-family: var(--tg-body-font-family), sans-serif;

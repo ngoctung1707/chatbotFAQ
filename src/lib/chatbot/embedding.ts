@@ -63,10 +63,46 @@ export function loadEmbedder(): Promise<FeatureExtractionPipeline> {
   return globalThis.__bkftEmbedderPromise;
 }
 
-/** Mean-pooled, L2-normalized dense embedding as a plain number[]. */
+/**
+ * Model đã được nạp (hoặc đang nạp) vào tiến trình này chưa.
+ *
+ * Job hàng tuần cần đúng tín hiệu này: sau khi ghi giấy phép và restart app, nó
+ * phải chờ tới khi app xác nhận ĐÃ NHẢ RAM rồi mới bắt đầu pha B. Trước đây nó
+ * chỉ tin vào việc `docker compose restart` đã trả về, mà lệnh đó trả về không
+ * có nghĩa tiến trình cũ đã chết hẳn — và tiến trình cũ thì đang giữ ~2GB.
+ *
+ * Đọc thẳng ô nhớ cache thay vì cờ riêng, để không bao giờ lệch khỏi sự thật.
+ */
+export function isEmbedderLoaded(): boolean {
+  return globalThis.__bkftEmbedderPromise !== undefined;
+}
+
+/**
+ * CLS-pooled, L2-normalized dense embedding as a plain number[].
+ *
+ * CLS chứ KHÔNG phải mean, và đây là điểm phải khớp với model: BGE-M3 huấn
+ * luyện vector dense bằng token đầu tiên — FlagEmbedding's BGEM3FlagModel lấy
+ * `normalize(last_hidden_state[:, 0])`, và 1_Pooling/config.json của BAAI/bge-m3
+ * bật pooling_mode_cls_token. Contrastive loss chỉ tối ưu hướng của token đó,
+ * nên mean pooling (giá trị mặc định trong ví dụ của transformers.js, và là thứ
+ * file này dùng cho tới lần sửa này) đem vector ra khỏi đúng không gian mà model
+ * được trả tiền để học. transformers.js cài `pooling: "cls"` thành
+ * `last_hidden_state.slice(null, 0)` — chính là phép trên.
+ *
+ * Đo được trên corpus này TRƯỚC khi đổi, để lần sau còn so: dưới mean pooling,
+ * cặp chunk ít giống nhau nhất trong toàn bộ 707 chunk vẫn đạt cosine 0.6420, và
+ * chuỗi rác "asdkjh qwe zxcvbn" ăn 0.6706 với chunk gần nhất — cao hơn một câu
+ * hỏi tiếng Việt hợp lệ nhưng ngoài phạm vi (nấu phở, 0.6199). Toàn bộ dải điểm
+ * bị nén vào ~[0.60, 0.90], nên không sàn tuyệt đối nào vừa an toàn vừa hữu ích.
+ * Đó là lý do thật khiến DEFAULT_MIN_SCORE trước đây là dead code.
+ *
+ * ĐỔI GIÁ TRỊ NÀY LÀ PHẢI BUILD LẠI INDEX (`pnpm build-index`). Query pool bằng
+ * CLS đấu với index pool bằng mean là hai không gian khác nhau: kết quả không
+ * phải "kém đi" mà là rác. Cùng hạng ràng buộc với việc đổi EMBEDDING_MODEL_ID.
+ */
 export async function embedDense(text: string): Promise<number[]> {
   const embedder = await loadEmbedder();
-  const output = await embedder(text, { pooling: "mean", normalize: true });
+  const output = await embedder(text, { pooling: "cls", normalize: true });
   return Array.from(output.data as Float32Array);
 }
 

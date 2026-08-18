@@ -76,7 +76,7 @@ async function main() {
   // --- Pha 2: một truy vấn thật, độ dài điển hình ---
   const q = "Viện trưởng của BK Fintech là ai và viện đào tạo những ngành nào?";
   const t1 = Date.now();
-  await embedder(q, { pooling: "mean", normalize: true });
+  await embedder(q, { pooling: "cls", normalize: true });
   const ms1 = Date.now() - t1;
   const peak1 = peakView[0];
   const idle1 = await settle();
@@ -86,7 +86,7 @@ async function main() {
   for (let round = 1; round <= 3; round++) {
     const before = peakView[0];
     for (let i = 0; i < 20; i++) {
-      await embedder(`${q} câu hỏi số ${i}`, { pooling: "mean", normalize: true });
+      await embedder(`${q} câu hỏi số ${i}`, { pooling: "cls", normalize: true });
     }
     const peakR = peakView[0];
     const idleR = await settle();
@@ -99,7 +99,7 @@ async function main() {
     const t = Date.now();
     await Promise.all(
       Array.from({ length: n }, (_, i) =>
-        embedder(`${q} (người dùng ${i})`, { pooling: "mean", normalize: true })
+        embedder(`${q} (người dùng ${i})`, { pooling: "cls", normalize: true })
       )
     );
     const ms = Date.now() - t;
@@ -116,7 +116,7 @@ async function main() {
       Math.ceil(chars / 57)
     );
     const t = Date.now();
-    await embedder(text, { pooling: "mean", normalize: true });
+    await embedder(text, { pooling: "cls", normalize: true });
     const ms = Date.now() - t;
     const peakL = peakView[0];
     const idleL = await settle();

@@ -40,6 +40,11 @@ import type {
   StoredIndex,
 } from "../src/lib/chatbot/vectorStore";
 import { INDEX_DIR } from "../src/lib/chatbot/config";
+// COLLECTION_LABEL + embeddedText da chuyen sang src/lib/chatbot/embeddedText.ts
+// de pha B cua job hang tuan (scripts/crawl/embed.ts) dung CHUNG mot dinh nghia.
+// Hai noi dung chuoi khac nhau mot ky tu la vector nam lech khoi khong gian cua
+// nhung vector con lai, va trieu chung duy nhat la chat luong tra loi te dan.
+import { embeddedText } from "../src/lib/chatbot/embeddedText";
 
 // data/chunks_all.jsonl, KHÔNG phải data/processed/chunks.json như trước. File
 // kia không tồn tại trong repo — `npm run build-index` chạy trần luôn chết ngay
@@ -86,67 +91,6 @@ function toChunkRecord(raw: RawChunk, fallbackIndex: number): ChunkRecord {
     // Kept alongside `raw`, not merged into it — see the header comment.
     content: raw.content,
   };
-}
-
-/**
- * What kind of page a chunk came from, in both languages, prepended to the
- * embedded text.
- *
- * The crawler's own breadcrumb names the *item* but never its *category*: the
- * course pages embed as "[Fintech]", "[Business Intelligence]",
- * "[Private Intelligence: AI for Everyone]" — not one of the 15 contains the
- * words "khóa học" or "course" anywhere in its embedded text. So "khoá học ở
- * bkfintech" had nothing to match on and retrieved the homepage, the advisory
- * board and the back-office staff list instead; the <data> block reaching the
- * model mentioned no course at all, and it refused. This is the same class of
- * bug the header comment above describes for the institute name, one level up:
- * a chunk cannot be found by the category it belongs to when its text never
- * names that category.
- *
- * Both languages because the corpus is mixed — 11 of the 15 course pages are
- * written in English while the questions arrive in Vietnamese — and the label
- * has to match whichever the query uses.
- */
-const COLLECTION_LABEL: Record<string, string> = {
-  academic: "Đào tạo · Academic programme",
-  application: "Ứng dụng · Application",
-  course: "Khóa học · Course · Chương trình đào tạo",
-  ecotech: "Hội thảo ECOTECH · ECOTECH conference",
-  event: "Sự kiện · Event",
-  hackathon: "Cuộc thi Hackathon · Hackathon",
-  home: "Trang chủ · Home",
-  lab: "Phòng thí nghiệm · Research lab",
-  news: "Tin tức · News",
-  people: "Nhân sự · People · Ban lãnh đạo",
-  publication: "Công bố khoa học · Publication",
-  report: "Báo cáo · Report",
-  research: "Nghiên cứu · Research",
-  researchers: "Nhà nghiên cứu · Researcher · Giảng viên · Tiến sĩ",
-  solutions: "Giải pháp · Solution",
-  static: "Giới thiệu · About",
-  workshop: "Workshop · Chuỗi hội thảo",
-};
-
-/**
- * The text that gets embedded: the context-headed form when the crawler
- * produced one, the plain text otherwise, both prefixed with the category and
- * the institute name.
- *
- * The institute name goes on *every* chunk deliberately, which sounds like it
- * would make the term useless — and that is the point. It is already in most
- * chunks, just unevenly: densest on the homepage, the staff pages and the
- * apps list, absent from the course pages. That imbalance is what made adding
- * "bkfintech" to a query actively harmful, dragging the best course chunk from
- * rank 11 down to rank 39 and out of the candidate pool. Spread evenly the
- * term stops discriminating between chunks, so the rest of the question —
- * the part that carries the user's actual intent — decides the ranking.
- */
-function embeddedText(record: ChunkRecord): string {
-  const label = COLLECTION_LABEL[record.collection ?? ""] ?? record.collection;
-  const header = label
-    ? `[${label} — BK Fintech, Viện Công nghệ và Kinh tế số]`
-    : "[BK Fintech, Viện Công nghệ và Kinh tế số]";
-  return `${header}\n${record.content || record.raw}`;
 }
 
 /**

@@ -5,3 +5,9 @@ npm-debug.log
 README.md
 .next
 .git
+
+# data/ được bind-mount lúc chạy (xem compose.yaml), runner không copy nó vào
+# image. Nhưng builder có `COPY . .`, nên 139MB chỉ mục + backup vẫn bị nhét vào
+# build context và layer builder ở MỌI lần build. Không có gì trong `next build`
+# đọc thư mục này.
+data

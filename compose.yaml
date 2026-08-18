@@ -8,11 +8,41 @@ services:
       - db
     volumes:
       - "/home/hust/bkfintech/media:/app/public/media"
+      # Chỉ mục chatbot. Dockerfile KHÔNG copy data/ vào image (runner chỉ lấy
+      # public + .next), nên không có mount này thì INDEX_DIR ở config.ts —
+      # `${process.cwd()}/data/faiss_index_js` — trỏ vào thư mục không tồn tại và
+      # VectorStore.load() chết ngay lần đầu có người hỏi. Mount cũng là thứ giữ
+      # cho store.json do job cập nhật hàng tuần sinh ra sống sót qua mỗi lần
+      # rebuild image, thay vì bị ghi đè bởi bản nằm trong image.
+      #
+      # :ro vì tiến trình web chỉ ĐỌC store.json (vectorStore.ts, diacritics.ts) —
+      # không có một lệnh ghi nào vào data/ trong toàn bộ src/. Phía ghi là
+      # scripts/build-index.ts, chạy ngoài container này.
+      #
+      # Thư mục host phải được seed sẵn bằng data/faiss_index_js/store.json
+      # trước lần khởi động đầu tiên.
+      - "/home/hust/bkfintech/data:/app/data:ro"
     ports:
       - "3003:3000"
+    # Mục 6.5 — trần RAM tường minh cho cả hai service.
+    #
+    # Không đặt thì mỗi bên tự phình cho tới khi OOM killer của kernel chọn nạn
+    # nhân, mà nó rất có thể chọn một dịch vụ khác của viện chứ không phải thủ
+    # phạm. Con số 2,5G cho app = Next + Payload (~0,4G) cộng một bản BGE-M3
+    # (~1,1-1,5G) cộng biên; trong cửa sổ bảo trì app bỏ preload nên chỉ dùng
+    # ~0,4G, nhường chỗ cho job.
+    mem_limit: 2560m
+    memswap_limit: 2560m
   db:
     restart: always
     image: mongo:4.4.6
+    # WiredTiger mặc định tự lấy 50% của (RAM máy − 1GB) làm cache VÀ KHÔNG TRẢ
+    # LẠI. Trên máy 8GB đó là ~3,5GB bị giữ vĩnh viễn — nghĩa là tắt chatbot
+    # trong cửa sổ bảo trì cũng không giải phóng đủ chỗ cho job như tính toán.
+    # Khai tường minh biến một biến số tự phình thành hằng số kiểm soát được.
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.5"]
+    mem_limit: 1024m
+    memswap_limit: 1024m
     ports:
       - '27026:27017'
     volumes:

@@ -29,7 +29,12 @@ import type {
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const BASE_URL = 'https://chatbot-api.bkfin.tech/api/v1'
+// Mặc định vẫn là backend thật, nên production không đổi hành vi dù không đặt
+// biến nào. Biến môi trường chỉ để trỏ sang một backend khác khi phát triển —
+// ví dụ bản giả ở /api/chatbot-mock/v1, thứ duy nhất cho phép đăng nhập bằng
+// tài khoản local (backend thật nằm ở một máy chủ khác, không đọc Mongo local).
+const BASE_URL =
+  process.env.NEXT_PUBLIC_CHATBOT_API_URL || 'https://chatbot-api.bkfin.tech/api/v1'
 const CSRF_HEADER_NAME = 'X-CSRF-Token'
 const CSRF_META_NAMES = ['csrf-token', 'csrf_token', 'xsrf-token', 'xsrf_token']
 const CSRF_COOKIE_NAMES = ['csrf-token', 'csrf_token', 'XSRF-TOKEN', 'xsrf-token', 'xsrf_token']

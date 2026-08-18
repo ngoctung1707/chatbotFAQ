@@ -91,7 +91,7 @@ async function main() {
   // Lần chạy đầu cấp phát arena cho activation — chưa tính vào bước tải.
   const t1 = Date.now();
   await embedder("Viện trưởng của BK Fintech là ai?", {
-    pooling: "mean",
+    pooling: "cls",
     normalize: true,
   });
   const firstMs = Date.now() - t1;
@@ -112,14 +112,14 @@ async function main() {
   ];
   const t2 = Date.now();
   for (const q of questions) {
-    await embedder(q, { pooling: "mean", normalize: true });
+    await embedder(q, { pooling: "cls", normalize: true });
   }
   const batchMs = Date.now() - t2;
   await snap(`5. + ${questions.length} truy vấn nữa`);
 
   // Câu dài: chuỗi token dài hơn => activation lớn hơn, xem đỉnh RAM tới đâu.
   const longText = questions.join(" ").repeat(8);
-  await embedder(longText, { pooling: "mean", normalize: true });
+  await embedder(longText, { pooling: "cls", normalize: true });
   await snap("6. + 1 truy vấn văn bản dài");
 
   // --- Các thành phần còn lại của một request thật, để có bức tranh đầy đủ ---

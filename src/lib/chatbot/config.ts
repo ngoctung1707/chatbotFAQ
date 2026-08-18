@@ -276,10 +276,18 @@ export const MOCK = !["", "0", "false"].includes(
 export const INDEX_DIR =
   process.env.CHATBOT_INDEX_DIR || `${process.cwd()}/data/faiss_index_js`;
 
-// Cosine floor. Same value as retriever.py's DEFAULT_MIN_SCORE — re-measure
-// on this corpus if the embedding model changes, since the number is tied to
-// BGE-M3's score distribution, not a universal constant.
-export const DEFAULT_MIN_SCORE = 0.35;
+// Sàn cosine, áp lên điểm dense THÔ trong retriever.ts — trước bước rerank, nên
+// nó so với cosine thật chứ không phải điểm hybrid đã qua rescale().
+//
+// 0.45, không còn là 0.35 của retriever.py. Con số cũ đã trở thành dead code đo
+// được: dưới mean pooling, cả 707/707 chunk vượt 0.45 với MỌI câu hỏi thử —
+// trong phạm vi, ngoài phạm vi, lẫn chuỗi rác — vì mean pooling nén toàn bộ dải
+// điểm vào ~[0.60, 0.90] (xem embedDense trong embedding.ts). Ngưỡng này chỉ có
+// nghĩa sau khi pooling đổi sang CLS, và nó được đặt cùng lúc với thay đổi đó.
+//
+// Vẫn gắn với phân bố điểm chứ không phải hằng số phổ quát: đổi
+// EMBEDDING_MODEL_ID, đổi pooling, hay đổi mức lượng tử hoá đều phải đo lại.
+export const DEFAULT_MIN_SCORE = 0.45;
 
 export const DEFAULT_MAX_PER_URL = 3;
 export const DEFAULT_CANDIDATES = 20;

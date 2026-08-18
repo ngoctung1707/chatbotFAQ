@@ -16,6 +16,7 @@ import {
 import { Retriever, type RetrievalChunk } from '@/lib/chatbot/retriever'
 import { CONTEXT_WEAK_DENSE, MOCK } from '@/lib/chatbot/config'
 import { MAX_QUESTION_CHARS } from '@/lib/chatbot/limits'
+import { readMaintenance } from '@/lib/chatbot/maintenance'
 
 // Runs the retrieval + Gemini-answering pipeline in-process (ported from the
 // old chatbot-service FastAPI app — see src/lib/chatbot/*). There is no
@@ -100,6 +101,18 @@ export async function POST(req: NextRequest) {
   if (typeof session_id !== 'string' || !session_id.trim()) {
     return NextResponse.json({ error: 'session_id is required' }, { status: 400 })
   }
+  // Cửa sổ bảo trì hàng tuần. Phải chặn ở ĐÂY, trước mọi thứ chạm tới model.
+  //
+  // Bỏ preload ở instrumentation-node.ts KHÔNG đủ: `embedDense()` gọi
+  // `loadEmbedder()` một cách lazy, nên câu hỏi đầu tiên trong lúc bảo trì sẽ
+  // kéo nguyên BGE-M3 (~1,1–2,2GB) vào tiến trình web — đúng lúc job embed đang
+  // giữ một bản khác. Hai bản model cùng lúc là chính xác thứ mà cả thiết kế
+  // cửa sổ bảo trì sinh ra để tránh. Bỏ preload chỉ HOÃN việc nạp, không ngăn.
+  const maintenance = readMaintenance()
+  if (maintenance.active) {
+    return NextResponse.json({ reply: maintenance.message, sources: [], maintenance: true })
+  }
+
   const question = message.trim().slice(0, MAX_QUESTION_CHARS)
 
   // History is read BEFORE retrieval, not alongside it, because search() needs

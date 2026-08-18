@@ -1,0 +1,42 @@
+[Unit]
+# Job cap nhat du lieu chatbot hang tuan — muc 6.1 va 6.5.
+Description=BK Fintech chatbot — cap nhat chi muc hang tuan
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/hust/bkfintech/app
+ExecStart=/usr/bin/env bash scripts/crawl/run-weekly.sh
+
+# MUC 6.5 — tran RAM.
+#
+# `--max-old-space-size` cua Node KHONG dung duoc o day: no chi gioi han heap
+# cua V8, con ~1,1GB model nam trong bo nho NATIVE cua onnxruntime, hoan toan
+# ngoai tam voi cua no. Dat tran bang co che nay moi tinh ca hai.
+#
+# 3G = ~1,5-2G cho pha B (mot ban BGE-M3) cong bien an toan. Cham tran thi job
+# bi kill sach voi log ro rang, thay vi de OOM killer cua kernel tu chon nan
+# nhan — ma no rat co the chon mot dich vu khac cua vien.
+MemoryMax=3G
+MemorySwapMax=0
+
+# May chu dung chung: job nay khong duoc phep lam cham thu khac. Website van
+# dang phuc vu suot pha A.
+Nice=10
+IOSchedulingClass=idle
+CPUWeight=50
+
+# Watchdog cua systemd, dat CAO HON tran 15 phut trong run-weekly.sh de hai co
+# che khong tranh nhau: script tu don dep truoc, day chi la luoi cuoi.
+TimeoutStartSec=25min
+
+StandardOutput=append:/home/hust/bkfintech/app/data/weekly.log
+StandardError=append:/home/hust/bkfintech/app/data/weekly.log
+
+# Job chet giua chung van phai tra chatbot ve trang thai phuc vu. Bay EXIT trong
+# script lo phan chinh; day la luoi cho truong hop script bi kill -9.
+ExecStopPost=/usr/bin/env bash -c 'rm -f data/maintenance.flag data/.weekly.lock; docker compose restart app || true'
+
+[Install]
+WantedBy=multi-user.target

@@ -10,6 +10,20 @@
  * of the edge bundle entirely, so the APIs below are never scanned there.
  */
 export async function registerNode() {
+  // Cửa sổ bảo trì hàng tuần (mục 4.5). Bỏ preload là cách duy nhất để website
+  // vẫn chạy mà RAM chỉ có ĐÚNG MỘT bản BGE-M3 — bản của job embed. Nếu vẫn
+  // preload ở đây thì dừng container mới cứu được RAM, mà dừng container là cả
+  // fintech.hust.edu.vn offline chứ không riêng chatbot.
+  const { readMaintenance } = await import("@/lib/chatbot/maintenance");
+  const maintenance = readMaintenance();
+  if (maintenance.active) {
+    console.log(
+      "[chatbot] CHE DO BAO TRI — bo qua preload BGE-M3. " +
+        "Website chay binh thuong, chatbot tra thong bao bao tri."
+    );
+    return;
+  }
+
   const { loadEmbedder } = await import("@/lib/chatbot/embedding");
 
   const start = Date.now();

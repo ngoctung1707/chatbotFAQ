@@ -11,6 +11,7 @@ import RuleManager from './tabs/RuleManager'
 import ConfigManager from './tabs/ConfigManager'
 import UserManager from './tabs/UserManager'
 import ChatLogsManager from './tabs/ChatLogsManager'
+import CrawlReportManager from './tabs/CrawlReportManager'
 
 export default function ChatbotAdmin() {
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null)
@@ -173,11 +174,11 @@ function DashboardView({
   const role = currentUser?.role?.toLowerCase() || ''
   const isAdmin = role === 'admin'
 
-  const [activeTab, setActiveTab] = useState<'faq' | 'config' | 'users' | 'rules' | 'logs'>('faq')
+  const [activeTab, setActiveTab] = useState<'faq' | 'config' | 'users' | 'rules' | 'logs' | 'crawl'>('faq')
 
   useEffect(() => {
     if (isAdmin) return
-    if (activeTab === 'config' || activeTab === 'rules') {
+    if (activeTab === 'config' || activeTab === 'rules' || activeTab === 'crawl') {
       setActiveTab('faq')
     }
   }, [activeTab, isAdmin])
@@ -224,6 +225,14 @@ function DashboardView({
         >
           Lịch sử hỏi đáp
         </button>
+        {isAdmin && (
+          <button
+            className={activeTab === 'crawl' ? styles.subNavTabActive : styles.subNavTab}
+            onClick={() => setActiveTab('crawl')}
+          >
+            Cập nhật dữ liệu
+          </button>
+        )}
       </nav>
 
       <main className={styles.main}>
@@ -232,6 +241,7 @@ function DashboardView({
         {activeTab === 'config' && isAdmin && <ConfigManager />}
         {activeTab === 'users' && <UserManager currentUser={currentUser} isAdmin={isAdmin} />}
         {activeTab === 'logs' && <ChatLogsManager />}
+        {activeTab === 'crawl' && isAdmin && <CrawlReportManager />}
       </main>
     </div>
   )

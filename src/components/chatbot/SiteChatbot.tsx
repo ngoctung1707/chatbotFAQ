@@ -1,5 +1,6 @@
 'use client'
 
+import type { CSSProperties } from 'react'
 import { usePathname } from 'next/navigation'
 import ChatbotWidget from './ChatbotWidget'
 import { BASE_PATH as CYBER_CLINIC_BASE } from '@/modules/cyber-clinic/constants'
@@ -34,6 +35,22 @@ import { BASE_PATH as CYBER_CLINIC_BASE } from '@/modules/cyber-clinic/constants
 // chủ đích để so sánh hai backend cạnh nhau.
 const ROUTES_WITH_OWN_CHATBOT = [CYBER_CLINIC_BASE]
 
+/**
+ * Route vừa có chatbot riêng vừa CẦN giữ widget toàn site — hai con phải cùng
+ * hiện, nên phải xếp chồng thay vì đè lên nhau.
+ *
+ * /chatbot/admin là trang quản trị: ở đó việc so sánh hai backend cạnh nhau là
+ * chủ đích, nên không ẩn cái nào. Nhưng cả hai đều `position: fixed` ở góc dưới
+ * phải và chỉ lệch nhau 6px, nên mặc định chúng chồng khít lên nhau.
+ */
+const ROUTES_WITH_STACKED_CHATBOT = ['/chatbot/admin']
+
+/**
+ * Nút đỏ của ChatWindow cao 58px (54px + viền 2px mỗi bên) và cách đáy 30px,
+ * tức chiếm tới 88px. Đẩy nút vàng lên 100px để có khe 12px giữa hai nút.
+ */
+const STACKED_BOTTOM = '100px'
+
 export default function SiteChatbot() {
   const pathname = usePathname()
   // Optional chaining vì usePathname có thể trả về giá trị rỗng ở vài ngữ cảnh
@@ -42,5 +59,16 @@ export default function SiteChatbot() {
   if (ROUTES_WITH_OWN_CHATBOT.some((base) => pathname?.startsWith(base))) {
     return null
   }
+
+  if (ROUTES_WITH_STACKED_CHATBOT.some((base) => pathname?.startsWith(base))) {
+    // Thẻ bọc chỉ mang biến CSS, không có style nào khác — nó KHÔNG tạo
+    // containing block mới, nên widget con vẫn định vị theo viewport như cũ.
+    return (
+      <div style={{ '--site-chatbot-bottom': STACKED_BOTTOM } as CSSProperties}>
+        <ChatbotWidget />
+      </div>
+    )
+  }
+
   return <ChatbotWidget />
 }
