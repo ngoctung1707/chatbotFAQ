@@ -167,3 +167,64 @@ export function docsToRecords(source, docs) {
   }
   return out
 }
+
+/**
+ * Định danh của một MỤC, phân biệt với định danh của một DOCUMENT.
+ *
+ * Bản en và vi của cùng một giải pháp là hai document nhưng một sản phẩm. Thứ
+ * phân biệt hai mục khác nhau là cái tạo ra URL của chúng: `slug`, hoặc
+ * `title`/`name` khi collection không có slug (solutions, publications). Dùng
+ * `id` làm chốt cuối để một doc thiếu cả ba trường trên vẫn không gộp nhầm với
+ * doc khác.
+ *
+ * Một định nghĩa, hai nơi import (stats.mjs đếm, index.mjs gộp) — cùng lý do
+ * như embeddedText.ts: hai bản chép tay lệch nhau sẽ cho ra con số thống kê
+ * mâu thuẫn với chính danh sách nằm ngay bên cạnh nó trong <data>.
+ */
+export const docIdentity = (d) => d.slug ?? d.title ?? d.name ?? d.id
+
+/**
+ * Gộp các bản dịch của CÙNG một mục về một document.
+ *
+ * ─── VÌ SAO KHÔNG PHẢI LÀ `docs.filter(d => d.lang === 'en')` ────────────────
+ *
+ * Bản trước làm đúng như vậy: hễ collection có lẫn hai ngôn ngữ thì vứt sạch
+ * document `vi`. Với một cặp song ngữ thì kết quả trông vẫn đúng, nên lỗi không
+ * lộ ra. Nhưng một mục CHỈ CÓ tiếng Việt — bài admin vừa thêm mà chưa kịp dịch —
+ * thì không có bản `en` nào để giữ lại, và nó biến mất khỏi kho.
+ *
+ * Biến mất một cách câm lặng là phần tệ nhất: `updated_at` của nguồn vẫn được
+ * ghi nhận là đã xử lý xong, nên mọi lần chạy sau đó đều `skipped` ở tầng lọc
+ * thô. Không lỗi, không cảnh báo, và bài đó không bao giờ vào chỉ mục nữa cho
+ * tới khi có người dịch nó sang tiếng Anh.
+ *
+ * Luật ở đây hẹp đúng bằng vấn đề nó giải quyết: chỉ bỏ bớt khi một định danh
+ * thật sự có TỪ HAI NGÔN NGỮ TRỞ LÊN. Hai document cùng tên mà cùng ngôn ngữ
+ * (hoặc cùng không khai ngôn ngữ, như publications) là hai mục khác nhau tình cờ
+ * trùng tiêu đề — giữ cả hai, vì gộp chúng mới là mất dữ liệu.
+ *
+ * Ưu tiên `en` khi có cả hai để đầu ra không đổi so với trước trên dữ liệu cũ:
+ * đổi bản được giữ sẽ đổi text -> đổi hash -> embed lại toàn bộ nguồn mà không
+ * thêm được thông tin nào.
+ *
+ * Thứ tự gốc được giữ nguyên (lọc theo tập loại bỏ, không dựng lại mảng từ các
+ * nhóm), vì thứ tự quyết định thứ tự dòng trong chunk, và thứ tự dòng quyết định
+ * hash.
+ */
+export function collapseLangVariants(docs) {
+  const groups = new Map()
+  for (const d of docs) {
+    const key = String(docIdentity(d) ?? '')
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(d)
+  }
+
+  const drop = new Set()
+  for (const g of groups.values()) {
+    if (new Set(g.map((d) => d.lang ?? null)).size < 2) continue
+    const keep = g.find((d) => d.lang === 'en') ?? g[0]
+    for (const d of g) if (d !== keep) drop.add(d)
+  }
+
+  return drop.size ? docs.filter((d) => !drop.has(d)) : docs
+}

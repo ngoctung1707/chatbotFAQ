@@ -18,7 +18,7 @@ ExecStart=/usr/bin/env bash scripts/crawl/run-weekly.sh
 # 3G = ~1,5-2G cho pha B (mot ban BGE-M3) cong bien an toan. Cham tran thi job
 # bi kill sach voi log ro rang, thay vi de OOM killer cua kernel tu chon nan
 # nhan — ma no rat co the chon mot dich vu khac cua vien.
-MemoryMax=3G
+MemoryMax=4G
 MemorySwapMax=0
 
 # May chu dung chung: job nay khong duoc phep lam cham thu khac. Website van

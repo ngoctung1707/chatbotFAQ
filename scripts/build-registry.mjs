@@ -13,10 +13,27 @@
  * Người phải quyết: nhãn collection, nhóm selector, min_items, keep_query.
  *
  * Chạy: node scripts/build-registry.mjs
+ *        CRAWL_BASE_URL=http://localhost:3000 node scripts/build-registry.mjs
  */
 import { readFile, writeFile } from 'node:fs/promises'
 
-const BASE = 'https://fintech.hust.edu.vn'
+const REGISTRY_PATH = 'data/sources.registry.json'
+
+/** Nơi site THẬT SỰ sống. Chỉ dùng để nhận ra URL nào trong kho là của chính
+ *  site này và cần đổi theo BASE — không phải để fetch. */
+const SITE_ORIGIN = 'https://fintech.hust.edu.vn'
+
+/**
+ * Gốc URL mà TOÀN BỘ registry được dựng theo — 57 chỗ trong file đầu ra, cộng
+ * với `baseline_chunks` vốn đối chiếu URL với chunks_live.jsonl.
+ *
+ * Hằng số này từng bị chốt cứng vào production trong khi registry đang phục vụ
+ * lại trỏ localhost. Chạy lại script để thêm một entry — đúng cái việc mà chú
+ * thích đầu file bảo là cách chuẩn để thêm route — sẽ lật sạch 57 URL sang
+ * production và đưa mọi `baseline_chunks` về 0, vì không URL nào còn khớp kho.
+ * Không lỗi nào báo: registry vẫn hợp lệ, chỉ là trỏ nhầm site.
+ */
+const BASE = process.env.CRAWL_BASE_URL ?? SITE_ORIGIN
 
 // 9 collection công khai. has_drafts quyết định có gắn where[_status] hay không:
 // gắn nhầm vào collection KHÔNG bật drafts thì Payload trả HTTP 400 chứ không
@@ -36,7 +53,6 @@ const JSON_SOURCES = [
   ['learning-materials', 'research', true, '/research/r&d-funding-projects/cyber-clinic/learning-materials/{slug}', 'material'],
   ['cyber-clinic-videos', 'research', false, '/research/r&d-funding-projects/cyber-clinic/video/{slug}', 'video'],
   ['publications', 'publication', false, '/research/publications', 'publication'],
-  ['members', 'people', false, '/members', 'member'],
   ['upcoming-events', 'event', false, null, 'event'],
 ]
 
@@ -90,8 +106,30 @@ const live = (await readFile('data/chunks_live.jsonl', 'utf-8'))
   .filter(Boolean)
   .map((l) => JSON.parse(l))
 
-const countByUrl = new Map()
-for (const r of live) countByUrl.set(r.url, (countByUrl.get(r.url) || 0) + 1)
+/**
+ * Đếm theo PATH, không theo URL đầy đủ.
+ *
+ * chunks_live.jsonl là ảnh chụp của kho do người dựng, nên URL trong đó chốt
+ * cứng ở host production. Đối chiếu bằng URL đầy đủ nghĩa là mọi lần chạy với
+ * `CRAWL_BASE_URL` khác production đều ra `baseline_chunks = 0` cho toàn bộ
+ * entry — và cái chốt chặn ở cuối file (phủ + bỏ có chủ đích = tổng kho) sẽ báo
+ * lệch 302 chunk, khiến script không dùng được ngoài production.
+ *
+ * Path là thứ thật sự định danh một trang; host chỉ là nơi nó đang được phục vụ.
+ */
+const pathOf = (u) => {
+  try {
+    return u.slice(new URL(u).origin.length)
+  } catch {
+    return u
+  }
+}
+
+const countByPath = new Map()
+for (const r of live) {
+  const k = pathOf(r.url)
+  countByPath.set(k, (countByPath.get(k) || 0) + 1)
+}
 
 /**
  * Route tĩnh có page.tsx nhưng CHƯA có chunk nào trong kho. Không tự động đưa
@@ -106,6 +144,25 @@ const PENDING = [
   ['/research/r&d-funding-projects', 'hub', 'hub_only', 'Trang index'],
   ['/research/r&d-funding-projects/cyber-clinic/learning-materials', 'hub', 'hub_only', 'Hub của collection learning-materials'],
   ['/research/r&d-funding-projects/cyber-clinic/video', 'hub', 'hub_only', 'Hub của collection cyber-clinic-videos'],
+
+  // /members đã bị loại SAU khi registry ra đời, và quyết định đó từng chỉ tồn
+  // tại trong file JSON đã sinh — chạy lại script sẽ hồi sinh nguồn này cùng con
+  // số sai của nó. Khai ở đây để quyết định nằm trong CODE, nơi nó không bị một
+  // lần chạy lại xoá mất. Xem thêm chú thích `PERSONNEL_GROUPS` ở stats.mjs.
+  [
+    '/members',
+    'personnel_duplicate',
+    'rejected',
+    'Trang /members la route mo coi — khong mot cho nao trong src/ link toi no, nen nguoi duyet web khong bao gio den duoc. Noi dung lai la TAP CON cua cac trang about/: 19 nguoi = Ban Giam doc (3) + Nha nghien cuu (16), THIEU 5 tro ly. Giu lai thi no tranh cho voi about/ trong top-k va tra loi thieu nguoi; chunk thong ke di kem con khang dinh "vien co 19 thanh vien" trong khi con so dung la 24.',
+    {
+      // GIỮ NGUYÊN id cũ, không đổi thành `pending-members`: crawl_state.json
+      // khoá theo source_id, và một id mới nghĩa là 2 chunk cũ của nguồn này
+      // không còn ai nhận để dọn đi. Các entry `pending-…` khác chưa từng chạy
+      // nên không có ràng buộc đó.
+      source_id: 'json-members',
+      replaced_by: 'html-about-board-of-deans + html-about-researchers-and-assistants',
+    },
+  ],
 
   // Năm trang dưới đây là redirect thuần — thân hàm chỉ có một lệnh redirect(),
   // không có nội dung nào của riêng chúng. Chunk cũ của chúng thực ra là nội
@@ -138,14 +195,13 @@ const PENDING = [
 /** Đếm chunk khớp một url_template. `{...}` khớp một đoạn path bất kỳ. */
 function baselineFor(template) {
   if (!template) return 0
-  const full = BASE + template
-  const m = full.match(/\{[a-z]+\}/)
-  if (!m) return countByUrl.get(full) ?? 0
-  const [head, tail] = full.split(m[0])
+  const m = template.match(/\{[a-z]+\}/)
+  if (!m) return countByPath.get(template) ?? 0
+  const [head, tail] = template.split(m[0])
   let total = 0
-  for (const [url, n] of countByUrl) {
-    if (!url.startsWith(head) || !url.endsWith(tail)) continue
-    const middle = url.slice(head.length, url.length - tail.length)
+  for (const [path, n] of countByPath) {
+    if (!path.startsWith(head) || !path.endsWith(tail)) continue
+    const middle = path.slice(head.length, path.length - tail.length)
     if (middle && !middle.includes('/')) total += n
   }
   return total
@@ -196,16 +252,17 @@ const html_sources = HTML_SOURCES.map(([path, collection, page_type, title, sele
   selector_group,
   content_root: 'section.blog__details-area > .container',
   min_items,
-  baseline_chunks: countByUrl.get(BASE + path) ?? 0,
+  baseline_chunks: countByPath.get(path) ?? 0,
 }))
 
-const pending_sources = PENDING.map(([path, role, status, reason]) => ({
-  source_id: `pending-${slugify(path)}`,
+const pending_sources = PENDING.map(([path, role, status, reason, extra = {}]) => ({
+  source_id: extra.source_id ?? `pending-${slugify(path)}`,
   url: BASE + path,
   role,
   status,
   reason,
-  baseline_chunks: countByUrl.get(BASE + path) ?? 0,
+  ...(extra.replaced_by ? { replaced_by: extra.replaced_by } : {}),
+  baseline_chunks: countByPath.get(path) ?? 0,
 }))
 
 // Những thứ cố ý để ngoài phạm vi. Ghi lại để lần sau ai đọc registry không
@@ -238,7 +295,14 @@ const frozen = (await readFile('data/chunks_frozen.jsonl', 'utf-8'))
   .split(NL)
   .filter((l) => l.trim())
   .map((l) => JSON.parse(l).url)
-const frozen_urls = [...new Set(frozen)].sort()
+// Đổi theo BASE giống mọi URL khác. Nhóm đóng băng phần lớn nằm ở tên miền
+// riêng (ecotech.bkfin.tech...) nên giữ nguyên, nhưng vài trang VDER lại nằm
+// ngay trên site chính. Không đổi thì khi chạy ở môi trường khác, discovery
+// không nhận ra chúng và tuần nào cũng báo "route mới" cho đúng những trang ta
+// cố ý không crawl — làm hàng chờ đầy dương tính giả, đúng cái mà mục 3.4 sợ.
+const frozen_urls = [...new Set(frozen)]
+  .map((u) => (u.startsWith(SITE_ORIGIN) ? BASE + u.slice(SITE_ORIGIN.length) : u))
+  .sort()
 
 const registry = {
   version: 1,
@@ -251,7 +315,20 @@ const registry = {
   out_of_scope,
 }
 
-await writeFile('data/sources.registry.json', JSON.stringify(registry, null, 2) + '\n')
+// Cảnh báo TRƯỚC khi ghi đè: đổi gốc URL chỉ nên xảy ra khi có chủ ý, và người
+// chạy phải thấy nó ngay tại đây chứ không phải suy ra từ việc baseline = 0.
+const previousBase = await readFile(REGISTRY_PATH, 'utf-8')
+  .then((t) => JSON.parse(t).base_url)
+  .catch(() => null)
+if (previousBase && previousBase !== BASE) {
+  console.log(`CANH BAO: base_url doi ${previousBase} -> ${BASE}`)
+  console.log('  Toan bo URL trong registry se duoc dung lai theo goc moi.')
+  console.log(`  Neu khong co y: CRAWL_BASE_URL=${previousBase} node scripts/build-registry.mjs`)
+}
+
+await writeFile(REGISTRY_PATH, JSON.stringify(registry, null, 2) + '\n')
+
+console.log(`base_url: ${BASE}`)
 
 const sum = (a) => a.reduce((s, x) => s + x.baseline_chunks, 0)
 const active = sum(json_sources) + sum(html_sources)

@@ -15,7 +15,7 @@
  * chạy liên tiếp mới được phép xoá.
  */
 import { readFile, writeFile } from 'node:fs/promises'
-import { fetchJsonSource, docsToRecords } from './lib/json-source.mjs'
+import { fetchJsonSource, docsToRecords, collapseLangVariants } from './lib/json-source.mjs'
 import { fetchHtmlSourceAllLangs } from './lib/html-source.mjs'
 import { makeChunks, chunksFromGroups, slugKey } from './lib/chunk.mjs'
 import { makeStatsChunk, makePersonnelChunk } from './lib/stats.mjs'
@@ -112,8 +112,11 @@ function chunksFromPerDoc(source, records) {
  * năm 2025 chỉ chạm chunk 2025, các năm cũ giữ nguyên hash và dùng lại vector.
  */
 function chunksFromAggregate(source, docs) {
-  const langs = new Set(docs.map((d) => d.lang).filter(Boolean))
-  const unique = langs.size > 1 ? docs.filter((d) => (d.lang ?? 'en') === 'en') : docs
+  // Gộp bản dịch, KHÔNG lọc theo ngôn ngữ. Bản trước giữ lại `lang === 'en'`
+  // khi collection có lẫn hai thứ tiếng, nên một mục chỉ có tiếng Việt — bài
+  // admin vừa thêm mà chưa dịch — không có bản nào để giữ và biến mất câm lặng.
+  // Xem chú thích dài ở `collapseLangVariants`.
+  const unique = collapseLangVariants(docs)
 
   const groups = new Map()
   for (const d of unique) {
@@ -135,6 +138,10 @@ function chunksFromAggregate(source, docs) {
         source_id: source.source_id,
         key: key === 'all' ? '' : key,
         url: source.url_template ?? source.endpoint,
+        // Nhãn CỐ ĐỊNH, không phải khai báo về nội dung: chunk gộp có thể trộn
+        // cả hai thứ tiếng. `lang` nằm trong chunk_id, nên suy nó ra từ dữ liệu
+        // sẽ khiến id đổi mỗi khi tỉ lệ ngôn ngữ trong collection đổi — tức là
+        // xoá-và-thêm lại toàn bộ chunk của nguồn mà không thêm thông tin nào.
         lang: 'en',
         title: section,
         section,

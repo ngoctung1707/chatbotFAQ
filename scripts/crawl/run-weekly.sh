@@ -53,6 +53,10 @@ RENEW_SEC="${RENEW_SEC:-60}"
 TIMEOUT_MIN="${TIMEOUT_MIN:-15}"
 
 RENEW_PID=""
+RAM_PID=""
+# Co danh dau bo lay mau RAM da tung chay, de `cleanup` biet co nen in tom tat
+# hay khong. Khong dung RAM_PID vi `stop_renewer` xoa no truoc khi toi luc hoi.
+RAM_RAN=0
 
 log() { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
 
@@ -65,8 +69,51 @@ restart_app() {
 # neu gio Viet Nam khong nam trong khung 1h-4h sang. Day la cach duy nhat phat
 # hien "lich chay nham 9h sang chu nhat" ma khong phai cho ai do bao lai.
 TZ_VN="Asia/Ho_Chi_Minh"
-VN_HOUR=$(TZ="$TZ_VN" date '+%-H')
-log "bat dau — UTC $(date -u '+%F %H:%M:%S') | VN $(TZ="$TZ_VN" date '+%F %H:%M:%S')"
+
+# ─── KHONG TIN `TZ=`, PHAI KIEM CHUNG NO ─────────────────────────────────────
+#
+# Ban truoc tinh gio Viet Nam bang `TZ=Asia/Ho_Chi_Minh date`. Cach do hong CAM
+# tren may khong co CSDL mui gio: `date` khong bao loi, no chi coi moi ten mui
+# gio la UTC — ke ca mot ten hoan toan bia dat. Do duoc tren may dev:
+#
+#   TZ=Asia/Ho_Chi_Minh    -> 07:20 GMT
+#   TZ=America/New_York    -> 07:20 GMT
+#   TZ=Zulu_Rac_Khong_Co   -> 07:20 GMT      <- van khong loi
+#
+# Va day khong phai loi hien thi. Neu may chu vien cung thieu tzdata thi
+# `Timezone=Asia/Ho_Chi_Minh` trong systemd timer CUNG hong y het: timer ban luc
+# 02:00 UTC = 9h SANG CHU NHAT gio Viet Nam. Luc do canh bao nay — thu duy nhat
+# phat hien duoc chuyen do — se tinh ra VN_HOUR = 2 va IM LANG. Hai loi cam trung
+# nhau, che dung cai can bao nhat.
+#
+# Nen tinh bang so hoc: Viet Nam co dinh UTC+7, khong co gio mua he tu 1975. Roi
+# doi chieu voi `TZ=` de biet tzdata con song hay khong.
+#
+# MOT hang so duy nhat dieu khien ca gio lan dau thoi gian. Truoc do co `7` va
+# `25200` nam o hai dong khac nhau — cung mot su that duoi hai don vi, sua mot
+# cho quen cho kia la ra hai gio khac nhau trong CUNG mot dong log.
+#
+# VA: KHONG suy do chenh nay tu gio may bang `date '+%-H'` tru `date -u '+%-H'`.
+# Cach do dung tren laptop dat gio Viet Nam, nhung MAY CHU VIEN DAT UTC — o do no
+# cho ra chenh 0 va "gio Viet Nam" thanh gio UTC, dung lai lo hong vua sua.
+VN_OFFSET_H=7
+VN_HOUR=$(( ($(date -u '+%-H') + VN_OFFSET_H) % 24 ))
+VN_HOUR_TZ=$(TZ="$TZ_VN" date '+%-H' 2>/dev/null || echo "$VN_HOUR")
+VN_EPOCH=$(( $(date -u '+%s') + VN_OFFSET_H * 3600 ))
+VN_STAMP=$(date -u -d "@$VN_EPOCH" '+%F %H:%M:%S' 2>/dev/null \
+  || date -u -r "$VN_EPOCH" '+%F %H:%M:%S' 2>/dev/null \
+  || echo "?")
+
+log "bat dau — UTC $(date -u '+%F %H:%M:%S') | VN $VN_STAMP"
+
+if [ "$VN_HOUR_TZ" != "$VN_HOUR" ]; then
+  log "CANH BAO: CSDL mui gio khong dung duoc tren may nay."
+  log "  TZ=$TZ_VN cho ${VN_HOUR_TZ}h, trong khi UTC+7 la ${VN_HOUR}h. Dang dung UTC+7."
+  log "  QUAN TRONG: 'Timezone=' trong systemd timer nhieu kha nang CUNG hong,"
+  log "  nghia la job co the dang chay 9h sang chu nhat chu khong phai 2h sang."
+  log "  Kiem tra: ls /usr/share/zoneinfo/$TZ_VN — thieu thi cai goi tzdata."
+fi
+
 if [ "$VN_HOUR" -lt 1 ] || [ "$VN_HOUR" -gt 4 ]; then
   log "CANH BAO: dang chay luc ${VN_HOUR}h gio Viet Nam, ngoai khung 1h-4h sang."
   log "  Kiem tra Timezone= trong systemd timer, hoac CRON_TZ trong crontab."
@@ -80,7 +127,7 @@ write_lease() {
   now=$(date -Iseconds)
   expires=$(date -Iseconds -d "+${LEASE_SEC} seconds" 2>/dev/null \
     || date -Iseconds -v "+${LEASE_SEC}S" 2>/dev/null)
-  printf '{"message":"Chatbot dang cap nhat du lieu, ban quay lai sau it phut nhe.","since":"%s","expires_at":"%s"}\n' \
+  printf '{"message":"Chatbot đang cập nhật, vui lòng quay lại trong ít phút.","since":"%s","expires_at":"%s"}\n' \
     "${LEASE_SINCE:-$now}" "$expires" > "$FLAG.tmp"
   mv -f "$FLAG.tmp" "$FLAG"
 }
@@ -96,11 +143,26 @@ start_renewer() {
   ( while :; do sleep "$RENEW_SEC"; write_lease || exit 0; done ) &
   RENEW_PID=$!
   log "cap giay phep — han ${LEASE_SEC}s, gia hạn moi ${RENEW_SEC}s (renewer pid $RENEW_PID)"
+
+  # Bo lay mau RAM chay song song, bat DUNG luc bat dau bao tri va tat truoc khi
+  # thu hoi giay phep — nen no do dung khoang thoi gian dang quan tam, khong lan
+  # sang pha A vốn khong bao tri gi ca.
+  #
+  # No do CA HAI thu: bo nho toan may (RSS cua rieng embed.ts khong noi len con
+  # bao nhieu cho trong, vi MongoDB va tien trinh web van chay ben canh), va
+  # `model_loaded` cua app — von PHAI la false suot cua so nay. Thay true nghia
+  # la co hai ban BGE-M3 trong RAM, tuc co che giay phep vua hong.
+  node scripts/crawl/ram-log.mjs &
+  RAM_PID=$!
+  RAM_RAN=1
+  log "theo doi RAM — mau moi ${RAM_SAMPLE_SEC:-2}s, ghi vao data/ram-maintenance.log"
 }
 
 stop_renewer() {
   [ -n "$RENEW_PID" ] && kill "$RENEW_PID" 2>/dev/null
   RENEW_PID=""
+  [ -n "$RAM_PID" ] && kill "$RAM_PID" 2>/dev/null
+  RAM_PID=""
 }
 
 # Cho app xac nhan DA NHA RAM, thay vi tin rang `docker compose restart` tra ve
@@ -131,6 +193,11 @@ wait_model_unloaded() {
 cleanup() {
   local code=$?
   stop_renewer
+  # In tom tat RAM TRUOC khi thu hoi giay phep va restart, de no co mat ca khi
+  # job that bai — do dung la luc can biet may con bao nhieu cho trong.
+  if [ "$RAM_RAN" -eq 1 ]; then
+    node scripts/crawl/ram-log.mjs --summary 2>&1 || log "khong doc duoc log RAM"
+  fi
   if [ -f "$FLAG" ]; then
     log "thu hoi giay phep (thoat voi ma $code)"
     rm -f "$FLAG" "$FLAG.tmp"

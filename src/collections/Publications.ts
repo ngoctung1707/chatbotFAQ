@@ -1,7 +1,15 @@
+import { anyone } from '@/access/anyone'
+import { authenticated } from '@/access/authenticated'
 import { CollectionConfig } from 'payload'
 
 export const Publications: CollectionConfig = {
   slug: 'publications',
+  access: {
+    create: authenticated,
+    delete: authenticated,
+    read: anyone,
+    update: authenticated,
+  },
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'link', type: 'text', required: true },

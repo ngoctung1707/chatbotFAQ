@@ -18,6 +18,7 @@
  * publications/công bố/số lượng, nó không hề khớp trên chuỗi "45".
  */
 import { hashOf } from './chunk.mjs'
+import { docIdentity } from './json-source.mjs'
 
 /** Mô tả để embed, và nhãn để LLM đọc. Chỉ khai cho collection đáng đếm. */
 const SUBJECTS = {
@@ -110,8 +111,11 @@ export function makeStatsChunk(slug, docs, source, now = new Date()) {
   // Định danh đúng là thứ tạo ra URL: slug, hoặc title/name khi collection
   // không có slug. Cách này đúng cho cả hai trường hợp mà không cần biết
   // collection nào song ngữ.
-  const identity = (d) => d.slug ?? d.title ?? d.name ?? d.id
-  const total = new Set(docs.map(identity).filter(Boolean)).size
+  // `docIdentity` dùng chung với `collapseLangVariants` trong json-source.mjs:
+  // con số đếm ở đây và danh sách mà index.mjs dựng phải cùng một khái niệm
+  // "một mục", nếu không chatbot sẽ nói "viện có 6 giải pháp" ngay bên cạnh một
+  // danh sách 4 dòng.
+  const total = new Set(docs.map(docIdentity).filter(Boolean)).size
   const unique = docs
 
   const lines = [`Tính đến ${dmy(now)}, viện có ${total} ${subject.noun}.`]
@@ -120,7 +124,7 @@ export function makeStatsChunk(slug, docs, source, now = new Date()) {
     const byYear = new Map()
     const seenYear = new Set()
     for (const d of unique) {
-      const key = identity(d)
+      const key = docIdentity(d)
       if (key && seenYear.has(key)) continue
       if (key) seenYear.add(key)
       const y = d.year ?? (d.publishedAt ? new Date(d.publishedAt).getFullYear() : null)
