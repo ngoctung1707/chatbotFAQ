@@ -34,9 +34,27 @@ TimeoutStartSec=25min
 StandardOutput=append:/home/hust/bkfintech/app/data/weekly.log
 StandardError=append:/home/hust/bkfintech/app/data/weekly.log
 
-# Job chet giua chung van phai tra chatbot ve trang thai phuc vu. Bay EXIT trong
-# script lo phan chinh; day la luoi cho truong hop script bi kill -9.
-ExecStopPost=/usr/bin/env bash -c 'rm -f data/maintenance.flag data/.weekly.lock; docker compose restart app || true'
+# Luoi cho truong hop bay EXIT trong script khong chay duoc: bi `kill -9`, OOM
+# killer, hoac systemd tu cat vi qua TimeoutStartSec.
+#
+# ─── VI SAO KHONG CON `docker compose restart app` O DAY ─────────────────────
+#
+# ExecStopPost chay sau MOI lan unit ket thuc, ke ca thanh cong. Ma duong thanh
+# cong thi bay EXIT da restart app roi — nen moi chu nhat website bi restart hai
+# lan lien tiep, lan thu hai roi dung luc tien trinh moi dang nap model, vut bo
+# cong nap do va bat ca site chop them mot nhip khong can thiet.
+#
+# Bo di khong mat gi, vi giay phep tu het han da lo phan phuc hoi: app dang chay
+# o che do bo preload se tu tra loi binh thuong tro lai ngay khi han het, roi nap
+# model lazily o cau hoi dau tien. Cham hon vai giay cho DUNG MOT cau hoi, doi lai
+# khong con lan restart thua nao.
+#
+# Hai lenh `rm -f` thi giu: xoa giay phep rut phuc hoi tu 5 phut xuong tuc thi,
+# va xoa lock la thu that su can — mot lock sot lai se chan MOI lan chay sau do.
+# An toan vi KillMode mac dinh la control-group: systemd da giet ca nhom tien
+# trinh (ke ca `tsx` con dang embed) TRUOC khi dong nay chay, nen "khong con giay
+# phep" van dong nghia voi "khong con ai giu RAM".
+ExecStopPost=/usr/bin/env bash -c 'rm -f data/maintenance.flag data/maintenance.flag.tmp data/.weekly.lock'
 
 [Install]
 WantedBy=multi-user.target

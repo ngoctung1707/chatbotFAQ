@@ -18,9 +18,18 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { fetchJsonSource, docsToRecords } from './lib/json-source.mjs'
 import { fetchHtmlSourceAllLangs } from './lib/html-source.mjs'
 import { makeChunks, chunksFromGroups, slugKey } from './lib/chunk.mjs'
-import { makeStatsChunk } from './lib/stats.mjs'
-import { loadState, saveState, entryOf, markSeen, markMissing, GRACE_RUNS } from './lib/state.mjs'
-import { diffChunks, chunkMap, latestUpdatedAt, pageHash, planEmbedding } from './lib/diff.mjs'
+import { makeStatsChunk, makePersonnelChunk } from './lib/stats.mjs'
+import {
+  loadState,
+  saveState,
+  entryOf,
+  markSeen,
+  markMissing,
+  markUnknown,
+  GRACE_RUNS,
+  FAIL_RUNS,
+} from './lib/state.mjs'
+import { diffChunks, chunkMap, latestUpdatedAt, pageHash } from './lib/diff.mjs'
 import { scanRepoRoutes, findNewRoutes, writePending, makeKnownMatcher } from './lib/discover.mjs'
 
 const args = process.argv.slice(2)
@@ -39,7 +48,6 @@ const FORCE = args.includes('--force')
 const REGISTRY = 'data/sources.registry.json'
 const OUT = 'data/crawl-output.jsonl'
 const PLAN = 'data/crawl-plan.json'
-const CACHE = 'data/embeddings.cache.jsonl'
 
 const NL = String.fromCharCode(10)
 const now = new Date().toISOString()
@@ -52,7 +60,12 @@ const report = {
   errors: [],
   gone: [],
   broken: [],
+  // Nguồn đã hỏng liên tiếp đủ FAIL_RUNS lần — không còn là sự cố nhất thời.
+  stale: [],
   discovered: [],
+  // source_id khi chạy tay `--source=`, null khi là lần chạy đầy đủ. Trang admin
+  // cần biết để không trình bày một lần chạy một nguồn như thể là lần chạy tuần.
+  partial: null,
 }
 
 const fail = (source_id, message) => report.errors.push({ source_id, message })
@@ -218,26 +231,45 @@ async function runHtmlSource(source, entry) {
   return { state: 'ok', chunks, links, hashes }
 }
 
-async function loadCacheHashes() {
-  try {
-    const raw = await readFile(CACHE, 'utf-8')
-    const set = new Set()
-    for (const line of raw.split('\n')) {
-      if (!line.trim()) continue
-      const h = JSON.parse(line).hash
-      if (h) set.add(h)
+/**
+ * Ghép kết quả của một lần chạy `--source=X` vào kho đang có.
+ *
+ * ─── VÌ SAO CẦN HÀM NÀY ──────────────────────────────────────────────────────
+ *
+ * `--source=X` chỉ lọc danh sách nguồn, nên `allChunks` cuối vòng lặp chứa ĐÚNG
+ * chunk của X. Trước đây bước ghi đem thẳng mảng đó đè lên `crawl-output.jsonl`
+ * — tức là xoá sạch chunk của 27 nguồn còn lại.
+ *
+ * Và lần chạy đầy đủ kế tiếp KHÔNG cứu được: các nguồn khác báo `skipped` (state
+ * của chúng có đổi gì đâu) nên đi lấy chunk cũ từ chính file vừa bị xoá. Kho tụt
+ * xuống còn vài chục chunk, van 20% ở pha C chặn lại, và chatbot đứng nguyên cho
+ * tới khi có người crawl lại toàn bộ.
+ *
+ * Giữ đúng vị trí cũ của nguồn trong file thay vì đẩy xuống cuối: thứ tự không
+ * ảnh hưởng tới truy hồi, nhưng giữ nguyên thì `diff` giữa hai lần chạy đọc được
+ * bằng mắt.
+ */
+function mergeIntoPrevious(previous, only, fresh) {
+  const out = []
+  let replaced = false
+  for (const [source_id, chunks] of previous) {
+    if (source_id === only) {
+      out.push(...fresh)
+      replaced = true
+    } else {
+      out.push(...chunks)
     }
-    return set
-  } catch {
-    return new Set()
   }
+  if (!replaced) out.push(...fresh)
+  return out
 }
 
 async function main() {
   const registry = JSON.parse(await readFile(REGISTRY, 'utf-8'))
   const state = await loadState()
-  const cached = await loadCacheHashes()
-  state.run = (state.run ?? 0) + 1
+  // Chạy tay một nguồn không phải một "lần chạy" của lịch tuần: nó không kiểm
+  // hết kho, nên đếm nó vào sẽ làm sai số thứ tự lần chạy trong mọi báo cáo.
+  if (!ONLY) state.run = (state.run ?? 0) + 1
 
   const sources = [...registry.json_sources, ...registry.html_sources].filter(
     (s) => !ONLY || s.source_id === ONLY
@@ -307,9 +339,15 @@ async function main() {
         line.note = `vang mat ${entry.missing_runs}/${GRACE_RUNS} lan — chua xoa`
       }
     } else if (r.state === 'broken' || r.state === 'unknown') {
-      // Giữ nguyên mọi thứ: state không đổi, chunk cũ được mang sang nguyên vẹn.
+      // Giữ nguyên mọi thứ: chunk cũ được mang sang nguyên vẹn, updated_at và
+      // page_hash không đổi nên lần sau vẫn crawl lại nguồn này.
       allChunks.push(...dedup(previous.get(s.source_id) ?? []))
-      line.note = 'giu nguyen chunk cu'
+      const persistent = markUnknown(entry)
+      line.fail_runs = entry.fail_runs
+      line.note = persistent
+        ? `HONG ${entry.fail_runs} lan chay lien tiep — giu nguyen chunk cu`
+        : `giu nguyen chunk cu (hong ${entry.fail_runs}/${FAIL_RUNS})`
+      if (persistent) report.stale.push({ source_id: s.source_id, fail_runs: entry.fail_runs })
     } else if (r.state === 'skipped') {
       markSeen(entry, now)
       allChunks.push(...dedup(previous.get(s.source_id) ?? []))
@@ -333,9 +371,35 @@ async function main() {
     process.stdout.write(`  ${s.source_id.padEnd(40)} ${bits}\n`)
   }
 
-  // Mục 3.3 — chunk nào tra được cache thì không phải chạy model.
+  // Mục luục nhân sự — dựng SAU vòng lặp vì nó tổng hợp từ hai nguồn.
+  //
+  // Phải loại bản mang-sang trước: chunk này mang `source_id` của trang
+  // researchers-and-assistants, nên khi nguồn đó bị bỏ qua ở tầng thô thì bản cũ
+  // đã được đưa vào `allChunks` rồi. Không loại thì có hai chunk trùng
+  // `chunk_id`, và bản cũ có thể mang con số cũ của một nhóm vừa đổi ở trang kia.
+  const personnelIdx = allChunks.findIndex((c) => c.chunk_id === 'stats_personnel_c01')
+  if (personnelIdx >= 0) allChunks.splice(personnelIdx, 1)
+  const personnel = makePersonnelChunk(allChunks)
+  if (personnel) allChunks.push(personnel)
+
+  // Mục 3.3 — "mới hoặc đã đổi so với lần crawl trước". Khử trùng theo
+  // `chunk_hash` vì hai nguồn có thể sinh ra cùng một đoạn chữ.
+  //
+  // Cố ý KHÔNG tự chia con số này thành "có trong cache" / "phải chạy model" ở
+  // đây. Khoá của cache là băm của CHUỖI ĐƯỢC EMBED — `content` cộng thêm header
+  // `[nhãn — BK Fintech, ...]` mà `embeddedText()` ghép vào — chứ không phải
+  // `chunk_hash` vốn chỉ băm `content`. Bản trước so hai thứ đó với nhau và
+  // không bao giờ khớp: đo trên kho thật được 0/415 hit, trong khi khoá đúng cho
+  // 415/415. Hậu quả là trang admin luôn hiện "lấy được từ cache: 0" và mâu
+  // thuẫn với log của job.
+  //
+  // Không sửa bằng cách chép `embeddedText()` sang đây: file này chạy bằng
+  // `node` thuần nên không import được module TypeScript, mà chép ra bản thứ hai
+  // thì đúng vào cái bẫy mà `src/lib/chatbot/embeddedText.ts` sinh ra để tránh —
+  // lệch một ký tự là vector nằm sai không gian, không lỗi, không cảnh báo.
+  // Câu hỏi về cache thuộc về `cache-report.ts`, nơi có sẵn định nghĩa đúng và
+  // chạy ngay sau pha A.
   const uniqueNeed = [...new Map(needEmbed.map((c) => [c.chunk_hash, c])).values()]
-  const { fromCache, toEmbed } = planEmbedding(uniqueNeed, cached)
 
   // Mục 3.4 — phát hiện route mới.
   const repoRoutes = await scanRepoRoutes()
@@ -348,11 +412,15 @@ async function main() {
   ]
 
   // MUC 5.2 — van chong "moi thu deu doi".
+  //
+  // Van nay do TI LE nguon bao da doi, nen no vo nghia khi chi kiem mot nguon:
+  // ti le chi co the la 0 hoac 1, va 1 > 0.30 nghia la moi lan chay tay tren
+  // mot nguon that su co thay doi deu bi huy voi ly do "vuot nguong 30%".
   const checked = report.sources.filter((r) => ['ok', 'skipped'].includes(r.state))
   const changed = checked.filter((r) => (r.added ?? 0) + (r.changed ?? 0) > 0)
   const rate = checked.length ? changed.length / checked.length : 0
   report.change_rate = Number(rate.toFixed(3))
-  if (rate > MAX_CHANGE_RATE && state.run > 1) {
+  if (rate > MAX_CHANGE_RATE && state.run > 1 && !ONLY) {
     const pct = (rate * 100).toFixed(0)
     console.error(`${NL}HUY: ${changed.length}/${checked.length} nguon (${pct}%) cung bao da doi.`)
     console.error('Vuot nguong 30% — gan nhu chac chan la normalize hong hoac site doi template.')
@@ -365,35 +433,50 @@ async function main() {
     console.error('(--force: bo qua van 5.2)')
   }
 
+  // `crawl-output.jsonl` PHAI luon la toan bo kho song. Voi --source= thi
+  // allChunks chi la mot nguon, nen phai ghep vao ban cu thay vi de len.
+  const outChunks = ONLY ? mergeIntoPrevious(previous, ONLY, allChunks) : allChunks
+  if (ONLY) {
+    report.partial = ONLY
+    if (!previous.size) {
+      console.error(`\nCANH BAO: ${OUT} dang rong hoac chua co.`)
+      console.error(`  Ghi ra day se chi co chunk cua "${ONLY}", khong phai toan kho.`)
+      console.error('  Chay day du mot lan truoc khi dung --source=.')
+    }
+  }
+
   report.totals = {
-    chunks: allChunks.length,
+    chunks: outChunks.length,
+    chunks_this_source: ONLY ? allChunks.length : undefined,
     need_embed: uniqueNeed.length,
-    from_cache: fromCache.length,
-    to_embed: toEmbed.length,
     to_remove: toRemove.length,
     discovered: report.discovered.length,
   }
   report.finished_at = new Date().toISOString()
 
   if (!DRY_RUN) {
-    await writeFile(OUT, allChunks.map((c) => JSON.stringify(c)).join('\n') + '\n')
+    await writeFile(OUT, outChunks.map((c) => JSON.stringify(c)).join('\n') + '\n')
     await writeFile(
       PLAN,
       JSON.stringify(
-        { ...report, to_embed: toEmbed.map((c) => c.chunk_id), to_remove: toRemove },
+        { ...report, to_remove: toRemove },
         null,
         2
       ) + '\n'
     )
     await saveState(state)
-    if (report.discovered.length) await writePending(report.discovered)
+    // Cung ly do nhu tren: mot lan chay tay chi thay link cua dung mot nguon,
+    // nen ghi de danh sach cho duyet se lam mat route ma cac nguon khac tim ra.
+    if (report.discovered.length && !ONLY) await writePending(report.discovered)
   }
 
-  console.log(`\nlan chay #${state.run}`)
-  console.log(`  chunk tong        ${allChunks.length}`)
+  console.log(ONLY ? `\nchay tay mot nguon: ${ONLY} (lan chay van la #${state.run})` : `\nlan chay #${state.run}`)
+  if (ONLY) {
+    console.log(`  chunk cua nguon nay  ${allChunks.length}`)
+    console.log(`  giu nguyen tu cac nguon khac  ${outChunks.length - allChunks.length}`)
+  }
+  console.log(`  chunk tong        ${outChunks.length}`)
   console.log(`  moi/doi so voi lan truoc  ${uniqueNeed.length}`)
-  console.log(`    da co trong cache       ${fromCache.length}`)
-  console.log(`    chua co trong cache     ${toEmbed.length}`)
   // Con so o tren tra loi "co gi doi so voi LAN CRAWL TRUOC". No KHONG phai do
   // dai cua so bao tri: store van co the thieu vector cho nhung chunk khong he
   // doi (vi du lan dau chuyen sang pipeline moi). Con so co tham quyen la cua
@@ -410,12 +493,55 @@ async function main() {
     for (const e of report.errors) console.log(`  ${e.source_id}: ${e.message}`)
   }
   if (report.discovered.length) {
-    console.log(`\nROUTE MOI CHO DUYET (${report.discovered.length}) -> data/pending-routes.json`)
+    console.log(
+      ONLY
+        ? `\nROUTE MOI THAY DUOC (${report.discovered.length}) — KHONG ghi de pending-routes.json khi chay tay mot nguon`
+        : `\nROUTE MOI CHO DUYET (${report.discovered.length}) -> data/pending-routes.json`
+    )
     for (const d of report.discovered.slice(0, 12)) console.log(`  [${d.found_by}] ${d.route ?? d.url}`)
     if (report.discovered.length > 12) console.log(`  ... con ${report.discovered.length - 12}`)
   }
+  if (report.stale.length) {
+    console.log(`\nNGUON DA NGUNG CAP NHAT (${report.stale.length}) — hong tu ${FAIL_RUNS} lan chay tro len:`)
+    for (const s of report.stale) console.log(`  ${s.source_id}  (${s.fail_runs} lan lien tiep)`)
+    console.log('  Chung dang phuc vu bang chunk cu. Can nguoi vao xem selector hoac URL.')
+  }
   console.log(DRY_RUN ? '\n(dry-run — khong ghi file nao)' : `\nda ghi ${OUT}, ${PLAN}, crawl_state.json`)
-  if (report.broken.length || report.errors.length) process.exitCode = 1
+
+  // ─── MA THOAT: HONG MOT NGUON KHONG DUOC PHEP HUY CA TUAN ──────────────────
+  //
+  // Ban truoc dat mã 1 khi co BAT KY nguon nao hong, va `run-weekly.sh` hieu
+  // mã khac 0 la "dung lai, khong vao bao tri". Nghia la mot request trong so
+  // ~47 request timeout luc 2h sang se vut bo ca 27 nguon con lai da cap nhat
+  // dung. Va neu selector vo that su — kieu hong co xac suat cao nhat, vi doi
+  // web doi markup luc nao khong bao — thi chi muc DONG BANG VINH VIEN, tuan
+  // nao cung thoat mã 1, khong ai biet.
+  //
+  // Mia mai la pha A da xu ly tung nguon rat dung roi: giu nguyen chunk cu,
+  // khong dung toi state, nen dau ra VAN LA MOT KHO HOP LE. Khong co ly do gi
+  // de khong dem no di embed.
+  //
+  // Ba mức, tach bach:
+  //
+  //   0  sach
+  //   2  co nguon hong nhung ket qua dung duoc -> B va C CU CHAY
+  //   1  khong dung duoc lan chay nay (van 30% o tren, hoac ngoai le)
+  //
+  // Mã 2 van la khac 0 nen systemd đanh dau unit that bai va nguoi van thay.
+  // Thu doi la HANH DONG, khong phai tin hieu: du lieu van chay, canh bao van
+  // keu.
+  const failed = report.sources.filter((s) => s.state === 'broken' || s.state === 'unknown').length
+  // `errors` bat them mot truong hop ma `failed` khong thay: nguon co mot ngon
+  // ngu lay duoc va mot ngon ngu timeout van tra ve 'ok', nhung kho lan nay
+  // thieu mot nua. Do la du lieu khong day du chu khong phai nguon hong.
+  if (failed || report.errors.length) {
+    console.log(
+      `\n${failed}/${report.sources.length} nguon khong kiem tra duoc` +
+        (report.errors.length ? `, ${report.errors.length} loi le` : '') +
+        ' — cac nguon con lai VAN duoc cap nhat va se di tiep sang pha B.'
+    )
+    process.exitCode = 2
+  }
 }
 
 main().catch((err) => {

@@ -22,6 +22,18 @@ export const STATE_PATH = 'data/crawl_state.json'
 /** Số lần chạy liên tiếp phải vắng mặt trước khi thật sự xoá. */
 export const GRACE_RUNS = 2
 
+/**
+ * Số lần chạy liên tiếp một nguồn không kiểm tra được, trước khi coi đó là hỏng
+ * THẬT chứ không phải sự cố nhất thời.
+ *
+ * Bộ đếm này không quyết định xoá gì cả — nó chỉ để phân biệt hai thứ trông
+ * giống hệt nhau trong log: "site chậm một đêm" và "đội web đổi class từ ba
+ * tuần trước mà không ai biết". Trường hợp thứ hai là kiểu hỏng im lặng nhất
+ * của cả hệ thống: nguồn đó giữ nguyên chunk cũ, chatbot vẫn trả lời, và không
+ * có gì trong đầu ra nói rằng nó đã ngừng cập nhật.
+ */
+export const FAIL_RUNS = 3
+
 export async function loadState(path = STATE_PATH) {
   try {
     const raw = JSON.parse(await readFile(path, 'utf-8'))
@@ -42,6 +54,7 @@ export function emptyEntry() {
     last_seen_at: null,
     missing_since: null,
     missing_runs: 0,
+    fail_runs: 0, // số lần chạy liên tiếp không kiểm tra được
     updated_at: null, // nguồn JSON
     page_hash: {}, // nguồn HTML, theo lang
     chunks: {}, // chunk_id -> chunk_hash
@@ -50,11 +63,12 @@ export function emptyEntry() {
 
 export const entryOf = (state, source_id) => state.sources[source_id] ?? emptyEntry()
 
-/** Lấy được nội dung: xoá mọi dấu vết vắng mặt. */
+/** Lấy được nội dung: xoá mọi dấu vết vắng mặt và mọi dấu vết hỏng. */
 export function markSeen(entry, at) {
   entry.last_seen_at = at
   entry.missing_since = null
   entry.missing_runs = 0
+  entry.fail_runs = 0
   return entry
 }
 
@@ -65,6 +79,9 @@ export function markSeen(entry, at) {
 export function markMissing(entry, at) {
   entry.missing_runs = (entry.missing_runs ?? 0) + 1
   if (!entry.missing_since) entry.missing_since = at
+  // 404/410 là một KẾT LUẬN, không phải một lần không kiểm tra được. Nguồn này
+  // đang được theo dõi đúng cách bằng bộ đếm ân hạn riêng, nên xoá fail_runs.
+  entry.fail_runs = 0
   return entry.missing_runs >= GRACE_RUNS
 }
 
@@ -73,7 +90,14 @@ export function markMissing(entry, at) {
  *
  * Cố ý KHÔNG đụng vào missing_runs. Nếu tính lỗi mạng vào ân hạn thì hai chủ
  * nhật site chậm liên tiếp sẽ xoá sạch nội dung thật.
+ *
+ * Nhưng PHẢI đếm vào fail_runs. Không đếm thì lần chạy thứ nhất và lần thứ mười
+ * đọc ra giống hệt nhau trong log, mà chúng là hai chuyện hoàn toàn khác: một
+ * bên là site chậm, một bên là nguồn đã ngừng cập nhật gần ba tháng.
+ *
+ * @returns {boolean} true nếu nguồn đã hỏng liên tiếp đủ ngưỡng — hỏng thật.
  */
 export function markUnknown(entry) {
-  return entry
+  entry.fail_runs = (entry.fail_runs ?? 0) + 1
+  return entry.fail_runs >= FAIL_RUNS
 }

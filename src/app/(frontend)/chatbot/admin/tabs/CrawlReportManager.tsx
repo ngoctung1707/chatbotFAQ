@@ -18,6 +18,7 @@ import { toast } from 'react-toastify'
 interface CrawlReport {
   ok: boolean
   aborted: string | null
+  partial?: string | null
   started_at: string | null
   finished_at: string | null
   duration_sec: number | null
@@ -27,6 +28,7 @@ interface CrawlReport {
   broken: { source_id: string; lang: string; error: string }[]
   errors: { source_id: string; message: string }[]
   gone: { source_id: string; url: string }[]
+  stale?: { source_id: string; fail_runs: number }[]
   pending_routes: number
   maintenance: { active: boolean; message: string; since: string | null }
   reason?: string
@@ -46,11 +48,17 @@ const formatDuration = (sec: number | null) => {
   return `${Math.floor(sec / 60)} phút ${sec % 60} giây`
 }
 
+// Chỉ những khoá có mặt ở đây mới được hiện. Nhờ vậy các bản kế hoạch cũ còn
+// mang `from_cache` / `to_embed` — hai con số pha A từng tự suy ra bằng sai
+// khoá, luôn cho ra "0 lấy được từ cache" — sẽ lặng lẽ biến mất thay vì hiện
+// một con số mâu thuẫn với log của job.
 const LABELS: Record<string, string> = {
   chunks: 'Tổng chunk trong kho',
-  need_embed: 'Mới hoặc đã đổi',
-  from_cache: 'Lấy được từ cache',
-  to_embed: 'Phải chạy model',
+  chunks_this_source: 'Chunk của nguồn vừa chạy tay',
+  need_embed: 'Mới hoặc đã đổi so với lần crawl trước',
+  // Con số này do `cache-report.ts` đóng dấu vào kế hoạch, vì chỉ nó dùng đúng
+  // khoá cache (băm của chuỗi được embed, không phải của riêng `content`).
+  must_embed: 'Thật sự phải chạy model',
   to_remove: 'Cần xoá',
   discovered: 'Route mới phát hiện',
 }
@@ -103,7 +111,11 @@ export default function CrawlReportManager() {
     )
   }
 
-  const hasIssue = !report.ok || report.broken.length > 0 || report.errors.length > 0
+  const hasIssue =
+    !report.ok ||
+    report.broken.length > 0 ||
+    report.errors.length > 0 ||
+    (report.stale?.length ?? 0) > 0
 
   return (
     <>
@@ -122,6 +134,14 @@ export default function CrawlReportManager() {
           </p>
         )}
 
+        {report.partial && (
+          <p className={styles.errorText}>
+            Đây là một lần <strong>chạy tay một nguồn</strong> (<code>--source={report.partial}</code>),
+            không phải lần chạy tuần. Các con số bên dưới chỉ nói về nguồn đó — những nguồn
+            khác không được kiểm trong lần này.
+          </p>
+        )}
+
         {report.aborted && (
           <p className={styles.errorText}>
             Lần chạy bị HUỶ bởi van an toàn: <code>{report.aborted}</code>. Chỉ mục cũ được
@@ -129,7 +149,9 @@ export default function CrawlReportManager() {
           </p>
         )}
 
-        {!hasIssue && !report.aborted && <p className={styles.successText}>Chạy sạch, không có sự cố.</p>}
+        {!hasIssue && !report.aborted && !report.partial && (
+          <p className={styles.successText}>Chạy sạch, không có sự cố.</p>
+        )}
 
         <table className={styles.table}>
           <tbody>
@@ -166,6 +188,28 @@ export default function CrawlReportManager() {
           </tbody>
         </table>
       </div>
+
+      {(report.stale?.length ?? 0) > 0 && (
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Nguồn đã ngừng cập nhật — cần người xem</div>
+          <p>
+            Những nguồn này hỏng nhiều lần chạy liên tiếp, nên gần như chắc chắn không còn
+            là sự cố mạng nhất thời. Chúng vẫn đang phục vụ bằng chunk cũ, nghĩa là chatbot
+            không hề báo lỗi — nó chỉ lặng lẽ trả lời bằng dữ liệu đứng yên từ nhiều tuần
+            trước. Kiểm tra selector trong registry hoặc URL đã đổi.
+          </p>
+          <table className={styles.table}>
+            <tbody>
+              {report.stale?.map((s, i) => (
+                <tr key={i}>
+                  <td>{s.source_id}</td>
+                  <td>hỏng {s.fail_runs} lần chạy liên tiếp</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {report.broken.length > 0 && (
         <div className={styles.card}>
@@ -225,12 +269,14 @@ export default function CrawlReportManager() {
         <div className={styles.cardTitle}>Số liệu</div>
         <table className={styles.table}>
           <tbody>
-            {Object.entries(report.totals).map(([k, v]) => (
-              <tr key={k}>
-                <td>{LABELS[k] ?? k}</td>
-                <td>{v}</td>
-              </tr>
-            ))}
+            {Object.entries(report.totals)
+              .filter(([k]) => k in LABELS)
+              .map(([k, v]) => (
+                <tr key={k}>
+                  <td>{LABELS[k]}</td>
+                  <td>{v}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

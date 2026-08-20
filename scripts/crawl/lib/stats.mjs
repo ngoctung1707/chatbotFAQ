@@ -52,12 +52,36 @@ const SUBJECTS = {
       'nhóm nghiên cứu, đếm phòng thí nghiệm.',
     noun: 'phòng thí nghiệm (lab)',
   },
-  members: {
-    embed:
-      'Thống kê số lượng nhân sự của viện. Viện có bao nhiêu thành viên, bao nhiêu cán ' +
-      'bộ, đếm nhân sự.',
-    noun: 'thành viên',
-  },
+  // KHÔNG có `members` ở đây, và đó là chủ ý — xem `makePersonnelChunk` bên dưới.
+  //
+  // Bản trước đếm collection `members` và sinh ra câu "viện có 19 thành viên".
+  // Con số đó SAI: collection ấy chỉ gồm Ban Giám đốc (3) và Nhà nghiên cứu
+  // (16), thiếu hẳn 5 trợ lý, nên tổng thật là 24. Tệ hơn là nó sai một cách tự
+  // tin — chatbot khẳng định "19" chứ không hề tỏ ra lưỡng lự.
+  //
+  // Nguồn `json-members` nay đã bị đánh `rejected` trong registry (trang
+  // /members là route mồ côi, không chỗ nào link tới), nên nhánh này không bao
+  // giờ chạy nữa. Vẫn xoá khai báo đi thay vì để lại: còn khai là còn cái bẫy
+  // cho người sau bật lại nguồn rồi lấy về đúng con số sai đó.
+}
+
+/**
+ * Nguồn sự thật cho câu hỏi "viện có những ai / bao nhiêu thành viên".
+ *
+ * Khoá là `source_id`, hoặc `source_id|<tên nhóm h4>` khi một trang chia nhiều
+ * nhóm. Giá trị là nhãn tiếng Việt dùng trong câu trả lời.
+ */
+const PERSONNEL_GROUPS = {
+  'html-about-board-of-deans': 'Ban Giám đốc Viện',
+  'html-about-researchers-and-assistants|Researchers': 'Nhà nghiên cứu',
+  'html-about-researchers-and-assistants|Assistants': 'Trợ lý',
+}
+
+/** Bỏ hậu tố "(phần i/n)" và lấy phần sau dấu — của nhãn ghép. */
+function groupKey(chunk) {
+  const section = (chunk.section ?? '').replace(/\s*\(phần \d+\/\d+\)\s*$/u, '')
+  const tail = section.includes(' — ') ? section.split(' — ').pop().trim() : null
+  return tail ? `${chunk.source_id}|${tail}` : chunk.source_id
 }
 
 const dmy = (d) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
@@ -131,6 +155,84 @@ export function makeStatsChunk(slug, docs, source, now = new Date()) {
     domain: 'fintech.hust.edu.vn',
     // Băm trên content, vốn cố ý KHÔNG chứa con số — nên hash đứng yên vĩnh
     // viễn và chunk này chỉ phải embed đúng một lần trong đời.
+    chunk_hash: hashOf(content),
+  }
+}
+
+/**
+ * Chunk "mục lục nhân sự" — câu trả lời cho "viện có những ai", "liệt kê tất cả
+ * thành viên", "viện có trợ lý không".
+ *
+ * ─── VÌ SAO PHẢI CÓ MỘT CHUNK RIÊNG ──────────────────────────────────────────
+ *
+ * Thành viên của viện nằm rải trên HAI trang và BA nhóm: Ban Giám đốc, Nhà
+ * nghiên cứu, Trợ lý. Retriever chỉ cho tối đa 3 chunk cùng một URL vào <data>
+ * và top-k là 7, nên không câu hỏi nào kéo được đủ cả ba nhóm về cùng lúc — y
+ * hệt lý do chunk thống kê publications phải tồn tại. Không có chunk này thì
+ * "liệt kê tất cả thành viên" chỉ có thể trả lời đúng MỘT phần, và người hỏi
+ * không có cách nào biết là còn thiếu.
+ *
+ * ─── KHÁC VỚI `makeStatsChunk` Ở HAI CHỖ ─────────────────────────────────────
+ *
+ * 1. Nó dựng từ `allChunks` SAU vòng lặp, không từ một nguồn. Nếu gắn nó vào
+ *    một nguồn thì lần chạy nào nguồn đó bị bỏ qua ở tầng thô, chunk này sẽ
+ *    được mang sang nguyên bản CŨ — kể cả khi trang kia vừa thêm người. Dựng
+ *    lại mỗi lần từ kho hiện hành thì không có đường nào lệch.
+ * 2. `source_id` vẫn phải là một nguồn CÓ THẬT (xem chú thích dài ở
+ *    `makeStatsChunk`), nên nó mượn id của trang nhân sự lớn nhất. Bên gọi có
+ *    trách nhiệm loại bản mang-sang trước khi thêm bản mới, nếu không sẽ có hai
+ *    bản trùng chunk_id.
+ *
+ * Vẫn giữ nguyên nguyên tắc hai trường: `content` không chứa con số nên vector
+ * đứng yên vĩnh viễn, `raw` mang số nên tuần nào cũng đúng.
+ */
+export function makePersonnelChunk(allChunks, now = new Date()) {
+  const OWNER = 'html-about-researchers-and-assistants'
+
+  // Trang nhân sự viết tiếng Anh; chỉ đếm một thứ tiếng để không nhân đôi.
+  const relevant = allChunks.filter((c) => groupKey(c) in PERSONNEL_GROUPS)
+  if (!relevant.length) return null
+  const lang = relevant.some((c) => c.lang === 'en') ? 'en' : relevant[0].lang
+
+  const counts = new Map()
+  for (const c of relevant) {
+    if (c.lang !== lang) continue
+    const label = PERSONNEL_GROUPS[groupKey(c)]
+    const n = c.raw.split('\n').filter((l) => l.trim()).length
+    counts.set(label, (counts.get(label) ?? 0) + n)
+  }
+  if (!counts.size) return null
+
+  // Giữ đúng thứ tự khai trong PERSONNEL_GROUPS, không theo thứ tự crawl.
+  const order = [...new Set(Object.values(PERSONNEL_GROUPS))]
+  const parts = order.filter((l) => counts.has(l)).map((l) => `${l} ${counts.get(l)} người`)
+  const total = [...counts.values()].reduce((a, b) => a + b, 0)
+
+  const content =
+    '[Thống kê thành viên viện]\n' +
+    'Thống kê nhân sự của viện. Viện có bao nhiêu thành viên, bao nhiêu người, bao nhiêu ' +
+    'cán bộ, đếm nhân sự. Danh sách toàn bộ thành viên của viện gồm Ban Giám đốc Viện, ' +
+    'các nhà nghiên cứu và các trợ lý. Liệt kê tất cả thành viên, kể tên nhân sự, ' +
+    'viện có trợ lý không, viện có nhà nghiên cứu không, viện có những ai.'
+
+  return {
+    chunk_id: 'stats_personnel_c01',
+    source_id: OWNER,
+    content,
+    raw:
+      `Tính đến ${dmy(now)}, viện có ${total} thành viên, gồm ${parts.join(', ')}. ` +
+      'Thành viên của viện gồm ba nhóm: Ban Giám đốc Viện, các nhà nghiên cứu, và các trợ lý. ' +
+      'Danh sách tên từng người nằm ở trang /about/board-of-deans và ' +
+      '/about/researchers-and-assistants.',
+    title: 'Thống kê thành viên viện',
+    url: 'https://fintech.hust.edu.vn/about/researchers-and-assistants',
+    collection: 'people',
+    page_type: 'stats',
+    published_at: null,
+    lang: 'vi',
+    section: 'Thống kê thành viên viện',
+    source: 'derived',
+    domain: 'fintech.hust.edu.vn',
     chunk_hash: hashOf(content),
   }
 }

@@ -27,6 +27,7 @@ import {
   REWRITE_ANSWER_SNIPPET_CHARS,
   REWRITE_ENABLED,
   REWRITE_HISTORY_PAIRS,
+  REWRITE_MAX_LOAD,
   REWRITE_MAX_OUTPUT_TOKENS,
   REWRITE_MODEL,
   REWRITE_TIMEOUT_MS,
@@ -188,18 +189,51 @@ function estimateRewriteTokens(input: string): number {
  * budget thì lượt request phải để dành cho CÂU TRẢ LỜI, không phải cho bước phụ
  * trợ này. Nên hết budget là bỏ rewrite, không tiêu nốt lượt cuối.
  *
- * Trả null khi REWRITE_MODEL không có trong MODEL_POOL. Im lặng bỏ rewrite là
+ * Ngưỡng nhường là REWRITE_MAX_LOAD chứ không phải "cạn hẳn", và đó là thay đổi
+ * quan trọng nhất ở đây: từ khi pool rút còn hai model, gemma vừa là bể rewrite
+ * vừa là fallback DUY NHẤT cho câu trả lời. Nhường ở mốc load = 1 nghĩa là chỉ
+ * dừng lại khi đã vét sạch — quá muộn, vì lúc đó fallback cũng không còn gì để
+ * tiêu. Xem REWRITE_MAX_LOAD trong config.ts.
+ *
+ * Trả null khi REWRITE_MODEL không có trong MODEL_POOL. Bỏ rewrite ở đây là
  * đúng: nó best-effort theo thiết kế, và không có ModelLimits thì cũng không có
  * hạn mức nào để rateLimiter đếm.
+ *
+ * Mọi nhánh trả null đều LOG một dòng. Trước đây chúng im lặng tuyệt đối, nên
+ * "rewrite biến mất khi tải cao" — chính xác là triệu chứng REWRITE_MAX_LOAD
+ * gây ra nhiều hơn — là thứ không quan sát được từ log.
  */
 function pickRewriteModel(estTokens: number): ModelLimits | null {
   const pinned = rankModels(estTokens).find(
     (r) => r.limits.id === REWRITE_MODEL
   );
-  if (!pinned) return null;
-  return pinned.usage.load < 1 && pinned.usage.cooldownMs === 0
-    ? pinned.limits
-    : null;
+  if (!pinned) {
+    console.log(
+      `    → bỏ rewrite: ${REWRITE_MODEL} không có trong MODEL_POOL — dùng câu gốc`
+    );
+    return null;
+  }
+  if (pinned.usage.cooldownMs > 0) {
+    console.log(
+      `    → bỏ rewrite: ${REWRITE_MODEL} đang cooldown ` +
+        `${Math.ceil(pinned.usage.cooldownMs / 1000)}s — dùng câu gốc`
+    );
+    return null;
+  }
+  // REWRITE_MAX_LOAD, KHÔNG phải 1: bể này chia chung với câu trả lời fallback,
+  // và hai bên hỏng không đối xứng — bỏ rewrite thì người dùng vẫn có câu trả
+  // lời, mất fallback thì họ nhận thông báo lỗi. Xem REWRITE_MAX_LOAD trong
+  // config.ts để biết tỷ giá (1 câu fallback ≈ 7,5 lượt rewrite).
+  if (pinned.usage.load >= REWRITE_MAX_LOAD) {
+    console.log(
+      `    → bỏ rewrite: ${REWRITE_MODEL} đã tiêu ` +
+        `${(pinned.usage.load * 100).toFixed(0)}% ngân sách ` +
+        `(trần rewrite ${(REWRITE_MAX_LOAD * 100).toFixed(0)}%, ` +
+        `để dành cho câu trả lời) — dùng câu gốc`
+    );
+    return null;
+  }
+  return pinned.limits;
 }
 
 export interface RewriteResult {

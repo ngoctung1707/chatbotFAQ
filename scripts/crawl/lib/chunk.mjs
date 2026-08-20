@@ -113,16 +113,46 @@ export function makeChunks({
   })
 }
 
-/** Gộp nhiều nhóm (mỗi nhóm là một `h4` hoặc một section) thành chunk. */
+/**
+ * Gộp nhiều nhóm (mỗi nhóm là một `h4` hoặc một section) thành chunk.
+ *
+ * ─── TIÊU ĐỀ TRANG GHÉP VỚI TÊN NHÓM, KHÔNG BỊ NÓ ĐÈ ─────────────────────────
+ *
+ * Bản trước lấy `g.heading ?? base.section` — hễ trang có `h4` riêng là tiêu đề
+ * khai trong registry biến mất. Đó là cách 15/54 chunk HTML mất phần song ngữ mà
+ * ta cố ý đặt vào registry, và không có triệu chứng nào ngoài chất lượng trả lời.
+ *
+ * Ca nặng nhất đo được: `/about/researchers-and-assistants` có hai nhóm
+ * `Researchers` và `Assistants`, nên nhãn thành `[Researchers]` và
+ * `[Assistants]`, che mất "Nhà nghiên cứu và Trợ lý". Trang đó viết tiếng Anh
+ * không dấu, nên sau khi mất nhãn thì trong toàn bộ chunk KHÔNG còn chữ "trợ lý"
+ * nào — nửa lexical vĩnh viễn không giúp được gì cho câu hỏi tiếng Việt, chỉ còn
+ * dense gánh. Hệ quả đo được: "kể tên các trợ lý" trúng (dense 0.4855, lex 0.000
+ * — thắng thuần bằng dense), còn "viện có trợ lý không?" thì trang đúng không lọt
+ * nổi top 5 và chatbot trả về cyber-clinic vì chữ "trợ" khớp với "hỗ trợ".
+ *
+ * Tách "trợ lý" thành hai âm tiết là chuyện tokenizer phải làm với tiếng Việt —
+ * `trợ` có mặt ở 162/820 chunk, `lý` ở 256/820 — nên không thể trông vào lexical
+ * để cứu. Cách duy nhất là để chữ đó THẬT SỰ nằm trong chunk.
+ *
+ * Ghép cũng có lợi cho trang chủ: `[Partners]` một mình không nói lên đó là
+ * trang nào, còn `[Trang chủ · Home — Partners]` thì vừa giữ ngữ cảnh vừa giữ
+ * phần tiếng Việt.
+ */
 export function chunksFromGroups(base, groups) {
   const out = []
+  const pageTitle = base.section ?? base.title ?? null
   for (const g of groups) {
     const text = g.items.join('\n')
     if (!text.trim()) continue
+    const section =
+      g.heading && pageTitle && g.heading !== pageTitle
+        ? `${pageTitle} — ${g.heading}`
+        : (g.heading ?? pageTitle)
     out.push(
       ...makeChunks({
         ...base,
-        section: g.heading ?? base.section ?? base.title,
+        section,
         key: [base.key, g.heading ? slugKey(g.heading) : ''].filter(Boolean).join('-'),
         text,
       })

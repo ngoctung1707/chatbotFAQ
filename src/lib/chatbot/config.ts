@@ -59,36 +59,39 @@ export interface ModelLimits {
 // The model *ids* need the same treatment. Which ones a key can call varies by
 // project, and a 404 entry is a silently wasted slot — the pool falls straight
 // past it to the next model, so nothing but the log says that choice never
-// existed. The third slot was exactly that until now: it held gemma-3-27b-it,
-// which answers 404 NOT_FOUND on the key this was developed against, and has
-// been swapped for gemma-4-31b-it, which that project does serve. Check against
-// ListModels before changing it again.
+// existed. The Gemma slot was exactly that once: it held gemma-3-27b-it, which
+// answers 404 NOT_FOUND on the key this was developed against, and was swapped
+// for gemma-4-31b-it, which that project does serve. Check against ListModels
+// before changing it again. With only two entries left, a 404 costs more than
+// it used to — there is no third model behind the one that vanishes.
 //
 // The order is the fallback order at zero load: quality first (tier), not
-// round-robin — see rankModels(). Gemma still sits last, but no longer for the
-// reason it used to: gemma-4-31b-it DOES accept a system_instruction through
-// @ai-sdk/google — unlike the generation supportsSystemInstruction was written
-// for — so it now takes the same prompt shape as the Gemini entries and
-// buildCallShape's second branch is currently unused by the default pool. What
-// keeps it last is that it is the one model here the prompt was not tuned
-// against, and that it spends over a thousand tokens on reasoning before its
-// first character of text (see EmptyAnswer in llm.ts) — the entry most likely
-// to hit TIMEOUT_MS with nothing to show for it.
+// round-robin — see rankModels().
+//
+// HAI entry, không phải ba. gemini-3.1-flash-lite đã bị bỏ hẳn, và không phải
+// vì nó thừa: nó dùng CHUNG một bể quota với gemini-3.5-flash-lite (gọi con này
+// thì con kia cũng bị trừ). rateLimiter key bộ đếm theo model **id**, nên nó
+// không có cách nào biểu diễn hai model chung bể — mỗi con tưởng mình sở hữu
+// riêng 15 rpm, tức pool đang đếm THIẾU đúng 2 lần trên bể gemini, sai số mà
+// BUDGET_HEADROOM 0.8 không đỡ nổi. Giữ đúng một entry cho bể đó là cách duy
+// nhất để bộ đếm nói thật, và nó KHÔNG mất capacity nào: trần thật xưa nay vẫn
+// là 15 rpm cho cả hai cộng lại.
+//
+// Muốn đưa 3.1 trở lại thì phải thêm một field `bucket` vào ModelLimits và cho
+// states Map key theo bucket thay vì id — đừng thêm entry thứ hai vào bể gemini
+// khi chưa có nó.
+//
+// Gemma vẫn đứng cuối, nhưng vai trò đã đổi hẳn: từ "lựa chọn thứ ba, hiếm khi
+// chạm tới" thành CHỖ DỰA DUY NHẤT khi bể gemini cạn. Nó cũng là model cho bước
+// rewrite (xem REWRITE_MODEL), nên hai đường tiêu vào chung một bể — đó là lý do
+// REWRITE_MAX_LOAD tồn tại.
 const DEFAULT_MODEL_POOL: ModelLimits[] = [
-  {
-    id: "gemini-3.1-flash-lite",
-    rpm: 15,
-    tpm: 250000,
-    rpd: 1000,
-    tier: 0,
-    supportsSystemInstruction: true,
-  },
   {
     id: "gemini-3.5-flash-lite",
     rpm: 15,
     tpm: 250000,
     rpd: 1000,
-    tier: 1,
+    tier: 0,
     supportsSystemInstruction: true,
   },
   {
@@ -99,10 +102,16 @@ const DEFAULT_MODEL_POOL: ModelLimits[] = [
     // là tpm 15000: model này đốt hơn một nghìn token suy luận cho mỗi câu trả
     // lời, nên nếu hạn mức thật thấp hơn con số này thì rateLimiter sẽ tưởng
     // còn budget trong khi Google đã trả 429.
+    //
+    // Đo được từ store hiện tại (819 chunk, trung bình 1169 ký tự, top_k 7):
+    // một call TRẢ LỜI trên gemma book ~5.800 token, tức ~48% ngân sách phút
+    // (15000 × 0.8 = 12000). Một call REWRITE chỉ ~770 token. Nói cách khác
+    // gemma GIÀU request nhưng NGHÈO token — 30 rpm là con số không thể với tới
+    // cho câu trả lời (cần 174k token/phút), nhưng lại rất vừa cho rewrite.
     rpm: 30,
-    tpm: 15000,
+    tpm: 16000,
     rpd: 14400,
-    tier: 2,
+    tier: 1,
     supportsSystemInstruction: true,
   },
 ];
@@ -169,7 +178,7 @@ export const MODEL_POOL: ModelLimits[] = parseModelPool();
 // cho một call thật — streamAnswer() chọn theo từng request từ pool, và
 // buildCallShape() mới là chỗ dựng cấu hình cho đúng model được chọn.
 export const CHAT_MODEL =
-  process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.1-flash-lite";
+  process.env.CHATBOT_MODEL || MODEL_POOL[0]?.id || "gemini-3.5-flash-lite";
 
 // Fraction of each published limit the local counters will actually spend.
 // 0.8 because those counters and Google's disagree by construction: token
@@ -328,6 +337,34 @@ export const REWRITE_ENABLED = !["0", "false"].includes(
  */
 export const REWRITE_MODEL =
   process.env.CHATBOT_REWRITE_MODEL || "gemma-4-31b-it";
+
+/**
+ * Trần `load` của bể gemma mà bước rewrite được phép chạm tới. Quá ngưỡng này
+ * thì bỏ rewrite, DÙ bể vẫn còn chỗ.
+ *
+ * Tồn tại vì rewrite và câu trả lời fallback tiêu CHUNG một bể. Từ số đo trong
+ * DEFAULT_MODEL_POOL: một câu trả lời trên gemma ~5.800 token, một rewrite ~770
+ * — tức mỗi câu fallback đáng giá 7,5 lượt rewrite. Ở đúng công suất tối đa của
+ * bể gemini (15 rpm × 0.8 = 12 câu/phút), 12 lượt rewrite đã ăn ~9.200/12.000
+ * token của gemma, không còn đủ cho lấy một câu fallback. Tức là đúng vào lúc
+ * gemini cạn và gemma được cần tới, gemma đã bị chính bước phụ trợ vét sạch.
+ *
+ * Hai bên hỏng KHÔNG đối xứng, và đó mới là lý do thật:
+ *   - bỏ một rewrite  → truy hồi kém đi một chút, người dùng VẪN có câu trả lời
+ *   - mất một fallback → người dùng nhận thông báo lỗi, hết
+ * Nên nửa bể để dành cho câu trả lời đắt hơn hẳn 7 lần truy hồi nhỉnh hơn.
+ *
+ * 0.5 là mốc "chia đôi bể", không phải số đo — nó chỉ cần đủ để luôn còn chỗ
+ * cho ít nhất một câu fallback (một câu ăn ~48% ngân sách gemma, nên nửa bể là
+ * mức thấp nhất còn có nghĩa). Đặt 1 để trả về hành vi cũ (rewrite giành tới
+ * khi cạn); đặt 0 để tắt hẳn rewrite trên bể chung.
+ *
+ * KHÔNG áp cho câu trả lời: rankModels() cố ý không bao giờ loại model nào khỏi
+ * danh sách, vì với call bắt buộc thì thử-và-ăn-429 vẫn hơn là tự từ chối.
+ */
+export const REWRITE_MAX_LOAD = Number(
+  process.env.CHATBOT_REWRITE_MAX_LOAD || 0.5
+);
 
 /**
  * Ngắn hơn TIMEOUT_MS rất nhiều vì đây là bước phụ trợ: quá hạn thì bỏ rewrite

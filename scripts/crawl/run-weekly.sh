@@ -153,20 +153,126 @@ echo $$ > "$LOCK"
 log "PHA A — crawl va diff (app van phuc vu binh thuong)"
 node scripts/crawl/index.mjs $DRY_RUN
 A_STATUS=$?
-if [ $A_STATUS -ne 0 ]; then
-  log "pha A bao loi hoac selector vo — KHONG vao bao tri, giu nguyen chi muc."
-  exit $A_STATUS
-fi
+
+# ─── BA MUC, KHONG PHAI HAI ──────────────────────────────────────────────────
+#
+# Ban truoc: bat ky ma khac 0 nao cung "dung lai, khong vao bao tri". Nghe ky
+# luong nhung sai huong: mot request timeout trong so ~47 request luc 2h sang
+# se vut bo ca 27 nguon con lai da cap nhat dung. Va neu selector vo that su —
+# kieu hong co xac suat cao nhat vi doi web doi markup luc nao khong bao — thi
+# chi muc DONG BANG VINH VIEN, tuan nao cung thoat khac 0, khong ai biet.
+#
+# Pha A da xu ly tung nguon dung roi: nguon hong giu nguyen chunk cu va khong
+# dung toi state, nen dau ra van la mot kho hop le. Cai gia cua viec di tiep chi
+# la mot nguon cu; cai gia cua viec dung lai la TAT CA deu cu.
+#
+#   0  sach                  -> chay tiep binh thuong
+#   2  co nguon hong         -> VAN chay tiep, nhung ket thuc voi ma 2
+#   *  khong dung duoc       -> dung lai, giu nguyen chi muc
+DEGRADED=0
+case $A_STATUS in
+  0) ;;
+  2)
+    DEGRADED=1
+    log "PHA A XONG NHUNG CO NGUON HONG — van di tiep."
+    log "  Nguon hong giu nguyen chunk cu; cac nguon khac van duoc cap nhat."
+    log "  Xem danh sach 'SELECTOR VO' / 'LOI' / 'NGUON DA NGUNG CAP NHAT' o tren."
+    ;;
+  *)
+    log "pha A that bai (ma $A_STATUS) — KHONG vao bao tri, giu nguyen chi muc."
+    exit $A_STATUS
+    ;;
+esac
 
 # Muc 4.4 — con so quyet dinh co phai bao tri hay khong.
-TO_EMBED=$(npx tsx scripts/crawl/cache-report.ts 2>/dev/null | awk '/PHAI EMBED/ {print $3}')
-TO_EMBED=${TO_EMBED:-0}
-log "can embed: $TO_EMBED chunk"
+#
+# ─── VI SAO KHONG DUOC PHEP FAIL-OPEN O DAY ──────────────────────────────────
+#
+# Ban truoc viet gon lai mot dong:
+#
+#   TO_EMBED=$(npx tsx ... cache-report.ts 2>/dev/null | awk '/PHAI EMBED/ ...')
+#   TO_EMBED=${TO_EMBED:-0}
+#
+# va no co mot lo rat kin. `2>/dev/null` nuot moi loi; script chet thi awk khong
+# in gi; bien rong roi `:-0` bien thanh 0; nhanh duoi in "khong co gi doi" va
+# THOAT VOI MA 0. systemd ghi nhan thanh cong. Dong log giong het mot tuan yen
+# a that su. Khong ai phan biet duoc "tuan nay khong co gi doi" voi "cong cu do
+# da hong" — va truong hop thu hai co the keo dai vo han.
+#
+# Ba ket cuc phai tach bach:
+#   lenh chay xong, doc duoc so  -> quyet dinh theo so do
+#   lenh that bai                -> DUNG LAI voi ma khac 0, giu nguyen chi muc
+#   lenh chay nhung khong doc     -> cung DUNG LAI: dinh dang dau ra da doi
+#
+# Giu ca stderr va in nguyen bao cao ra log: phan chia theo collection cua
+# cache-report.ts truoc day bi awk nuot mat, trong khi do chinh la thu can nhin
+# khi con so lech voi du kien.
+# `--write-plan` dong hai con so CO THAM QUYEN vao crawl-plan.json cho trang
+# admin doc. Khong dong khi dry-run: pha A khong ghi ke hoach o che do do, nen
+# se di sua ke hoach cua LAN CHAY TRUOC.
+WRITE_PLAN_ARG="--write-plan"
+[ -n "$DRY_RUN" ] && WRITE_PLAN_ARG=""
+REPORT_OUT=$(npx tsx scripts/crawl/cache-report.ts $WRITE_PLAN_ARG 2>&1)
+REPORT_STATUS=$?
+printf '%s\n' "$REPORT_OUT"
 
-if [ "$TO_EMBED" -eq 0 ]; then
-  log "khong co gi doi — BO QUA hoan toan pha B va C."
+if [ $REPORT_STATUS -ne 0 ]; then
+  log "cache-report.ts THAT BAI (ma $REPORT_STATUS) — khong biet duoc can embed bao nhieu."
+  log "  Dung lai va giu nguyen chi muc. KHONG coi day la 'tuan nay khong co gi doi'."
+  exit 1
+fi
+
+TO_EMBED=$(printf '%s\n' "$REPORT_OUT" | awk '/^PHAI EMBED:/ { print $3; found = 1 } END { exit !found }')
+if [ $? -ne 0 ]; then
+  log "cache-report.ts chay xong nhung KHONG in dong 'PHAI EMBED:' — dinh dang dau ra da doi?"
+  log "  Dung lai: mot con so doan mo la co so toi de quyet dinh co bao tri hay khong."
+  exit 1
+fi
+case "$TO_EMBED" in
+  '' | *[!0-9]*)
+    log "doc duoc '$TO_EMBED' o vi tri con so chunk — khong phai so nguyen khong am."
+    log "  Dung lai thay vi doan."
+    exit 1
+    ;;
+esac
+STORE_STATE=$(printf '%s\n' "$REPORT_OUT" | awk '/^STORE:/ { print $2; found = 1 } END { exit !found }')
+if [ $? -ne 0 ]; then
+  log "cache-report.ts khong in dong 'STORE:' — ban cu chua co phep so nay?"
+  log "  Dung lai: khong biet store.json da khop hay chua thi khong quyet dinh duoc."
+  exit 1
+fi
+case "$STORE_STATE" in
+  khop | lech) ;;
+  *)
+    log "doc duoc trang thai store la '$STORE_STATE', chi chap nhan 'khop' hoac 'lech'."
+    exit 1
+    ;;
+esac
+
+log "can embed: $TO_EMBED chunk | store: $STORE_STATE"
+
+# ─── DIEU KIEN BO QUA PHAI HOI THANG STORE ───────────────────────────────────
+#
+# Ban truoc chi hoi `TO_EMBED == 0`. Hai cau hoi do chi trung nhau khi lan chay
+# TRUOC da thanh cong, va dung cho do co mot lo im lang: pha B xong roi pha C
+# hoac cong QA hong -> tuan sau moi chunk deu hit cache -> TO_EMBED = 0 -> bo
+# qua ca pha C -> noi dung moi khong bao gio vao duoc store.json, tuan nao cung
+# vay. Chatbot van chay, van tra loi, chi la bang du lieu cu mai mai.
+#
+# Gio phai dung CA HAI: khong con gi de embed VA store da khop kho hien tai.
+if [ "$TO_EMBED" -eq 0 ] && [ "$STORE_STATE" = "khop" ]; then
+  log "khong co gi doi va store da khop — BO QUA hoan toan pha B va C."
   log "tuan nay chatbot khong tat phut nao."
-  exit 0
+  exit $((DEGRADED * 2))
+fi
+
+# TO_EMBED = 0 ma store lech nghia la mot lan chay truoc do da dut giua chung.
+# Van phai vao bao tri du khong embed chunk nao: cong QA o cuoi CO nap model
+# (`Retriever.search` goi `embedQuery`), nen de app giu ban cua no thi thanh hai
+# ban trong RAM. Pha B se tu nhan ra khong co gi de lam va tra ve ngay.
+if [ "$TO_EMBED" -eq 0 ]; then
+  log "KHOI PHUC: khong chunk nao can embed, nhung store dang lech voi kho."
+  log "  Mot lan chay truoc da dut sau pha B. Chay lai pha C de dua kho moi vao phuc vu."
 fi
 
 if [ -n "$DRY_RUN" ]; then
@@ -209,7 +315,22 @@ if ! CHATBOT_REWRITE=0 npx tsx scripts/crawl/qa-gate.ts; then
   exit 1
 fi
 
+# Don vector mo coi TRUOC khi sao luu, de ban sao la ban da don. Dat sau cong
+# QA vi xoa vector la viec khong lui duoc: neu cong QA truot va store cu duoc
+# khoi phuc thi cache phai con nguyen cho lan chay sau. Hong o day khong anh
+# huong gi toi ket qua, nen chi canh bao.
+log "don vector mo coi khoi cache"
+npx tsx scripts/crawl/prune-cache.ts || log "CANH BAO: don cache that bai (khong anh huong ket qua)"
+
 log "sao luu state va cache"
 bash scripts/crawl/backup-state.sh || log "CANH BAO: sao luu that bai"
 
 log "xong — bay EXIT se thu hoi giay phep va restart app voi store moi"
+
+# Du lieu da cap nhat xong, nhung neu co nguon hong thi van phai thoat khac 0:
+# do la kenh duy nhat systemd hien ra cho nguoi van hanh. Thu doi la HANH DONG
+# (di tiep thay vi dung lai), khong phai tin hieu.
+if [ "$DEGRADED" -eq 1 ]; then
+  log "LUU Y: lan chay nay co nguon hong — thoat voi ma 2 de systemd danh dau."
+  exit 2
+fi

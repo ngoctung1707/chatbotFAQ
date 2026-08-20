@@ -209,6 +209,22 @@ function renderMessageContent(content: string): React.ReactNode[] {
   return nodes
 }
 
+/**
+ * Lỗi từ /api/chat, mang theo câu chữ server đã soạn cho người dùng.
+ *
+ * Tách `userMessage` khỏi `message`: cái sau là chuỗi để đọc log ("Chat API
+ * error 502"), cái trước là câu đưa thẳng vào bong bóng chat. Gộp làm một thì
+ * hoặc log mất mã trạng thái, hoặc người dùng nhìn thấy số 502.
+ */
+class ChatApiError extends Error {
+  readonly userMessage: string
+  constructor(message: string, userMessage: string) {
+    super(message)
+    this.name = 'ChatApiError'
+    this.userMessage = userMessage
+  }
+}
+
 async function fetchBotReply(
   message: string,
   sessionId: string,
@@ -220,7 +236,21 @@ async function fetchBotReply(
   })
 
   if (!res.ok) {
-    throw new Error(`Chat API error ${res.status}`)
+    // Đọc body TRƯỚC khi ném. /api/chat trả `{ error }` với câu chữ đã được
+    // friendlyError() soạn riêng cho từng kiểu hỏng — "Tất cả model đang tạm
+    // hết lượt của gói miễn phí. Đợi khoảng một phút rồi hỏi lại." khác hẳn về
+    // mặt hành động so với một lỗi kết nối: một bên bảo người dùng ở lại và
+    // chờ, một bên nghe như web hỏng. Ném đi mà không đọc body thì cả câu đó
+    // bị vứt và người dùng luôn thấy thông báo chung chung nhất.
+    let serverMessage = ''
+    try {
+      const body = await res.json()
+      if (typeof body?.error === 'string') serverMessage = body.error.trim()
+    } catch {
+      // Body rỗng hoặc không phải JSON (502 từ proxy, không phải từ route) —
+      // không có gì để lấy, rơi về thông báo chung bên dưới.
+    }
+    throw new ChatApiError(`Chat API error ${res.status}`, serverMessage)
   }
 
   const data = await res.json()
@@ -306,13 +336,21 @@ export default function ChatbotWidget() {
           sources: reply ? citedSources(reply, sources) : [],
         },
       ])
-    } catch {
+    } catch (err) {
+      // Câu của server nếu nó có gửi, nếu không thì mới tới thông báo chung.
+      // Thông báo chung nói SAI trong trường hợp hay gặp nhất — hết lượt gói
+      // miễn phí không phải là mất kết nối, và hai tình huống đó dẫn người dùng
+      // đi hai hướng ngược nhau (chờ một phút rồi hỏi lại, so với bỏ đi vì
+      // tưởng web hỏng).
+      const serverMessage = err instanceof ChatApiError ? err.userMessage : ''
       setMessages((prev) => [
         ...prev,
         {
           id: nextId(),
           role: 'bot',
-          content: 'Xin lỗi, hiện tôi chưa thể kết nối tới máy chủ. Vui lòng thử lại sau.',
+          content:
+            serverMessage ||
+            'Xin lỗi, hiện tôi chưa thể kết nối tới máy chủ. Vui lòng thử lại sau.',
         },
       ])
     } finally {
