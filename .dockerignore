@@ -11,3 +11,19 @@ README.md
 # build context và layer builder ở MỌI lần build. Không có gì trong `next build`
 # đọc thư mục này.
 data
+
+# Bi mat KHONG duoc nam trong image.
+#
+# Do duoc: khong co dong nay thi `COPY . .` o builder keo `.env` vao, roi
+# `next build` chep no sang `.next/standalone/.env`, va runner copy nguyen
+# thu muc do vao image cuoi. Ket qua: GOOGLE_GENERATIVE_AI_API_KEY va
+# CHATBOT_INTERNAL_SECRET nam trong layer cua image, ai keo duoc image thi doc
+# duoc. Xac nhan bang cach grep gia tri bi mat trong .next/standalone -> khop
+# dung file .env do.
+#
+# Bo file nay ra thi bien moi truong phai den tu compose luc CHAY — xem
+# `env_file:` trong compose.yaml. Do cung la cho dung cua no: cung mot image
+# chay duoc o may khac voi bo khoa khac.
+.env
+.env.*
+!.env.example

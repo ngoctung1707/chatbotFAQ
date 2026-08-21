@@ -6,6 +6,17 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - db
+    # Doc bien moi truong tu .env cua HOST luc chay, thay vi nuong vao image.
+    #
+    # Bat buoc phai co ke tu khi `.env` duoc dua vao .dockerignore. Do duoc
+    # truoc khi sua: `COPY . .` o builder keo .env vao, `next build` chep no
+    # sang .next/standalone/.env, va runner copy nguyen thu muc do — nen
+    # GOOGLE_GENERATIVE_AI_API_KEY nam san trong layer cua image.
+    #
+    # CHATBOT_INTERNAL_SECRET phai co trong file nay, va job hang tuan chay
+    # tren host phai dung DUNG gia tri do; lech nhau thi pha B an 401 moi lo.
+    env_file:
+      - .env
     volumes:
       - "/home/hust/bkfintech/media:/app/public/media"
       # Chỉ mục chatbot. Dockerfile KHÔNG copy data/ vào image (runner chỉ lấy
