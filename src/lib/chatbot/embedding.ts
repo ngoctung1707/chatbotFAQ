@@ -18,8 +18,14 @@
  * knobs to retune for it — the 0.7/0.3 split was tuned for the *learned*
  * sparse signal, not for plain TF.
  */
-import { pipeline, type FeatureExtractionPipeline } from "@xenova/transformers";
-import { EMBEDDING_MODEL_ID } from "./config";
+import { Worker } from "node:worker_threads";
+import {
+  EMBEDDING_MODEL_ID,
+  EMBED_REMOTE_URL,
+  EMBED_TIMEOUT_MS,
+  EMBED_WORKER_PATH,
+  INTERNAL_SECRET,
+} from "./config";
 
 export type LexicalWeights = Map<string, number>;
 
@@ -34,47 +40,236 @@ export type LexicalWeights = Map<string, number>;
 // share. The transformers.js library itself is already a singleton (it is in
 // serverExternalPackages, so it is a plain Node require, not bundled twice).
 declare global {
-  var __bkftEmbedderPromise: Promise<FeatureExtractionPipeline> | undefined;
+  var __bkftEmbedWorker: EmbedWorkerHandle | undefined;
 }
 
-/** Exported so instrumentation.ts can warm this at server start — the model is
- * ~560MB and loading it on the first real question makes that question wait for
- * the download plus ONNX session init. Still lazy for every other caller: the
- * cache means preloading and lazy loading are the same code path, so a preload
- * that never ran (or failed) just moves the cost back to first use. */
-export function loadEmbedder(): Promise<FeatureExtractionPipeline> {
-  if (!globalThis.__bkftEmbedderPromise) {
-    globalThis.__bkftEmbedderPromise = (
-      pipeline(
-        "feature-extraction",
-        EMBEDDING_MODEL_ID
-      ) as Promise<FeatureExtractionPipeline>
-    ).catch((err) => {
-      // Uncache a failed load so the next caller retries. Without this the
-      // rejected promise is the cache: one transient failure at boot (the
-      // observed one was an out-of-memory during ONNX init on a loaded
-      // machine) would make every question for the rest of the process's life
-      // fail with that same stale error, which is exactly the crash-proofing
-      // the preload's allSettled is supposed to buy.
-      globalThis.__bkftEmbedderPromise = undefined;
-      throw err;
-    });
-  }
-  return globalThis.__bkftEmbedderPromise;
+interface PendingCall {
+  resolve: (vectors: number[][]) => void;
+  reject: (err: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+interface EmbedWorkerHandle {
+  worker: Worker;
+  /** Resolve đúng một lần khi model nạp xong, rồi giữ nguyên suốt đời worker. */
+  ready: Promise<void>;
+  modelReady: boolean;
+  pending: Map<number, PendingCall>;
+  nextId: number;
+  spawnedAt: number;
 }
 
 /**
- * Model đã được nạp (hoặc đang nạp) vào tiến trình này chưa.
+ * Giữ tiến trình sống đúng lúc cần, và chỉ lúc cần.
  *
- * Job hàng tuần cần đúng tín hiệu này: sau khi ghi giấy phép và restart app, nó
- * phải chờ tới khi app xác nhận ĐÃ NHẢ RAM rồi mới bắt đầu pha B. Trước đây nó
- * chỉ tin vào việc `docker compose restart` đã trả về, mà lệnh đó trả về không
- * có nghĩa tiến trình cũ đã chết hẳn — và tiến trình cũ thì đang giữ ~2GB.
+ * Với server thì dòng này không đổi gì — luôn có listener HTTP giữ event loop.
+ * Nhưng các script (build-index.ts, qa-*.ts) chạy xong là muốn thoát, mà một
+ * worker còn ref sẽ treo tiến trình vô hạn. unref() khi rảnh, ref() khi đang
+ * có việc: đó là cách để cùng một đoạn code phục vụ được cả server dài hạn lẫn
+ * script chạy một lần.
+ */
+/**
+ * Mượn model của app qua HTTP thay vì tự nạp.
  *
- * Đọc thẳng ô nhớ cache thay vì cờ riêng, để không bao giờ lệch khỏi sự thật.
+ * Chỉ dùng cho SCRIPT (xem chốt chặn NEXT_RUNTIME ở EMBED_REMOTE_URL). Đây là
+ * thứ giữ cho lời hứa "đúng một bản BGE-M3 trong cả hệ thống" đúng cả ở những
+ * pha không phải pha embed — cụ thể là cổng QA, vốn dựng Retriever thật.
+ *
+ * Chia lô để không vượt trần MAX_BATCH phía route, và cũng để một câu lỗi
+ * không kéo theo cả nghìn đoạn phải làm lại.
+ */
+async function embedViaApp(texts: string[]): Promise<number[][]> {
+  const out: number[][] = [];
+  const BATCH = 64;
+  for (let i = 0; i < texts.length; i += BATCH) {
+    const slice = texts.slice(i, i + BATCH);
+    const res = await fetch(`${EMBED_REMOTE_URL}/api/chatbot/embed`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-internal-secret": INTERNAL_SECRET,
+      },
+      body: JSON.stringify({ texts: slice }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `mượn model qua ${EMBED_REMOTE_URL}/api/chatbot/embed thất bại ` +
+          `(${res.status}): ${detail.slice(0, 300)}`
+      );
+    }
+    const body = (await res.json()) as { vectors?: number[][] };
+    if (!Array.isArray(body.vectors) || body.vectors.length !== slice.length) {
+      throw new Error(
+        `app trả ${body.vectors?.length ?? "?"} vector cho ${slice.length} đoạn`
+      );
+    }
+    out.push(...body.vectors);
+  }
+  return out;
+}
+
+function syncRef(handle: EmbedWorkerHandle): void {
+  if (handle.pending.size > 0 || !handle.modelReady) handle.worker.ref();
+  else handle.worker.unref();
+}
+
+function failAll(handle: EmbedWorkerHandle, err: Error): void {
+  for (const [, call] of handle.pending) {
+    clearTimeout(call.timer);
+    call.reject(err);
+  }
+  handle.pending.clear();
+}
+
+function spawnWorker(): EmbedWorkerHandle {
+  const worker = new Worker(EMBED_WORKER_PATH, {
+    workerData: { modelId: EMBEDDING_MODEL_ID },
+  });
+
+  const handle: EmbedWorkerHandle = {
+    worker,
+    modelReady: false,
+    pending: new Map(),
+    nextId: 1,
+    spawnedAt: Date.now(),
+    ready: undefined as unknown as Promise<void>,
+  };
+
+  handle.ready = new Promise<void>((resolve, reject) => {
+    worker.on("message", (msg) => {
+      if (msg?.type === "ready") {
+        handle.modelReady = true;
+        syncRef(handle);
+        resolve();
+      } else if (msg?.type === "ready-error") {
+        reject(new Error(msg.error));
+      }
+    });
+    worker.once("error", reject);
+  });
+
+  worker.on("message", (msg) => {
+    if (msg?.type !== "result" && msg?.type !== "error") return;
+    const call = handle.pending.get(msg.id);
+    if (!call) return;
+    handle.pending.delete(msg.id);
+    clearTimeout(call.timer);
+    syncRef(handle);
+    if (msg.type === "result") call.resolve(msg.vectors as number[][]);
+    else call.reject(new Error(msg.error));
+  });
+
+  worker.on("error", (err) => failAll(handle, err));
+
+  // Worker chết thì bỏ cache đi để lần gọi sau SINH LẠI. Đây là chỗ giữ đúng
+  // lời hứa "luôn luôn có model ở đâu đó": worker sập vì bất kỳ lý do gì cũng
+  // chỉ làm mất model trong khoảng giữa hai lần gọi, chứ không vĩnh viễn — và
+  // không cần restart app để lấy lại.
+  worker.on("exit", (code) => {
+    failAll(handle, new Error(`embed worker đã thoát với mã ${code}`));
+    if (globalThis.__bkftEmbedWorker === handle) {
+      globalThis.__bkftEmbedWorker = undefined;
+    }
+  });
+
+  syncRef(handle);
+  return handle;
+}
+
+function ensureWorker(): EmbedWorkerHandle {
+  if (!globalThis.__bkftEmbedWorker) {
+    const handle = spawnWorker();
+    globalThis.__bkftEmbedWorker = handle;
+    handle.ready.catch(() => {
+      // Bỏ cache khi nạp hỏng, để lần sau sinh worker mới. Không có nhánh này
+      // thì một lần hết RAM lúc khởi động sẽ làm mọi câu hỏi về sau hỏng theo
+      // với đúng cái lỗi cũ — chính thứ mà allSettled ở instrumentation định
+      // mua bảo hiểm cho.
+      if (globalThis.__bkftEmbedWorker === handle) {
+        globalThis.__bkftEmbedWorker = undefined;
+      }
+      void handle.worker.terminate().catch(() => {});
+    });
+  }
+  return globalThis.__bkftEmbedWorker;
+}
+
+/** Sinh worker và chờ model nạp xong. instrumentation gọi lúc boot để cái giá
+ *  ~7s đó rơi vào lúc không ai đợi. Vẫn lười cho mọi caller khác — cache nghĩa
+ *  là preload và nạp lười đi chung một đường code. */
+export function loadEmbedder(): Promise<void> {
+  // Chế độ mượn model: không có gì để hâm nóng ở tiến trình này, và gọi
+  // ensureWorker() ở đây sẽ SINH RA đúng bản model thứ hai mà chế độ mượn tồn
+  // tại để tránh.
+  //
+  // Đo được: retriever.ts gọi loadEmbedder() trong Promise.all để hâm nóng
+  // song song với bước rewrite. Bản đầu của thay đổi này chỉ chặn ở
+  // embedDenseBatch, nên `qa-gate.ts` vẫn nạp model — chứng minh bằng cách trỏ
+  // CHATBOT_EMBED_WORKER vào một file không tồn tại: đáng lẽ phải chạy bình
+  // thường thì nó chết với ERR_MODULE_NOT_FOUND.
+  if (EMBED_REMOTE_URL) return Promise.resolve();
+  return ensureWorker().ready;
+}
+
+/**
+ * Model đã sẵn sàng trong worker chưa.
+ *
+ * Ý nghĩa của hàm này đã ĐỔI kể từ khi model chuyển vào worker. Trước đây job
+ * hàng tuần chờ nó về false để biết app đã nhả RAM rồi mới dám nạp bản model
+ * của riêng nó. Bây giờ **không còn bước nhả RAM nào** — model sống suốt đời
+ * tiến trình, và job không nạp model nữa mà gọi vào /api/chatbot/embed.
+ *
+ * false giờ chỉ còn hai nghĩa: worker chưa nạp xong, hoặc worker vừa chết và
+ * chưa ai gọi lại để nó sinh lại.
  */
 export function isEmbedderLoaded(): boolean {
-  return globalThis.__bkftEmbedderPromise !== undefined;
+  return globalThis.__bkftEmbedWorker?.modelReady === true;
+}
+
+/** Trạng thái chi tiết cho /api/health. */
+export function embedderStatus(): {
+  spawned: boolean;
+  model_ready: boolean;
+  pending: number;
+  uptime_sec: number | null;
+} {
+  const h = globalThis.__bkftEmbedWorker;
+  return {
+    spawned: h !== undefined,
+    model_ready: h?.modelReady === true,
+    pending: h?.pending.size ?? 0,
+    uptime_sec: h ? Math.round((Date.now() - h.spawnedAt) / 1000) : null,
+  };
+}
+
+/**
+ * Embed nhiều đoạn trong một lượt gửi sang worker.
+ *
+ * Gộp lô vì mỗi lượt postMessage phải sao chép chuỗi qua ranh giới luồng: gửi
+ * 16 đoạn một lần rẻ hơn hẳn 16 lượt. Trần thời gian cộng thêm theo số đoạn
+ * chứ không cố định — một lô 64 đoạn lâu gấp 64 lần một đoạn, mà dùng chung
+ * một hằng số thì hoặc quá chặt cho lô lớn, hoặc quá lỏng cho lô nhỏ.
+ */
+export async function embedDenseBatch(texts: string[]): Promise<number[][]> {
+  if (texts.length === 0) return [];
+  if (EMBED_REMOTE_URL) return embedViaApp(texts);
+  const handle = ensureWorker();
+  await handle.ready;
+
+  const id = handle.nextId++;
+  const budgetMs = EMBED_TIMEOUT_MS + texts.length * 5000;
+
+  return new Promise<number[][]>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      handle.pending.delete(id);
+      syncRef(handle);
+      reject(new Error(`embed worker không trả lời trong ${budgetMs}ms`));
+    }, budgetMs);
+    handle.pending.set(id, { resolve, reject, timer });
+    syncRef(handle);
+    handle.worker.postMessage({ type: "embed", id, texts });
+  });
 }
 
 /**
@@ -99,11 +294,14 @@ export function isEmbedderLoaded(): boolean {
  * ĐỔI GIÁ TRỊ NÀY LÀ PHẢI BUILD LẠI INDEX (`pnpm build-index`). Query pool bằng
  * CLS đấu với index pool bằng mean là hai không gian khác nhau: kết quả không
  * phải "kém đi" mà là rác. Cùng hạng ràng buộc với việc đổi EMBEDDING_MODEL_ID.
+ *
+ * Phép pooling thật sự nằm ở workers/embed-worker.mjs kể từ khi model chuyển
+ * vào worker thread; hàm này chỉ còn là lối vào. Ràng buộc "đổi pooling là
+ * phải build lại index" không đổi — chỉ là chỗ sửa đã chuyển sang file kia.
  */
 export async function embedDense(text: string): Promise<number[]> {
-  const embedder = await loadEmbedder();
-  const output = await embedder(text, { pooling: "cls", normalize: true });
-  return Array.from(output.data as Float32Array);
+  const [vector] = await embedDenseBatch([text]);
+  return vector;
 }
 
 // Tokenizer for the lexical half: word-level, not the model's subword

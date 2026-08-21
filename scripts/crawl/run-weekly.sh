@@ -6,14 +6,21 @@
 #
 # Trinh tu, va vi sao no nhu vay:
 #
-#   PHA A  crawl + diff          app CHAY BINH THUONG, khong nap model
+#   PHA A  crawl + diff          app CHAY BINH THUONG
 #   -- neu khong co gi doi thi DUNG O DAY, khong bao tri phut nao (muc 4.4)
-#   cap giay phep + restart      app boot lai KHONG preload model (~400MB)
-#   cho app xac nhan nha RAM     thay vi tin rang lenh restart da tra ve
-#   PHA B  embed phan da doi     pha duy nhat can model
+#   cap giay phep                chatbot tra thong bao bao tri; website van chay
+#   cho app xac nhan CO model    pha B sap muon no
+#   PHA B  embed phan da doi     goi /api/chatbot/embed, KHONG tu nap model
 #   PHA C  IDF + ghi store       khong can model
 #   cong QA                      truot thi khoi phuc store cu
-#   thu hoi giay phep + restart  app boot lai, nap model va store MOI
+#   bao app nap store moi        POST /api/chatbot/reload
+#   thu hoi giay phep            xong; app chua he restart lan nao
+#
+# KHONG CON LAN `docker compose restart app` NAO. Truoc day co HAI, va ca hai
+# deu la he qua cua viec pha B tu nap mot ban BGE-M3 thu hai: phai restart de
+# app nha model ra, roi restart lan nua de app doc store moi. Bay gio model nam
+# trong worker thread cua app va moi script cua job muon lai no qua HTTP
+# (CHATBOT_EMBED_REMOTE), con store thi app tu kiem mtime va nap lai.
 #
 # Diem mau chot cua muc 4.5: KHONG dung container. Service `app` phuc vu toan
 # bo website, dung no la ca fintech.hust.edu.vn offline chu khong rieng chatbot.
@@ -36,8 +43,22 @@ DRY_RUN=""
 
 FLAG="data/maintenance.flag"
 LOCK="data/.weekly.lock"
+# Job khong con goi `docker compose restart app` (xem chu thich cho reload_store
+# ben duoi), nhung bien nay giu lai vi cac script phu van dung toi.
 COMPOSE="docker compose"
-HEALTH_URL="${HEALTH_URL:-http://localhost:3003/api/health}"
+# Mot goc duy nhat cho ca hai route noi bo, thay vi hai bien roi lech nhau.
+APP_URL="${CHATBOT_APP_URL:-http://localhost:3003}"
+HEALTH_URL="${HEALTH_URL:-$APP_URL/api/health}"
+
+# MOI script cua job muon model cua app thay vi tu nap mot ban rieng.
+#
+# Khong chi pha B: `qa-gate.ts` dung mot Retriever THAT, va
+# `retriever.search()` goi `embedQuery()` — trong tien trinh tsx cua job, dieu
+# do sinh ra mot worker voi BGE-M3 rieng. Do la dung ban model thu hai ma ca
+# thiet ke nay sinh ra de tranh, chi khac la no xuat hien o pha 8 thay vi pha B.
+#
+# Export chu khong truyen tung lenh, de khong bo sot script nao them vao sau.
+export CHATBOT_EMBED_REMOTE="$APP_URL"
 
 # Han 5 phut, gia hạn moi 60 giay — chiu duoc 5 nhip tre lien tiep. Gia hạn dien
 # ra dung luc may cang nhat (dang embed, RAM sat tran) nen bien do nay la co y.
@@ -60,9 +81,30 @@ RAM_RAN=0
 
 log() { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
 
-restart_app() {
-  if [ -n "$DRY_RUN" ]; then log "(dry-run) bo qua restart app"; return 0; fi
-  $COMPOSE restart app || log "CANH BAO: restart app that bai"
+# DA BO restart_app().
+#
+# Truoc day job restart app HAI lan moi tuan: mot lan truoc pha B de app nha
+# model ra lay RAM, mot lan sau khi xong de app doc store moi. Ca hai deu khong
+# con ly do ton tai:
+#
+#   - pha B khong nap model nua, no goi /api/chatbot/embed va muon ban model
+#     nam san trong worker thread cua app -> khong con phai nha RAM
+#   - app tu kiem mtime cua store.json va nap lai -> khong con phai restart de
+#     doc store moi
+#
+# Ket qua: fintech.hust.edu.vn khong chop tat lan nao khi cap nhat du lieu.
+
+# Bao cho app nap lai store ngay, thay cho lan restart thu hai. Duong nhanh
+# thoi — app van tu kiem mtime moi 5 giay, nen bo qua buoc nay thi du lieu moi
+# van toi noi, chi la cham vai giay.
+reload_store() {
+  if [ -n "$DRY_RUN" ]; then log "(dry-run) bo qua reload store"; return 0; fi
+  local out
+  out=$(curl -fsS --max-time 60 -X POST \
+    -H "x-internal-secret: ${CHATBOT_INTERNAL_SECRET:-}" \
+    "$APP_URL/api/chatbot/reload" 2>&1) \
+    && log "app da nap store moi: $out" \
+    || log "CANH BAO: goi /api/chatbot/reload that bai ($out) — app se tu bat kip qua mtime"
 }
 
 # MUC 6.1 — MAY CHU DANG CHAY UTC. In ca hai moc gio o dong dau log, va canh bao
@@ -165,22 +207,28 @@ stop_renewer() {
   RAM_PID=""
 }
 
-# Cho app xac nhan DA NHA RAM, thay vi tin rang `docker compose restart` tra ve
-# la xong. Lenh do tra ve khong co nghia tien trinh cu da chet han — ma tien
-# trinh cu thi dang giu ~2GB.
-wait_model_unloaded() {
+# DA BO wait_model_unloaded().
+#
+# No cho `/api/health` bao `"model_loaded":false`, tuc cho app nha model xong.
+# Bay gio app KHONG BAO GIO nha model nua — do la chu y, khong phai thieu sot:
+# model song suot doi tien trinh trong worker thread, va job muon no qua HTTP.
+# Cho mot dieu kien khong bao gio xay ra thi chi ton dung 60 giay moi tuan.
+#
+# Thay vao do, kiem dieu NGUOC LAI: model PHAI dang san sang, vi pha B sap goi
+# vao no. Khong san sang thi dung ngay, thay vi de lo dau tien that bai.
+require_model_ready() {
   if [ -n "$DRY_RUN" ]; then return 0; fi
   local i=0
-  while [ $i -lt 60 ]; do
-    if curl -fsS --max-time 5 "$HEALTH_URL" 2>/dev/null | grep -q '"model_loaded":false'; then
-      log "app da nha model (sau ${i}s)"
+  while [ $i -lt 120 ]; do
+    if curl -fsS --max-time 5 "$HEALTH_URL" 2>/dev/null | grep -q '"model_loaded":true'; then
+      log "app da san sang model (sau ${i}s)"
       return 0
     fi
     sleep 1
     i=$((i + 1))
   done
-  log "CANH BAO: sau 60s app van chua bao model_loaded=false — chay tiep, nhung RAM co the cham tran."
-  return 0
+  log "app KHONG bao model_loaded=true sau 120s — pha B se that bai, dung lai."
+  return 1
 }
 
 # Bay EXIT: du script chet o dau, giay phep PHAI duoc thu hoi va app phai duoc
@@ -201,7 +249,9 @@ cleanup() {
   if [ -f "$FLAG" ]; then
     log "thu hoi giay phep (thoat voi ma $code)"
     rm -f "$FLAG" "$FLAG.tmp"
-    restart_app
+    # Khong con restart app o day. Thu hoi giay phep la du: app van dang chay,
+    # van dang giu model, va store moi thi no da nap (hoac se nap trong vai
+    # giay qua kiem mtime). Chatbot tra loi binh thuong tro lai ngay lap tuc.
   fi
   rm -f "$LOCK"
   kill -- -$$ 2>/dev/null
@@ -348,8 +398,7 @@ if [ -n "$DRY_RUN" ]; then
 fi
 
 start_renewer
-restart_app
-wait_model_unloaded
+require_model_ready || exit 1
 
 # `timeout` bao trum ca hai pha nang. Khong dat rieng tung pha vi thu can chan
 # la TONG thoi gian bao tri, chu khong phai pha nao cham.
@@ -369,6 +418,10 @@ npx tsx scripts/crawl/build-store.ts || { log "pha C THAT BAI — giu store cu."
 #
 # CHATBOT_REWRITE=0: cong nay chi do TRUY HOI. De rewrite bat thi moi cau goi
 # LLM, ket qua khong tat dinh va moc so sanh mat y nghia.
+# Cong nay chay trong tien trinh tsx RIENG, doc thang store.json tu dia — nen
+# no luon danh gia ban MOI, khong phu thuoc vao viec app da nap lai hay chua.
+# Day cung la ly do phai goi reload_store SAU cong nay chu khong phai truoc:
+# neu cong truot thi app chua bao gio phuc vu ban hong.
 log "cong chat luong truy hoi"
 if ! CHATBOT_REWRITE=0 npx tsx scripts/crawl/qa-gate.ts; then
   log "QA GATE TRUOT — khoi phuc store cu va giu nguyen."
@@ -376,11 +429,17 @@ if ! CHATBOT_REWRITE=0 npx tsx scripts/crawl/qa-gate.ts; then
   if [ -n "$PREV" ]; then
     cp "$PREV" data/faiss_index_js/store.json
     log "da khoi phuc tu $PREV"
+    # `cp` doi mtime, nen kiem mtime cua app se tu bat kip trong vai giay. Van
+    # goi tuong minh de log co mot dong xac nhan app dang phuc vu ban nao.
+    reload_store
   else
     log "CANH BAO: khong tim thay ban truoc de khoi phuc."
   fi
   exit 1
 fi
+
+# Qua cong roi moi cho app nap. Thay cho lan `docker compose restart app` thu hai.
+reload_store
 
 # Don vector mo coi TRUOC khi sao luu, de ban sao la ban da don. Dat sau cong
 # QA vi xoa vector la viec khong lui duoc: neu cong QA truot va store cu duoc
@@ -392,7 +451,7 @@ npx tsx scripts/crawl/prune-cache.ts || log "CANH BAO: don cache that bai (khong
 log "sao luu state va cache"
 bash scripts/crawl/backup-state.sh || log "CANH BAO: sao luu that bai"
 
-log "xong — bay EXIT se thu hoi giay phep va restart app voi store moi"
+log "xong — bay EXIT se thu hoi giay phep. App khong restart lan nao; store moi da vao phuc vu tu buoc reload o tren."
 
 # Du lieu da cap nhat xong, nhung neu co nguon hong thi van phai thoat khac 0:
 # do la kenh duy nhat systemd hien ra cho nguoi van hanh. Thu doi la HANH DONG

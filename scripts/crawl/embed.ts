@@ -1,12 +1,24 @@
 /**
- * PHA B — mục 4.2. Pha DUY NHẤT cần model, và là pha duy nhất cần bảo trì.
+ * PHA B — mục 4.2. Pha duy nhất cần tới model.
  *
  *   npx tsx scripts/crawl/embed.ts            # embed phần còn thiếu
- *   npx tsx scripts/crawl/embed.ts --dry-run  # chỉ đếm, không nạp model
+ *   npx tsx scripts/crawl/embed.ts --dry-run  # chỉ đếm, không gọi model
  *
- * Chỉ embed những chunk mà cache CHƯA có. Thời lượng tỉ lệ với lượng nội dung
- * mới trong tuần chứ không với kích thước kho — đó là lý do mục 4.4 bỏ hẳn được
- * pha này ở những tuần không có gì đổi.
+ * FILE NÀY KHÔNG CÒN NẠP BGE-M3 NỮA.
+ * ----------------------------------
+ * Trước đây nó `import { embedDense }` rồi nạp một ONNX session ~1,9GB trong
+ * chính tiến trình tsx này. Máy chủ 8GB không chứa nổi bản đó CÙNG bản mà app
+ * đang giữ để trả lời câu hỏi, nên job buộc phải bắt app nhả model ra trước —
+ * tức `docker compose restart app`, rồi restart lần nữa lúc xong. Hai lần cả
+ * website chớp tắt cho mỗi lần cập nhật dữ liệu.
+ *
+ * Bây giờ nó gửi chuỗi sang /api/chatbot/embed và app embed hộ bằng bản model
+ * nằm sẵn trong worker thread của nó. Trong toàn hệ thống chỉ còn ĐÚNG MỘT bản
+ * BGE-M3, và không còn lần restart nào.
+ *
+ * Ranh giới trách nhiệm phải giữ đúng: BÊN NÀY dựng chuỗi bằng embeddedText(),
+ * app chỉ nhận chuỗi thô rồi embed. Để app tự dựng lại chuỗi thì vector sinh ra
+ * sẽ lệch khỏi thứ build-index.ts từng tạo, và cache trượt sạch.
  *
  * Ghi cache theo kiểu nối thêm từng dòng và flush ngay: job bị kill giữa chừng
  * (watchdog ở mục 5.4) vẫn giữ được phần đã embed, lần sau chạy tiếp chứ không
@@ -15,12 +27,18 @@
 import { readFile, appendFile } from "fs/promises";
 import { existsSync } from "fs";
 import { createHash } from "crypto";
-import { embedDense } from "../../src/lib/chatbot/embedding";
 import { embeddedText } from "../../src/lib/chatbot/embeddedText";
+import { embedDenseBatch } from "../../src/lib/chatbot/embedding";
+import { EMBED_REMOTE_URL } from "../../src/lib/chatbot/config";
 
 const CACHE = "data/embeddings.cache.jsonl";
 const SOURCES = ["data/chunks_frozen.jsonl", "data/crawl-output.jsonl"];
 const DRY_RUN = process.argv.includes("--dry-run");
+
+/** Số đoạn mỗi lượt gọi. 16 là cân bằng giữa hai thứ: lô càng lớn thì càng ít
+ *  chi phí HTTP, nhưng cũng càng lâu mới ghi được vào cache — mà ghi sớm chính
+ *  là thứ giữ lại tiến độ khi bị kill giữa chừng. Trần phía app là 128. */
+const BATCH = Math.max(1, Number(process.env.CHATBOT_EMBED_BATCH || 16));
 
 const hashOf = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
 
@@ -61,35 +79,52 @@ async function main() {
     return;
   }
   if (DRY_RUN) {
-    console.log("(dry-run — khong nap model)");
+    console.log("(dry-run — khong goi model)");
     return;
   }
 
-  console.log("nap BGE-M3 ...");
-  const rss0 = process.memoryUsage().rss;
-  const started = Date.now();
-  let done = 0;
-  let peakRss = rss0;
-  for (const [h, text] of todo) {
-    const dense = await embedDense(text);
-    // Ghi ngay từng dòng thay vì gom cuối: bị kill giữa chừng vẫn giữ được
-    // phần đã làm.
-    await appendFile(CACHE, JSON.stringify({ hash: h, dense }) + "\n");
-    done++;
-    const rss = process.memoryUsage().rss;
-    if (rss > peakRss) peakRss = rss;
-    if (done % 25 === 0 || done === todo.size) {
-      const s = (Date.now() - started) / 1000;
-      const eta = ((s / done) * (todo.size - done)).toFixed(0);
-      console.log(`  ${done}/${todo.size}  ${s.toFixed(1)}s  con ~${eta}s`);
-    }
+  // Chặn sớm, trước khi làm bất cứ việc gì. Thiếu bí mật thì app trả 503 cho
+  // MỌI lô, và phát hiện ra điều đó ở lô thứ nhất thay vì sau khi đã chạy nửa
+  // tiếng là khác biệt đáng kể lúc 2h sáng.
+  if (!EMBED_REMOTE_URL) {
+    console.error("HUY: chua dat CHATBOT_EMBED_REMOTE.");
+    console.error("  Khong co bien nay, embedding.ts se NAP MOT BAN BGE-M3 RIENG trong tien");
+    console.error("  trinh nay — dung thu ma ca thiet ke muon model cua app sinh ra de tranh.");
+    console.error("  Vi du: CHATBOT_EMBED_REMOTE=http://localhost:3003 CHATBOT_INTERNAL_SECRET=... \\");
+    console.error("         npx tsx scripts/crawl/embed.ts");
+    process.exit(1);
   }
+
+  // Không đo RSS của tiến trình này nữa: model không còn ở đây. Con số đáng
+  // theo dõi bây giờ là RSS của app, và ram-log.mjs vẫn đang lấy nó.
+  console.log(`muon model cua app tai ${EMBED_REMOTE_URL} (lo ${BATCH} doan)`);
+  const started = Date.now();
+  const entries = [...todo];
+  let done = 0;
+
+  for (let i = 0; i < entries.length; i += BATCH) {
+    const slice = entries.slice(i, i + BATCH);
+    const vectors = await embedDenseBatch(slice.map(([, text]) => text));
+
+    // Ghi ngay từng dòng thay vì gom cuối: bị kill giữa chừng vẫn giữ được
+    // phần đã làm. Vẫn đúng khi chia lô — mỗi lô ghi xong mới sang lô sau.
+    for (let k = 0; k < slice.length; k++) {
+      await appendFile(
+        CACHE,
+        JSON.stringify({ hash: slice[k][0], dense: vectors[k] }) + "\n"
+      );
+    }
+
+    done += slice.length;
+    const s = (Date.now() - started) / 1000;
+    const eta = ((s / done) * (entries.length - done)).toFixed(0);
+    console.log(`  ${done}/${entries.length}  ${s.toFixed(1)}s  con ~${eta}s`);
+  }
+
   const total = (Date.now() - started) / 1000;
-  const mb = (b: number) => (b / 1024 / 1024).toFixed(0);
   console.log(`xong ${done} chunk trong ${total.toFixed(1)}s`);
   console.log(`  ${((total / done) * 1000).toFixed(0)}ms moi chunk`);
-  console.log(`  RSS: truoc khi nap model ${mb(rss0)}MB -> dinh ${mb(peakRss)}MB`);
-  console.log(`=> cua so bao tri that su cua tuan nay: ~${total.toFixed(0)}s cong thoi gian restart`);
+  console.log(`=> cua so bao tri that su cua tuan nay: ~${total.toFixed(0)}s (KHONG con lan restart nao)`);
 }
 
 main().catch((err) => {

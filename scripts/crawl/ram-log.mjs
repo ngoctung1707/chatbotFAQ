@@ -12,13 +12,18 @@
  *
  *   1. Máy còn bao nhiêu chỗ trống lúc căng nhất? (RSS của một tiến trình không
  *      nói lên điều đó — MongoDB và tiến trình web vẫn đang chạy bên cạnh)
- *   2. Đỉnh rơi vào pha nào? Pha B hay cổng QA — vốn CŨNG nạp model?
- *   3. App có lỡ nạp bản model thứ hai không?
+ *   2. Đỉnh rơi vào pha nào?
+ *   3. Model có còn nguyên vẹn trong app suốt cửa sổ bảo trì không?
  *
- * Câu 3 là quan trọng nhất và cũng dễ kiểm nhất: `/api/health` trả
- * `model_loaded`. Suốt cửa sổ bảo trì nó PHẢI là `false`. Thấy `true` nghĩa là
- * có hai bản BGE-M3 trong RAM cùng lúc — đúng thứ mà cơ chế giấy phép sinh ra
- * để chặn, và là dấu hiệu duy nhất cho thấy nó vừa hỏng.
+ * ⚠️ BẤT BIẾN CỦA CÂU 3 ĐÃ ĐẢO CHIỀU so với bản đầu của file này.
+ *
+ * Trước đây `model_loaded` PHẢI là `false` suốt cửa sổ bảo trì, vì pha B tự nạp
+ * một bản BGE-M3 thứ hai trong tiến trình riêng — nên `true` nghĩa là hai bản
+ * cùng lúc. Bây giờ pha B (và cả cổng QA) mượn model của app qua
+ * /api/chatbot/embed, nên chỉ còn MỘT bản duy nhất, và nó phải sống suốt.
+ *
+ * Bất biến mới: `model_loaded` phải là `true` ở MỌI mẫu. Thấy `false` nghĩa là
+ * worker giữ model vừa chết, và pha B sẽ thất bại.
  *
  * Ghi đè log ở mỗi lần chạy: một cửa sổ bảo trì là một file. Phần tóm tắt đi ra
  * stdout của `run-weekly.sh`, tức là vào `weekly.log` mà systemd giữ — đó mới là
@@ -97,7 +102,6 @@ async function sample() {
   // bình thường chứ không phải sự cố. Chỉ sau khi thấy `false` một lần — tức app
   // đã boot lại ở chế độ bỏ preload — thì `true` mới có nghĩa là nó lỡ nạp bản
   // thứ hai. Không phân biệt hai giai đoạn này thì cảnh báo nổ ở mọi lần chạy.
-  let releasedOnce = false
   await writeFile(
     LOG,
     `# bat dau ${new Date().toISOString()} | lay mau moi ${EVERY_MS / 1000}s | nguon bo nho: ${memory().src}\n` +
@@ -112,11 +116,10 @@ async function sample() {
     }
     const m = memory()
     const loaded = await modelLoaded()
-    if (loaded === false) releasedOnce = true
-    const flag = loaded === null ? '?' : loaded ? (releasedOnce ? 'TRUE' : 'chua-nha') : 'false'
-    // Đánh dấu ngay trên dòng, để đọc log không phải tự đối chiếu: app nạp lại
-    // model giữa lúc bảo trì là sự cố, không phải số liệu.
-    const note = flag === 'TRUE' ? '  <== APP DA NAP LAI MODEL GIUA LUC BAO TRI' : ''
+    const flag = loaded === null ? '?' : loaded ? 'co-model' : 'MAT-MODEL'
+    // Đánh dấu ngay trên dòng, để đọc log không phải tự đối chiếu: mất model
+    // giữa lúc bảo trì là sự cố, không phải số liệu.
+    const note = flag === 'MAT-MODEL' ? '  <== APP MAT MODEL GIUA LUC BAO TRI' : ''
     const sec = String(Math.round((Date.now() - started) / 1000)).padStart(5)
     await appendFile(
       LOG,
@@ -148,7 +151,8 @@ async function summary() {
   const peakAt = rows[used.indexOf(peak)][0]
   const avg = Math.round(used.reduce((a, b) => a + b, 0) / used.length)
   const secs = Number(rows[rows.length - 1][0])
-  const twoModels = rows.filter((f) => f[3] === 'TRUE').length
+  const lost = rows.filter((f) => f[3] === 'MAT-MODEL').length
+  const unknown = rows.filter((f) => f[3] === '?').length
 
   console.log(`RAM trong cua so bao tri (${rows.length} mau / ${secs}s):`)
   console.log(`  dinh        ${peak}MB / ${total}MB  (o giay thu ${peakAt})`)
@@ -159,16 +163,16 @@ async function summary() {
     console.log(`  CANH BAO: chi con ${freeAtPeak}MB luc cang nhat (nguong ${MIN_FREE_MB}MB).`)
     console.log('    OOM killer co the chon bat ky dich vu nao cua may, khong rieng job nay.')
   }
-  const notYet = rows.filter((f) => f[3] === 'chua-nha').length
-  if (twoModels) {
-    console.log(`  LOI NGHIEM TRONG: ${twoModels}/${rows.length} mau thay app nap LAI model sau khi da nha.`)
-    console.log('    Nghia la da co HAI ban BGE-M3 trong RAM. Kiem tra lai giay phep va buoc restart.')
-  } else if (notYet === rows.length) {
-    console.log(`  app chua bao gio bao model_loaded=false trong ${secs}s — no KHONG restart.`)
-    console.log('    O local khong co docker thi day la binh thuong. O may chu thi khong.')
+  if (lost) {
+    console.log(`  LOI NGHIEM TRONG: ${lost}/${rows.length} mau thay app MAT model giua luc bao tri.`)
+    console.log('    Pha B muon model cua app, nen mat model la pha B that bai. Xem worker o')
+    console.log('    workers/embed-worker.mjs va log cua app.')
+  } else if (unknown === rows.length) {
+    console.log(`  khong doc duoc /api/health lan nao trong ${secs}s — app co dang chay khong?`)
   } else {
-    console.log(`  app khong nap lai model lan nao sau khi nha — dung nhu thiet ke.`)
-    if (notYet) console.log(`    (${notYet} mau dau tien la luc app chua kip restart, khong tinh la loi)`)
+    console.log(`  app giu model suot ${rows.length - unknown}/${rows.length} mau — dung nhu thiet ke.`)
+    console.log('    Chi mot ban BGE-M3 ton tai trong toan bo cua so bao tri.')
+    if (unknown) console.log(`    (${unknown} mau khong doc duoc health, khong tinh la loi)`)
   }
   console.log(`  chi tiet tung mau: ${LOG}`)
 }

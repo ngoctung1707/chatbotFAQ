@@ -91,9 +91,10 @@ Ký hiệu: **[MÁY]** hệ thống tự làm — **[NGƯỜI]** phải có ngư
       `since` đặt **một lần** ở `start_renewer` và giữ nguyên qua mọi lần gia hạn.
 - [ ] Vòng gia hạn nằm ở **shell**, không nằm trong `embed.ts` — job treo mà vẫn giữ RAM thì bảo trì phải **tiếp tục**.
 - [ ] Bật đo RAM nền: `node scripts/crawl/ram-log.mjs` → `data/ram-maintenance.log`, mẫu mỗi `RAM_SAMPLE_SEC=2`s.
-- [ ] `docker compose restart app` → app boot **bỏ preload BGE-M3** (`instrumentation-node.ts` đọc flag).
-- [ ] `/api/chat` trả thẳng câu thông báo bảo trì, **không** gọi `embedDense()` → không nạp model lazily.
-- [ ] **Chờ xác nhận đã nhả RAM**: poll `/api/health` tới 60s cho tới khi `"model_loaded":false`. Quá 60s → cảnh báo nhưng vẫn chạy tiếp.
+- [ ] **KHÔNG restart app.** Model nằm trong worker thread của app và ở nguyên đó; pha B mượn nó qua `/api/chatbot/embed` thay vì tự nạp bản thứ hai.
+- [ ] `/api/chat` trả thẳng câu thông báo bảo trì. Lý do đã đổi: không còn nguy cơ nạp bản model thứ hai, nhưng worker đang bận chạy pha B nên một câu hỏi lọt vào sẽ xếp hàng rất lâu.
+- [ ] **Chờ xác nhận model SẴN SÀNG** (`require_model_ready`): poll `/api/health` tới 120s cho tới khi `"model_loaded":true`. Không đạt → dừng, vì pha B chắc chắn sẽ thất bại.
+- [ ] `CHATBOT_INTERNAL_SECRET` phải có ở cả app lẫn môi trường chạy job — thiếu thì hai route nội bộ trả 503.
 
 ---
 
@@ -138,8 +139,8 @@ Chạy **dù job thành công hay chết ở bất kỳ đâu**:
 
 - [ ] Dừng vòng gia hạn + dừng bộ đo RAM.
 - [ ] In tóm tắt RAM **trước** khi thu hồi giấy phép (để nó có mặt cả khi job hỏng).
-- [ ] `rm -f data/maintenance.flag*` → thu hồi giấy phép.
-- [ ] `docker compose restart app` → app boot lại, nạp model + **store mới**.
+- [ ] `rm -f data/maintenance.flag*` → thu hồi giấy phép. **Chỉ thế là đủ**: app vẫn đang chạy, vẫn giữ model, và store mới thì đã nạp ở bước `reload_store` sau cổng QA.
+- [ ] **KHÔNG restart app** (trước đây có, đã bỏ — đó là lần restart thứ hai trong hai lần).
 - [ ] `rm -f data/.weekly.lock`.
 - [ ] `kill -- -$$` → giết cả nhóm tiến trình (tránh `tsx` mồ côi còn giữ model).
 - [ ] Lưới cuối: `ExecStopPost` của service xoá flag + lock nếu bẫy EXIT không chạy được (`kill -9`, OOM, quá `TimeoutStartSec`).
@@ -165,7 +166,8 @@ Chạy **dù job thành công hay chết ở bất kỳ đâu**:
 - [ ] Bảo trì ≥ `STUCK_MIN=20` phút mà giấy phép **vẫn được gia hạn** → job **treo chứ không chết**, watchdog 15 phút cũng hỏng.
       ⚠️ **KHÔNG tự restart** (job đang giữ model trong RAM) — thoát 1, **[NGƯỜI]** phải vào xem.
 - [ ] Không bảo trì mà flag còn nằm đó ≥ `STALE_MIN=60` phút → dọn file.
-- [ ] Bất biến suốt cửa sổ bảo trì: `/api/health` → `model_loaded == false`. Thấy `true` = có **hai bản BGE-M3** trong RAM = cơ chế giấy phép vừa hỏng.
+- [ ] ⚠️ **BẤT BIẾN NÀY ĐÃ BỊ ĐẢO NGƯỢC.** Suốt cửa sổ bảo trì, `/api/health` phải cho `model_loaded == true` — model sống trong worker thread của app suốt đời tiến trình, và pha B mượn chính nó. Thấy `false` giữa lúc bảo trì nghĩa là worker chết, và pha B sẽ hỏng.
+      Bản cũ đòi `false` vì hồi đó pha B tự nạp một bản BGE-M3 thứ hai trong tiến trình riêng, nên hai bản cùng lúc là dấu hiệu hỏng. Bây giờ chỉ còn **một** bản, mọi lúc — xem `workers/embed-worker.mjs`.
 
 ---
 

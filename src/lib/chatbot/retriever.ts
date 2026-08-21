@@ -38,7 +38,7 @@ import {
   loadEmbedder,
   type LexicalWeights,
 } from "./embedding";
-import { VectorStore, type SearchHit } from "./vectorStore";
+import { getStore, VectorStore, type SearchHit } from "./vectorStore";
 import { rewriteQuery } from "./queryRewriter";
 import { needsRestoration, restoreQuestion } from "./diacritics";
 // `import type`, not a value import, and it has to stay that way: TS erases it
@@ -78,14 +78,21 @@ export interface RetrievalResult {
 }
 
 export class Retriever {
-  private storePromise: Promise<VectorStore>;
+  /** Store được ghim cứng do caller truyền vào — chỉ các script đo đạc muốn
+   *  một bản bất biến trong suốt lượt chạy mới dùng tới.
+   *
+   *  null (mặc định, và là đường mà production đi) = dùng store CHUNG của tiến
+   *  trình, và store đó tự nạp lại khi store.json trên đĩa đổi. Đây là chỗ bỏ
+   *  giả định cũ "store không bao giờ đổi trong đời tiến trình" — giả định đã
+   *  buộc phải restart app sau mỗi lần cập nhật dữ liệu. Xem getStore(). */
+  private readonly pinned: VectorStore | null;
 
   constructor(store?: VectorStore) {
-    this.storePromise = store ? Promise.resolve(store) : VectorStore.load();
+    this.pinned = store ?? null;
   }
 
   private async store(): Promise<VectorStore> {
-    return this.storePromise;
+    return this.pinned ?? getStore();
   }
 
   /**

@@ -101,13 +101,20 @@ export async function POST(req: NextRequest) {
   if (typeof session_id !== 'string' || !session_id.trim()) {
     return NextResponse.json({ error: 'session_id is required' }, { status: 400 })
   }
-  // Cửa sổ bảo trì hàng tuần. Phải chặn ở ĐÂY, trước mọi thứ chạm tới model.
+  // Cửa sổ bảo trì hàng tuần.
   //
-  // Bỏ preload ở instrumentation-node.ts KHÔNG đủ: `embedDense()` gọi
-  // `loadEmbedder()` một cách lazy, nên câu hỏi đầu tiên trong lúc bảo trì sẽ
-  // kéo nguyên BGE-M3 (~1,1–2,2GB) vào tiến trình web — đúng lúc job embed đang
-  // giữ một bản khác. Hai bản model cùng lúc là chính xác thứ mà cả thiết kế
-  // cửa sổ bảo trì sinh ra để tránh. Bỏ preload chỉ HOÃN việc nạp, không ngăn.
+  // LÝ DO ĐÃ ĐỔI kể từ khi model vào worker thread. Trước đây phải chặn ở đây
+  // để câu hỏi đầu tiên không lazy-load một bản BGE-M3 THỨ HAI vào tiến trình
+  // web trong lúc job đang giữ bản của nó. Bây giờ chỉ còn đúng một bản model
+  // trong cả hệ thống, nên nguy cơ đó không còn.
+  //
+  // Vẫn giữ, vì lý do thứ hai: trong cửa sổ bảo trì, worker đang chạy hết công
+  // suất cho pha B. Một câu hỏi lọt vào sẽ xếp hàng sau cả lô embed và có thể
+  // chờ rất lâu. Trả ngay một câu thông báo rõ ràng thì thành thật hơn là để
+  // người dùng nhìn ô chat quay vòng.
+  //
+  // Và nó phải nằm TRƯỚC mọi thứ chạm tới truy hồi — đó là thứ giữ cho website
+  // vẫn phục vụ bình thường suốt lúc cập nhật dữ liệu.
   const maintenance = readMaintenance()
   if (maintenance.active) {
     return NextResponse.json({ reply: maintenance.message, sources: [], maintenance: true })

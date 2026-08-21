@@ -285,6 +285,46 @@ export const MOCK = !["", "0", "false"].includes(
 export const INDEX_DIR =
   process.env.CHATBOT_INDEX_DIR || `${process.cwd()}/data/faiss_index_js`;
 
+// Worker thread giữ BGE-M3. Ghép chuỗi chứ không path.join, cùng lý do như
+// INDEX_DIR ngay trên (file này bị kéo vào bundle edge).
+//
+// File nằm NGOÀI src/ và là .mjs thuần, cố ý: bundler của Next không đụng vào
+// nó, worker được nạp thẳng bằng đường dẫn lúc chạy. Đổi vị trí file thì phải
+// sửa cả outputFileTracingIncludes trong next.config.ts, nếu không bản dựng
+// standalone sẽ thiếu nó và worker không sinh được.
+export const EMBED_WORKER_PATH =
+  process.env.CHATBOT_EMBED_WORKER || `${process.cwd()}/workers/embed-worker.mjs`;
+
+// Trần chờ cho MỘT lô embed, chưa tính phần cộng theo số lượng text (xem
+// embedDenseBatch). 60s cho lô đầu tiên vì nó phải chờ model nạp xong —
+// đo được ~7s trên máy ấm, nhưng lần đầu sau khi dọn cache thì lâu hơn nhiều.
+export const EMBED_TIMEOUT_MS = Number(process.env.CHATBOT_EMBED_TIMEOUT_MS || 60000);
+
+// Bí mật dùng chung cho hai route nội bộ /api/chatbot/embed và
+// /api/chatbot/reload. KHÔNG có giá trị mặc định, và đó là chủ ý: thiếu biến
+// này thì hai route trả 503 chứ không mở toang. /api/chatbot/embed cho phép
+// người gọi bắt máy chủ chạy model tuỳ ý — để hở là một cách đốt CPU.
+export const INTERNAL_SECRET = process.env.CHATBOT_INTERNAL_SECRET || "";
+
+/**
+ * Gốc URL của app để các SCRIPT mượn model thay vì tự nạp một bản riêng.
+ *
+ * Vì sao cần: `scripts/crawl/qa-gate.ts` dựng một `Retriever` thật, và
+ * `retriever.search()` gọi `embedQuery()`. Trong tiến trình tsx của job, điều
+ * đó sinh ra một worker với BGE-M3 riêng — đúng bản model thứ hai mà cả thiết
+ * kế này sinh ra để tránh, chỉ là nó xuất hiện ở pha 8 thay vì pha B.
+ *
+ * Đặt biến này thì mọi script đi qua embedding.ts sẽ gọi /api/chatbot/embed.
+ *
+ * CHỐT CHẶN QUAN TRỌNG: chế độ này chỉ bật khi KHÔNG chạy trong Next
+ * (`NEXT_RUNTIME` rỗng). Nếu ai đó lỡ đặt biến này vào .env của app thì app sẽ
+ * tự gọi chính nó — một vòng lặp vô hạn qua HTTP. Kiểm NEXT_RUNTIME làm điều
+ * đó bất khả thi thay vì chỉ dặn dò trong tài liệu.
+ */
+export const EMBED_REMOTE_URL = process.env.NEXT_RUNTIME
+  ? ""
+  : process.env.CHATBOT_EMBED_REMOTE || "";
+
 // Sàn cosine, áp lên điểm dense THÔ trong retriever.ts — trước bước rerank, nên
 // nó so với cosine thật chứ không phải điểm hybrid đã qua rescale().
 //
