@@ -22,7 +22,11 @@
  */
 import { readFile, writeFile } from "fs/promises";
 import { existsSync } from "fs";
-import { CORE } from "../qa-cases";
+// Nhóm hồi quy trong bộ mẫu hợp nhất — trước đây là scripts/qa-cases.ts (đã
+// gộp vào qa-samples.ts). Từ ngữ của nhóm này cố ý bất biến, đúng thứ một
+// cổng chất lượng cần: nếu câu hỏi đổi thì ngưỡng đạt/trượt không so được.
+import { SAMPLES } from "../qa-samples";
+const CORE = SAMPLES.filter((c) => c.group.startsWith("00."));
 import { Retriever } from "../../src/lib/chatbot/retriever";
 import { REWRITE_ENABLED } from "../../src/lib/chatbot/config";
 

@@ -10,7 +10,7 @@
  * mà không tầng nào báo, còn C bị vô hiệu hóa (history không được truyền vào)
  * thì A và B vẫn xanh.
  *
- * Phần C chạy nguyên bộ 15 câu CORE của qa-cases NHƯ MỘT HỘI THOẠI LIÊN TỤC
+ * Phần C chạy nguyên nhóm hồi quy của qa-samples NHƯ MỘT HỘI THOẠI LIÊN TỤC
  * qua đúng Mongo thật, lặp lại đúng trình tự route /api/chat làm: đọc history →
  * search(q, {history}) → ghi lại user + assistant. Đây mới là chỗ đo được thứ
  * qa-test.ts không đo: qa-test truyền history rỗng cho mọi câu nên với nó
@@ -39,7 +39,10 @@ import {
 import { buildCallShape, buildMessages } from "../src/lib/chatbot/llm";
 import { Retriever, type RetrievalChunk } from "../src/lib/chatbot/retriever";
 import { HISTORY_MAX_MESSAGES, MOCK } from "../src/lib/chatbot/config";
-import { CORE } from "./qa-cases";
+// Xem ghi chú trong scripts/crawl/qa-gate.ts — bộ hồi quy nay nằm trong
+// qa-samples.ts dưới nhóm "00.".
+import { SAMPLES } from "./qa-samples";
+const CORE = SAMPLES.filter((c) => c.group.startsWith("00."));
 
 let failures = 0;
 
@@ -95,9 +98,9 @@ async function testStorage(): Promise<void> {
     shape(trimmed)
   );
 
-  await setSessionModel(id, "gemini-3.1-flash-lite");
+  await setSessionModel(id, "gemini-3.5-flash-lite");
   const pinned = await getHistoryAndModel(id);
-  check(pinned.model === "gemini-3.1-flash-lite", "ghim được model của phiên");
+  check(pinned.model === "gemini-3.5-flash-lite", "ghim được model của phiên");
   check(
     pinned.history.length === HISTORY_MAX_MESSAGES,
     "ghim model không đụng tới messages"
@@ -195,7 +198,7 @@ function testPrompt(): void {
 // --- C. Tầng truy hồi: 15 câu chạy như một hội thoại ------------------------
 
 async function testConversation(): Promise<void> {
-  console.log("\n=== C. 15 câu CORE chạy như MỘT hội thoại (Mongo + retrieval thật) ===");
+  console.log("\n=== C. Nhóm hồi quy chạy như MỘT hội thoại (Mongo + retrieval thật) ===");
   console.log(`    MOCK=${MOCK}`);
 
   const { answerStream } = await import("../src/lib/chatbot/llm");

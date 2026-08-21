@@ -13,11 +13,12 @@
     "prepare": "husky",
     "payload-gen-types": "payload generate:types",
     "build-index": "tsx --env-file-if-exists=.env scripts/build-index.ts",
-    "test:rewrite": "tsx --env-file-if-exists=.env scripts/test-rewrite.ts",
-    "test:history": "tsx --env-file-if-exists=.env scripts/test-chat-history.ts",
-    "test:followup": "tsx --env-file-if-exists=.env scripts/test-history-followup.ts",
     "measure-preload": "tsx --env-file-if-exists=.env scripts/measure-preload.ts",
-    "measure-rewrite": "tsx --expose-gc --env-file-if-exists=.env scripts/measure-rewrite.ts"
+    "measure-rewrite": "tsx --expose-gc --env-file-if-exists=.env scripts/measure-rewrite.ts",
+    "qa:400": "tsx --env-file-if-exists=.env scripts/qa-batch.ts",
+    "qa:metrics": "tsx --env-file-if-exists=.env scripts/qa-metrics.ts",
+    "qa:failures": "tsx --env-file-if-exists=.env scripts/qa-failures.ts",
+    "qa:followups": "tsx --env-file-if-exists=.env scripts/qa-followups.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.37",
@@ -43,9 +44,10 @@
     "react-modal-video": "^2.0.2",
     "react-toastify": "^11.1.0",
     "sass": "^1.92.1",
-    "sharp": "^0.34.3",
+    "sharp": "^0.34.5",
     "swiper": "^12.0.1",
-    "wowjs": "^1.1.3"
+    "wowjs": "^1.1.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -81,5 +83,8 @@
       "protobufjs",
       "@parcel/watcher"
     ]
+  },
+  "overrides": {
+    "sharp": "^0.34.5"
   }
 }

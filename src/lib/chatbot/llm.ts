@@ -87,13 +87,62 @@ const REFUSAL_CORES = [
   "đặt ra câu hỏi chi tiết hơn",
 ].map((s) => s.toLowerCase());
 
+/**
+ * Từ chối kiểu "tự diễn đạt": model bỏ hẳn hai câu cố định và tự nói ra rằng
+ * ngữ liệu không chứa câu trả lời — "tài liệu không đề cập…", "dữ liệu chưa
+ * cung cấp…", "thông tin hiện tại không nhắc tới…".
+ *
+ * Đo được 6 ca trong 600 ca ở docs/qa-results.json. Không phải chuyện chấm
+ * điểm: route.ts dùng chính isRefusal() để quyết định có gắn khối "Nguồn tham
+ * khảo" hay không, nên mỗi ca như vậy là một lần người dùng thấy danh sách
+ * trang web trích dẫn cho một câu nói rằng chẳng có trang nào nói điều đó.
+ *
+ * Bắt bằng cặp (chủ ngữ chỉ ngữ liệu) + (phủ định khả dụng) thay vì bắt riêng
+ * từ "không đề cập": một câu trả lời thật hoàn toàn có thể chứa "không đề cập"
+ * khi chính nội dung được hỏi nói vậy ("thông báo không đề cập hạn nộp muộn"),
+ * còn chủ ngữ ở đây thì chỉ xuất hiện khi model đang nói VỀ ngữ liệu của mình.
+ */
+const ABSENCE_RE = new RegExp(
+  String.raw`(tài liệu|văn bản|dữ liệu|ngữ liệu|nội dung|thông tin)` +
+    String.raw`[^.!?\n]{0,40}?\s(không|chưa)\s+` +
+    String.raw`(đề cập|nhắc|nói|cung cấp|nêu|ghi|có thông tin|thể hiện)`,
+  "i"
+);
+
+/**
+ * Câu trả lời có khẳng định thêm điều gì đó ngoài lời tuyên bố thiếu dữ liệu.
+ *
+ * Đây là chốt chặn cho ABSENCE_RE, và nó tồn tại vì hai ca đo được: "văn bản
+ * không cung cấp số điện thoại chung của Viện, CHỈ CÓ số của ban tổ chức
+ * Hackday (0396416699)…" và "tài liệu chưa cung cấp đầu mối cụ thể MÀ CHỈ nêu
+ * lời mời liên hệ". Cả hai mở đầu bằng phủ định rồi đưa ra thứ có thật, lấy từ
+ * nguồn có thật — gọi chúng là từ chối thì sẽ giấu đi đúng cái nguồn chứa số
+ * điện thoại vừa đọc cho người dùng. Ranh giới là "câu này có khẳng định thêm
+ * gì không", chứ không phải "nó mở đầu thế nào".
+ *
+ * Nghiêng về phía bỏ sót: chấm nhầm một câu từ chối thành câu trả lời chỉ mất
+ * một điểm trong bảng đo, còn chấm nhầm chiều ngược lại thì giấu mất nguồn có
+ * thật khỏi mắt người dùng.
+ */
+const HAS_SUBSTANCE_RE = new RegExp(
+  String.raw`(chỉ có|chỉ nêu|chỉ đề cập|chỉ nhắc|mà chỉ|tuy nhiên|nhưng|thay vào đó|dưới đây|như sau)`,
+  "i"
+);
+
 export function isRefusal(reply: string): boolean {
   const stripped = reply.replace(CITATION_MARKER_RE, "").trim();
   if (stripped.includes(NO_ANSWER) || stripped.includes(NOT_UPDATED)) {
     return true;
   }
   const lowered = stripped.toLowerCase();
-  return REFUSAL_CORES.some((core) => lowered.includes(core));
+  if (REFUSAL_CORES.some((core) => lowered.includes(core))) return true;
+
+  // Gạch đầu dòng = đang liệt kê thứ gì đó, tức là có nội dung; và giới hạn độ
+  // dài để một bài trả lời dài có nhắc qua "tài liệu không đề cập X" ở giữa
+  // không bị quy thành từ chối cả bài.
+  if (/^\s*[-*•]\s/m.test(stripped)) return false;
+  if (stripped.split(/\s+/).length > 60) return false;
+  return ABSENCE_RE.test(stripped) && !HAS_SUBSTANCE_RE.test(stripped);
 }
 
 // Rule order and wording follow llm.py's SYSTEM_PROMPT. The "Văn phong" block

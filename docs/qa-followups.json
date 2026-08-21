@@ -1,0 +1,2468 @@
+{
+  "note": "Câu nối tiếp. Kết quả chỉ đúng khi lượt chạy dùng QA_BATCH=1 — xem chú thích đầu scripts/qa-followups.ts.",
+  "total": 70,
+  "ran": 70,
+  "passed": 62,
+  "rewriteRan": 69,
+  "byGroup": {
+    "11. Nối tiếp — đại từ người": {
+      "n": 5,
+      "pass": 4,
+      "rewrote": 5
+    },
+    "11. Nối tiếp — đại từ vật": {
+      "n": 5,
+      "pass": 5,
+      "rewrote": 5
+    },
+    "11. Nối tiếp — chỉ định": {
+      "n": 10,
+      "pass": 8,
+      "rewrote": 10
+    },
+    "11. Nối tiếp — lược ngữ hoàn toàn": {
+      "n": 6,
+      "pass": 5,
+      "rewrote": 6
+    },
+    "11. Nối tiếp — ba lượt": {
+      "n": 4,
+      "pass": 3,
+      "rewrote": 4
+    },
+    "11. Nối tiếp — đổi chủ đề ra ngoài": {
+      "n": 3,
+      "pass": 3,
+      "rewrote": 3
+    },
+    "11. Nối tiếp — corpus không có": {
+      "n": 4,
+      "pass": 4,
+      "rewrote": 4
+    },
+    "11. Nối tiếp — mơ hồ sau ngữ cảnh rõ": {
+      "n": 3,
+      "pass": 2,
+      "rewrote": 2
+    },
+    "20. Nối tiếp — đổi chủ đề ra ngoài": {
+      "n": 6,
+      "pass": 6,
+      "rewrote": 6
+    },
+    "20. Nối tiếp — đổi sang chủ thể khác": {
+      "n": 5,
+      "pass": 5,
+      "rewrote": 5
+    },
+    "20. Nối tiếp — tiền đề sai cài trong lượt sau": {
+      "n": 5,
+      "pass": 5,
+      "rewrote": 5
+    },
+    "20. Nối tiếp — quay lại chủ đề cũ sau khi lạc": {
+      "n": 4,
+      "pass": 4,
+      "rewrote": 4
+    },
+    "20. Nối tiếp — đại từ trỏ sai/mơ hồ": {
+      "n": 4,
+      "pass": 3,
+      "rewrote": 4
+    },
+    "20. Nối tiếp — hỏi lại chính câu vừa trả lời": {
+      "n": 6,
+      "pass": 5,
+      "rewrote": 6
+    }
+  },
+  "when": "2026-08-21T02:50:09.239Z",
+  "rows": [
+    {
+      "id": 321,
+      "group": "11. Nối tiếp — đại từ người",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Thầy Đỗ Bá Lâm là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "thầy có những thành tích gì?",
+          "scored": true
+        }
+      ],
+      "question": "thầy có những thành tích gì?",
+      "searchQuery": "achievements of Do Ba Lam at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9813,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/congratulations-to-dr-do-ba-lam-on-his-appointment-as-vice-director-of-the-institute-for-digital-technology-and-economy",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao",
+        "https://fintech.hust.edu.vn/news/final-round-hack-cx-together-2025"
+      ],
+      "reply": "Dạ, \n\n- Thầy tham gia nhiều dự án nghiên cứu và sáng kiến chuyển đổi số, đặc biệt trong các lĩnh vực công nghệ blockchain, văn bằng và chứng chỉ số, hệ thống chữ ký số, tích hợp dữ liệu và phát triển nền tảng số cho giáo dục.\n- Thầy đóng góp tích cực vào các hoạt động nghiên cứu của Viện Công nghệ và Kinh tế số, giúp tăng cường kết nối giữa công nghệ, kinh tế và các ứng dụng thực tiễn.",
+      "gold": {
+        "text": [
+          "Do Ba Lam|Đỗ Bá Lâm"
+        ]
+      }
+    },
+    {
+      "id": 322,
+      "group": "11. Nối tiếp — đại từ người",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng của BK Fintech là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "thầy ấy phụ trách mảng nào?",
+          "scored": true
+        }
+      ],
+      "question": "thầy ấy phụ trách mảng nào?",
+      "searchQuery": "What research areas and responsibilities does BKFintech Institute Director Nguyen Binh Minh lead?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8637,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/welcome-message",
+        "https://fintech.hust.edu.vn/news/hoi-thao-va-le-ra-mat-bao-cao-thuong-nien-ve-cong-nghe-so-va-kinh-te-so-viet-nam-chu-de-khong-gian-phat-trien-moi-thuc-day-kinh-te-so",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, thầy Nguyễn Bình Minh tham gia thảo luận về các vấn đề trọng tâm của kinh tế số Việt Nam trong giai đoạn tới.",
+      "gold": {
+        "text": [
+          "Nguyen Binh Minh|Nguyễn Bình Minh"
+        ]
+      }
+    },
+    {
+      "id": 323,
+      "group": "11. Nối tiếp — đại từ người",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Chủ tịch Hội đồng cố vấn là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "ông ấy công tác ở đâu?",
+          "scored": true
+        }
+      ],
+      "question": "ông ấy công tác ở đâu?",
+      "searchQuery": "Where does Prof. David Tran work?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/advisory-board",
+        "https://fintech.hust.edu.vn/about/institute-council",
+        "https://ecotech.bkfin.tech/ecotech2025/index.html"
+      ],
+      "reply": "Dạ, Prof. David Tran công tác tại University of Massachusetts Boston, US.",
+      "gold": {
+        "text": [
+          "David Tran"
+        ]
+      }
+    },
+    {
+      "id": 324,
+      "group": "11. Nối tiếp — đại từ người",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Phó Viện trưởng gồm những ai?"
+        },
+        {
+          "turn": 2,
+          "user": "họ phụ trách gì?",
+          "scored": true
+        }
+      ],
+      "question": "họ phụ trách gì?",
+      "searchQuery": "What are the responsibilities of Vice Directors Nguyen Thi Xuan Hoa and Do Ba Lam at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "not_updated",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9097,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/congratulations-to-dr-do-ba-lam-on-his-appointment-as-vice-director-of-the-institute-for-digital-technology-and-economy",
+        "https://fintech.hust.edu.vn/about/board-of-deans",
+        "https://fintech.hust.edu.vn/about/institute-council"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1]",
+      "gold": {
+        "text": [
+          "Xuan Hoa|Xuân Hoa",
+          "Do Ba Lam|Đỗ Bá Lâm"
+        ]
+      }
+    },
+    {
+      "id": 325,
+      "group": "11. Nối tiếp — đại từ người",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cô Nguyễn Thị Xuân Hoa là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "cô ấy giữ chức vụ gì?",
+          "scored": true
+        }
+      ],
+      "question": "cô ấy giữ chức vụ gì?",
+      "searchQuery": "What is the position of Nguyen Thi Xuan Hoa at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/research",
+        "https://fintech.hust.edu.vn/research/publications",
+        "https://fintech.hust.edu.vn/about/institute-council"
+      ],
+      "reply": "Dạ, \n\n- Phó Viện trưởng Viện Công nghệ và Kinh tế số, Đại học Bách khoa Hà Nội\n- Thành viên Hội đồng Viện Công nghệ và Kinh tế số, Đại học Bách khoa Hà Nội",
+      "gold": {
+        "text": [
+          "Xuan Hoa|Xuân Hoa"
+        ]
+      }
+    },
+    {
+      "id": 326,
+      "group": "11. Nối tiếp — đại từ vật",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nó hỗ trợ những mạng nào?",
+          "scored": true
+        }
+      ],
+      "question": "nó hỗ trợ những mạng nào?",
+      "searchQuery": "Which blockchain networks does V-Chain support?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemma-4-31b-it",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/V-Chain",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024"
+      ],
+      "reply": "Dạ, V-Chain hỗ trợ nhiều mạng lưới blockchain công khai và riêng tư như:\n- Hyperledger Sawtooth\n- Hyperledger Fabric\n- Ethereum\n- IPFS",
+      "gold": {
+        "url": [
+          "solutions/V-Chain"
+        ],
+        "text": [
+          "V-Chain"
+        ]
+      }
+    },
+    {
+      "id": 327,
+      "group": "11. Nối tiếp — đại từ vật",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nó giải quyết vấn đề gì?",
+          "scored": true
+        }
+      ],
+      "question": "nó giải quyết vấn đề gì?",
+      "searchQuery": "What problems does V-Chain solve?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/V-Chain",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025"
+      ],
+      "reply": "Dạ, V-Chain giải quyết các vấn đề sau:\n- Rút ngắn thời gian lập trình ứng dụng phi tập trung từ vài tháng xuống còn vài ngày [1].\n- Giúp lập trình viên giảm bớt thời gian nghiên cứu công nghệ do có quá nhiều mạng lưới blockchain khác nhau ra đời [3].",
+      "gold": {
+        "url": [
+          "solutions/V-Chain"
+        ],
+        "text": [
+          "V-Chain"
+        ]
+      }
+    },
+    {
+      "id": 328,
+      "group": "11. Nối tiếp — đại từ vật",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "eDiploma là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nó dùng công nghệ gì?",
+          "scored": true
+        }
+      ],
+      "question": "nó dùng công nghệ gì?",
+      "searchQuery": "What technology is used in the eDiploma system?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9364,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/eDiploma",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/solutions/BKOffice"
+      ],
+      "reply": "Dạ, eDiploma dùng công nghệ chữ ký số [1].",
+      "gold": {
+        "url": [
+          "solutions/eDiploma"
+        ],
+        "text": [
+          "eDiploma"
+        ]
+      }
+    },
+    {
+      "id": 329,
+      "group": "11. Nối tiếp — đại từ vật",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BKSign là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nó có gì khác các giải pháp khác?",
+          "scored": true
+        }
+      ],
+      "question": "nó có gì khác các giải pháp khác?",
+      "searchQuery": "What are the differences between BKSign and other digital signature solutions?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/BKSign",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, so với các phương thức ký số truyền thống như SimCA và USB Token, BKSign có các điểm khác biệt:\n\n- Khắc phục các hạn chế về việc sử dụng và khả năng tính toán của phương thức truyền thống.\n- Tự xây dựng hạ tầng khóa công khai (PKI) nội bộ để cấp chứng thư số cho người lao động, giúp tổ chức chủ động và tối ưu chi phí thay vì phải mua chứng thư số công cộng tốn kém hoặc dùng thiết bị ký vật lý.\n- Sử dụng cách tiếp cận của chữ ký số từ xa hiện đại, giúp người dùng không bị phụ thuộc vào việc phải mang theo thiết bị ký vật lý.",
+      "gold": {
+        "url": [
+          "solutions/BKSign"
+        ],
+        "text": [
+          "BKSign"
+        ]
+      }
+    },
+    {
+      "id": 330,
+      "group": "11. Nối tiếp — đại từ vật",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BKOffice là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nó dành cho ai?",
+          "scored": true
+        }
+      ],
+      "question": "nó dành cho ai?",
+      "searchQuery": "Who is BKOffice intended for?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/BKOffice",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, hệ thống BKOffice được thiết kế dành cho các cơ sở giáo dục đại học [1]. Hệ thống này hỗ trợ đa dạng các cấu trúc hành chính trong trường như Đảng ủy, Hội đồng trường, Ban Giám hiệu, Công đoàn và Đoàn Thanh niên [4].",
+      "gold": {
+        "url": [
+          "solutions/BKOffice"
+        ],
+        "text": [
+          "BKOffice"
+        ]
+      }
+    },
+    {
+      "id": 331,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Business Intelligence dạy những gì?"
+        },
+        {
+          "turn": 2,
+          "user": "khóa đó học bao lâu?",
+          "scored": true
+        }
+      ],
+      "question": "khóa đó học bao lâu?",
+      "searchQuery": "duration of the Business Intelligence course at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.954,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights"
+      ],
+      "reply": "Dạ, khóa Business Intelligence có thời lượng 30 giờ, bao gồm 15 buổi học (khoảng 2 tháng) và thêm 1 tháng hoàn thành đồ án cá nhân. [2]",
+      "gold": {
+        "text": [
+          "30 hours",
+          "30 giờ"
+        ]
+      }
+    },
+    {
+      "id": 332,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Fintech dạy gì?"
+        },
+        {
+          "turn": 2,
+          "user": "khóa này dành cho ai?",
+          "scored": true
+        }
+      ],
+      "question": "khóa này dành cho ai?",
+      "searchQuery": "Who is the target audience for the Fintech course at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "not_updated",
+      "pass": false,
+      "model": "gemma-4-31b-it",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/fintech-course-en",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/courses/ai-for-everyone-eng"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1], [4], [6]",
+      "gold": {
+        "url": [
+          "courses/fintech-course"
+        ]
+      }
+    },
+    {
+      "id": 333,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có những phòng lab nào?"
+        },
+        {
+          "turn": 2,
+          "user": "cái Smart Finance thì nghiên cứu gì?",
+          "scored": true
+        }
+      ],
+      "question": "cái Smart Finance thì nghiên cứu gì?",
+      "searchQuery": "What are the research areas of the Smart Finance and Digital Banking Lab at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9827,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/research/r&d-labs/smart-finance-and-digital-banking-sfdb",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, phòng Smart Finance and Digital Banking Lab nghiên cứu, phát triển và ứng dụng công nghệ số nâng cao trong lĩnh vực tài chính - ngân hàng, cụ thể gồm:\n- Ngân hàng số và tài chính thông minh\n- Quy định về tài sản số và ngân hàng phi tập trung\n- Thúc đẩy tài chính toàn diện, tăng khả năng tiếp cận dịch vụ tài chính, nâng cao bảo mật và quyền riêng tư dữ liệu, giảm gian lận [2]",
+      "gold": {
+        "text": [
+          "Smart Finance and Digital Banking"
+        ]
+      }
+    },
+    {
+      "id": 334,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có những phòng lab nào?"
+        },
+        {
+          "turn": 2,
+          "user": "lab đó đặt ở đâu?",
+          "scored": true
+        }
+      ],
+      "question": "lab đó đặt ở đâu?",
+      "searchQuery": "Where are the labs of BKFintech Institute located?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "not_updated",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8369,
+      "urls": [
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao",
+        "https://fintech.hust.edu.vn/research/r&d-labs/smart-finance-and-digital-banking-sfdb"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [3], [5]",
+      "gold": {
+        "url": [
+          "r&d-labs/"
+        ]
+      }
+    },
+    {
+      "id": 335,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Dự án Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "kéo dài bao lâu?",
+          "scored": true
+        }
+      ],
+      "question": "kéo dài bao lâu?",
+      "searchQuery": "duration of the Cyber Clinic project",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9305,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy",
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic"
+      ],
+      "reply": "Dạ, dự án có thời gian thực hiện là 15 tháng, kéo dài từ tháng 4 năm 2026 đến tháng 3 năm 2027 [6].",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 336,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Dự án Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "ai được tham gia?",
+          "scored": true
+        }
+      ],
+      "question": "ai được tham gia?",
+      "searchQuery": "Who is eligible to participate in the Cyber Clinic project?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9106,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy",
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic"
+      ],
+      "reply": "Dạ, các đối tượng được tham gia dự án gồm:\n- Sinh viên và học viên có nền tảng về an toàn thông tin và chuyển đổi số (được tuyển dụng và đào tạo khoảng 80-100 người) [1], [3].\n- Giảng viên và chuyên gia tham gia chương trình đào tạo giảng viên (Train-the-Trainer) để phát triển đội ngũ giảng dạy và nâng cao năng lực hỗ trợ doanh nghiệp [1], [2].",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 337,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Hội đồng cố vấn của Viện gồm những ai?"
+        },
+        {
+          "turn": 2,
+          "user": "ai làm chủ tịch?",
+          "scored": true
+        }
+      ],
+      "question": "ai làm chủ tịch?",
+      "searchQuery": "Who is the chairman of the advisory board of BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8498,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/about/advisory-board"
+      ],
+      "reply": "Giáo sư David Tran giữ vai trò Chủ tịch Ban cố vấn [4].",
+      "gold": {
+        "text": [
+          "David Tran"
+        ]
+      }
+    },
+    {
+      "id": 338,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Vietnam Digital Economy Review là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "số mới nhất nói về gì?",
+          "scored": true
+        }
+      ],
+      "question": "số mới nhất nói về gì?",
+      "searchQuery": "What is the latest issue of Vietnam Digital Economy Review about?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8844,
+      "urls": [
+        "https://ecotech.bkfin.tech/ecotech2025/index.html",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/news/hoi-thao-va-le-ra-mat-bao-cao-thuong-nien-ve-cong-nghe-so-va-kinh-te-so-viet-nam-chu-de-khong-gian-phat-trien-moi-thuc-day-kinh-te-so"
+      ],
+      "reply": "Dạ,\n\nSố mới nhất (Vietnam Digital Economy Review 2025) có chủ đề \"Không gian phát triển mới thúc đẩy kinh tế số\" với các nội dung chính:\n- Cung cấp cái nhìn toàn diện về kinh tế số của Việt Nam qua dữ liệu và các diễn biến chính [3]\n- Tổng hợp các nghiên cứu liên quan đến kinh tế số, y tế số và xã hội số [3]\n- Phân tích chiều sâu và đưa ra các khuyến nghị chính sách nhằm hỗ trợ hoạch định chính sách, thúc đẩy nghiên cứu và đổi mới sáng tạo [3]",
+      "gold": {
+        "text": [
+          "Chuyên san Khoa học Thường thức",
+          "D-Economy Review"
+        ]
+      }
+    },
+    {
+      "id": 339,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BK Fintech Hackday là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "đã tổ chức mấy lần rồi?",
+          "scored": true
+        }
+      ],
+      "question": "đã tổ chức mấy lần rồi?",
+      "searchQuery": "How many times has BK Fintech Hackday been organized?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9575,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-7",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-6",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-8"
+      ],
+      "reply": "Dạ, tài liệu nhắc đến các mùa từ Season 6, 7, 8, 11, 12 đến Season 13 [1, 2, 3, 4, 5, 7].",
+      "gold": {
+        "text": [
+          "Hackday"
+        ]
+      }
+    },
+    {
+      "id": 340,
+      "group": "11. Nối tiếp — chỉ định",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Hội thảo ECOTECH là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "năm nay chủ đề là gì?",
+          "scored": true
+        }
+      ],
+      "question": "năm nay chủ đề là gì?",
+      "searchQuery": "What is the theme of the ECOTECH workshop this year?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8822,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/ecotech",
+        "https://fintech.hust.edu.vn/news/conference-on-digital-technology-and-economy-ecotech-2026-data-and-ai-from-infrastructure-to-real-world-value",
+        "https://ecotech.bkfin.tech/ecotech2025/index.html"
+      ],
+      "reply": "Daj, \n\nchủ đề của ECOTECH 2026 là “Data & AI: From Infrastructure to Real-World Value”.",
+      "gold": {
+        "text": [
+          "ECOTECH"
+        ]
+      }
+    },
+    {
+      "id": 341,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Business Intelligence học những gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn học phí?",
+          "scored": true
+        }
+      ],
+      "question": "còn học phí?",
+      "searchQuery": "tuition fee for Business Intelligence course at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "not_updated",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.87,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights",
+        "https://fintech.hust.edu.vn/academic"
+      ],
+      "reply": "Dạ, xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1], [3], [5], [6]",
+      "gold": {
+        "url": [
+          "courses/business-intelligence"
+        ]
+      }
+    },
+    {
+      "id": 342,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có khóa học nào?"
+        },
+        {
+          "turn": 2,
+          "user": "đăng ký thế nào?",
+          "scored": true
+        }
+      ],
+      "question": "đăng ký thế nào?",
+      "searchQuery": "How to register for short-term courses at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9171,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/news/cuoc-thi-bkfintech-hackday-lan-thu-i-nam-2024",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en"
+      ],
+      "reply": "Dạ, thủ tục đăng ký tùy thuộc vào chương trình bạn quan tâm:\n- Khóa học \"Vườn ươm Nhân lực An toàn thông tin trong nền kinh tế số\": đăng ký hồ sơ thông qua Google Form [4].\n- Khóa học \"Business Intelligence: AI-Powered Insights\": đăng ký trước qua đường link do ban tổ chức cung cấp [6].\n- Cuộc thi BKFintech Hackday: gửi hồ sơ đăng ký tham gia cá nhân hoặc theo đội tại link do ban tổ chức cung cấp [2].",
+      "gold": {
+        "url": [
+          "/courses/"
+        ]
+      }
+    },
+    {
+      "id": 343,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "điều kiện?",
+          "scored": true
+        }
+      ],
+      "question": "điều kiện?",
+      "searchQuery": "admission requirements for Cyber Clinic project at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9118,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy"
+      ],
+      "reply": "Dạ,\n\n- Dự án tuyển chọn và đào tạo từ 80 đến 100 sinh viên và học viên có nền tảng về an toàn thông tin và chuyển đổi số [1, 4]\n- Tất cả người tham gia được hỗ trợ toàn bộ chi phí đào tạo, chỗ ở và đi lại để tạo điều kiện cho các bạn trẻ tiếp cận chương trình chất lượng cao [1]",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 344,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn eDiploma?",
+          "scored": true
+        }
+      ],
+      "question": "còn eDiploma?",
+      "searchQuery": "What is eDiploma at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9064,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/solutions/eDiploma",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, eDiploma là hệ thống tạo, cấp và xác thực văn bằng, chứng chỉ, chứng nhận số có giá trị pháp lý, giúp chống giả mạo nhờ công nghệ chữ ký số.",
+      "gold": {
+        "url": [
+          "solutions/eDiploma"
+        ],
+        "text": [
+          "eDiploma"
+        ]
+      }
+    },
+    {
+      "id": 345,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "còn phó viện trưởng?",
+          "scored": true
+        }
+      ],
+      "question": "còn phó viện trưởng?",
+      "searchQuery": "Who are the deputy directors of BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9393,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/board-of-deans",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Dạ, các phó viện trưởng gồm PGS. Nguyễn Thị Xuân Hoa và TS. Đỗ Bá Lâm.",
+      "gold": {
+        "text": [
+          "Xuan Hoa|Xuân Hoa",
+          "Do Ba Lam|Đỗ Bá Lâm"
+        ]
+      }
+    },
+    {
+      "id": 346,
+      "group": "11. Nối tiếp — lược ngữ hoàn toàn",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Lab SFDB nghiên cứu gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn OE-Fin?",
+          "scored": true
+        }
+      ],
+      "question": "còn OE-Fin?",
+      "searchQuery": "What does the OE-Fin lab research at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.7668,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/research/r&d-labs/oe-fin-lab-operational-efficiency-in-finance-laboratory",
+        "https://fintech.hust.edu.vn/news/hoi-thao-ecotech-va-cuoc-thi-fintech-innovation"
+      ],
+      "reply": "Dạ, Lab OE-Fin (Operational Efficiency in Finance Laboratory) tập trung nghiên cứu về:\n\n- Tối ưu hóa, toán ứng dụng và tối ưu hóa hoạt động trong tài chính và các ứng dụng kinh doanh.\n- Tác động của cuộc cách mạng chuyển đổi số và các công nghệ mới đến hiệu quả hoạt động của các ngân hàng thương mại và quốc doanh.\n- Sự tích hợp toàn diện của các công nghệ chuyển đổi số như trí tuệ nhân tạo, điện toán đám mây, dữ liệu lớn và Internet vạn vật để định hình lại hoạt động kinh doanh.\n- Quá trình số hóa tài chính truyền thống thông qua các dịch vụ trực tuyến, thanh toán di động và phân tích dữ liệu lớn nhằm giảm sự phụ thuộc vào các chi nhánh vật lý và mở rộng khả năng tiếp cận dịch vụ tài chính cho mọi người.",
+      "gold": {
+        "text": [
+          "Operational Efficiency in Finance"
+        ]
+      }
+    },
+    {
+      "id": 347,
+      "group": "11. Nối tiếp — ba lượt",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BK Fintech là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "Viện có khóa học nào?"
+        },
+        {
+          "turn": 3,
+          "user": "khóa đầu tiên dạy gì?",
+          "scored": true
+        }
+      ],
+      "question": "khóa đầu tiên dạy gì?",
+      "searchQuery": "What is the content of the Business Intelligence course at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9664,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights"
+      ],
+      "reply": "Dạ, khóa học Business Intelligence dạy các nội dung sau:\n- Xây dựng tư duy hướng dữ liệu và ứng dụng BI trong doanh nghiệp [1]\n- Kỹ thuật phân tích dữ liệu và phát triển bảng điều khiển (dashboard) với Power BI [1]\n- Tự động hóa báo cáo và tối ưu hóa quy trình làm việc với các công cụ No-code AI và Automation Tools [1]",
+      "gold": {
+        "url": [
+          "/courses/"
+        ]
+      }
+    },
+    {
+      "id": 348,
+      "group": "11. Nối tiếp — ba lượt",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có mấy lab?"
+        },
+        {
+          "turn": 2,
+          "user": "lab Smart Finance làm gì?"
+        },
+        {
+          "turn": 3,
+          "user": "còn lab kia?",
+          "scored": true
+        }
+      ],
+      "question": "còn lab kia?",
+      "searchQuery": "research activities and goals of other R&D labs at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "no_answer",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8685,
+      "urls": [
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?",
+      "gold": {
+        "url": [
+          "r&d-labs/"
+        ]
+      }
+    },
+    {
+      "id": 349,
+      "group": "11. Nối tiếp — ba lượt",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "dành cho ai?"
+        },
+        {
+          "turn": 3,
+          "user": "doanh nghiệp thì sao?",
+          "scored": true
+        }
+      ],
+      "question": "doanh nghiệp thì sao?",
+      "searchQuery": "Role and benefits of enterprises in the Cyber Clinic project at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9616,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic",
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy"
+      ],
+      "reply": "Dạ, đối với doanh nghiệp, chương trình Cyber Clinic hỗ trợ như sau:\n\n- Khoảng 200 đến 300 doanh nghiệp vừa và nhỏ, doanh nghiệp siêu nhỏ, hộ kinh doanh và tổ chức xã hội được hỗ trợ, tư vấn và nâng cao năng lực về an toàn thông tin, bảo mật dữ liệu và quản lý rủi ro kỹ thuật số [2, 3, 4, 7]\n- Doanh nghiệp tham gia các buổi kết nối trực tiếp với giảng viên và sinh viên để trao đổi nhu cầu, phạm vi hỗ trợ và hình thức triển khai [7]\n- Được sinh viên (dưới sự hướng dẫn của giảng viên và mentor) đồng hành trực tiếp hoặc trực tuyến trong các hoạt động bảo mật và quản lý số để đối phó với các thách thức an ninh mạng [4, 7]",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 350,
+      "group": "11. Nối tiếp — ba lượt",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "còn hội đồng cố vấn?"
+        },
+        {
+          "turn": 3,
+          "user": "chủ tịch là ai?",
+          "scored": true
+        }
+      ],
+      "question": "chủ tịch là ai?",
+      "searchQuery": "Who is the chairman of the advisory board of BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8498,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/about/advisory-board"
+      ],
+      "reply": "Dạ, chủ tịch có thể là:\n\n- Prof. David Tran (Chủ tịch Ban cố vấn)\n- Tiến sĩ Nguyễn Văn Cường (Phó Chủ tịch phụ trách Hội đồng quản lý Bảo hiểm xã hội Việt Nam, Chủ tịch Hội đồng Viện)",
+      "gold": {
+        "text": [
+          "David Tran"
+        ]
+      }
+    },
+    {
+      "id": 351,
+      "group": "11. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng của BK Fintech là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "thế còn giá vàng hôm nay?",
+          "scored": true
+        }
+      ],
+      "question": "thế còn giá vàng hôm nay?",
+      "searchQuery": "gold price today",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 6,
+      "topScore": 0.7992,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 352,
+      "group": "11. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có khóa học nào?"
+        },
+        {
+          "turn": 2,
+          "user": "à mà thời tiết Hà Nội thế nào?",
+          "scored": true
+        }
+      ],
+      "question": "à mà thời tiết Hà Nội thế nào?",
+      "searchQuery": "current weather in Hanoi",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/news/unihackfest-2026-hanoi-campus-workshop-brings-together-leading-experts-in-ai-blockchain-and-web-3",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-12"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1]",
+      "gold": null
+    },
+    {
+      "id": 353,
+      "group": "11. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "Bitcoin giá bao nhiêu rồi?",
+          "scored": true
+        }
+      ],
+      "question": "Bitcoin giá bao nhiêu rồi?",
+      "searchQuery": "current Bitcoin price",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.7,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/news/assoc-prof-nguyen-binh-minh-shares-insights-on-vtv-1-business-finance-news-on-the-pilot-implementation-of-a-digital-asset-exchang-eng-ban-tin-tai-chinh-kinh-doanh-vtv-1-ve-viec-trien-khai-thi-diem-thanh-lap-san-giao-dich-tai-san-so",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [5]",
+      "gold": null
+    },
+    {
+      "id": 354,
+      "group": "11. Nối tiếp — corpus không có",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Business Intelligence dạy gì?"
+        },
+        {
+          "turn": 2,
+          "user": "khai giảng ngày nào?",
+          "scored": true
+        }
+      ],
+      "question": "khai giảng ngày nào?",
+      "searchQuery": "When does the Business Intelligence course start?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9208,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights",
+        "https://fintech.hust.edu.vn/academic"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1][2][4][5]",
+      "gold": null
+    },
+    {
+      "id": 355,
+      "group": "11. Nối tiếp — corpus không có",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có những khóa học nào?"
+        },
+        {
+          "turn": 2,
+          "user": "học phí từng khóa bao nhiêu?",
+          "scored": true
+        }
+      ],
+      "question": "học phí từng khóa bao nhiêu?",
+      "searchQuery": "Tuition fees for Business Intelligence, Fintech, and Data Analysis short-term courses at BKFintech Institute.",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1]",
+      "gold": null
+    },
+    {
+      "id": 356,
+      "group": "11. Nối tiếp — corpus không có",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "chi phí tham gia bao nhiêu?",
+          "scored": true
+        }
+      ],
+      "question": "chi phí tham gia bao nhiêu?",
+      "searchQuery": "participation cost for Cyber Clinic Cybersecurity Human Resources Incubator in the Digital Economy",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic",
+        "https://fintech.hust.edu.vn/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [6]",
+      "gold": null
+    },
+    {
+      "id": 357,
+      "group": "11. Nối tiếp — corpus không có",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "số điện thoại của thầy?",
+          "scored": true
+        }
+      ],
+      "question": "số điện thoại của thầy?",
+      "searchQuery": "phone number of BKFintech Institute Director Nguyen Binh Minh",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9674,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/institute-council",
+        "https://fintech.hust.edu.vn/news/conference-on-digtital-techonology-and-economy-2024",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, tài liệu không cung cấp số điện thoại của Viện trưởng.",
+      "gold": null
+    },
+    {
+      "id": 358,
+      "group": "11. Nối tiếp — mơ hồ sau ngữ cảnh rõ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có những khóa học nào?"
+        },
+        {
+          "turn": 2,
+          "user": "cái đó thế nào?",
+          "scored": true
+        }
+      ],
+      "question": "cái đó thế nào?",
+      "searchQuery": "details and information about short-term courses at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "answer",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Dạ, câu hỏi của bạn chưa rõ ràng về việc bạn muốn biết thông tin chi tiết về khóa học nào. Bạn vui lòng cho biết cụ thể tên khóa học (Business Intelligence, Fintech hay Data Analysis) để nhận được thông tin chi tiết nhé.",
+      "gold": null
+    },
+    {
+      "id": 359,
+      "group": "11. Nối tiếp — mơ hồ sau ngữ cảnh rõ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có mấy lab?"
+        },
+        {
+          "turn": 2,
+          "user": "còn cái kia?",
+          "scored": true
+        }
+      ],
+      "question": "còn cái kia?",
+      "searchQuery": "còn cái kia?",
+      "rewriteRan": false,
+      "expect": "no_answer",
+      "got": "nothing_found",
+      "pass": true,
+      "model": null,
+      "nChunks": 0,
+      "topScore": null,
+      "urls": [],
+      "reply": "Tôi không tìm thấy thông tin nào liên quan đến câu hỏi này trong dữ liệu của BKFintech.",
+      "gold": null
+    },
+    {
+      "id": 360,
+      "group": "11. Nối tiếp — mơ hồ sau ngữ cảnh rõ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "thế à?",
+          "scored": true
+        }
+      ],
+      "question": "thế à?",
+      "searchQuery": "What is V-Chain?",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "no_answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/V-Chain",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024"
+      ],
+      "reply": "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?",
+      "gold": null
+    },
+    {
+      "id": 556,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Business Intelligence dạy gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn giá xăng hôm nay?",
+          "scored": true
+        }
+      ],
+      "question": "còn giá xăng hôm nay?",
+      "searchQuery": "today's gasoline price",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 1,
+      "topScore": 0.46,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 557,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "à mà mấy giờ rồi?",
+          "scored": true
+        }
+      ],
+      "question": "à mà mấy giờ rồi?",
+      "searchQuery": "What time is it now?",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 3,
+      "topScore": 1,
+      "urls": [
+        "https://ecotech.bkfin.tech/ecotech2025/index.html",
+        "https://fintech.hust.edu.vn/news/hoi-thao-nang-cao-nang-suat-lao-dong-va-chat-luong-trong-ky-nguyen-so",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-8"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 558,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "cho tôi công thức nấu bún chả",
+          "scored": true
+        }
+      ],
+      "question": "cho tôi công thức nấu bún chả",
+      "searchQuery": "how to cook bun cha",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "nothing_found",
+      "pass": true,
+      "model": null,
+      "nChunks": 0,
+      "topScore": null,
+      "urls": [],
+      "reply": "Tôi không tìm thấy thông tin nào liên quan đến câu hỏi này trong dữ liệu của BKFintech.",
+      "gold": null
+    },
+    {
+      "id": 559,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "đội Việt Nam thắng chưa?",
+          "scored": true
+        }
+      ],
+      "question": "đội Việt Nam thắng chưa?",
+      "searchQuery": "Did the Vietnam team win?",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "no_answer",
+      "pass": true,
+      "model": "gemma-4-31b-it",
+      "nChunks": 3,
+      "topScore": 0.7008,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/hack-cx-in-banking-together-2026-khep-lai-sau-36-gio-hackathon-vinh-danh-nhung-giai-phap-cong-nghe-sang-tao-trong-linh-vuc-ngan-hang",
+        "https://fintech.hust.edu.vn/news/final-round-hack-cx-together-2025",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-5-pitching-day-ends-with-high-energy-and-excitement"
+      ],
+      "reply": "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?",
+      "gold": null
+    },
+    {
+      "id": 560,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có mấy lab?"
+        },
+        {
+          "turn": 2,
+          "user": "dịch giúp tôi câu này sang tiếng Trung",
+          "scored": true
+        }
+      ],
+      "question": "dịch giúp tôi câu này sang tiếng Trung",
+      "searchQuery": "Translate this sentence into Chinese",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "nothing_found",
+      "pass": true,
+      "model": null,
+      "nChunks": 0,
+      "topScore": null,
+      "urls": [],
+      "reply": "Tôi không tìm thấy thông tin nào liên quan đến câu hỏi này trong dữ liệu của BKFintech.",
+      "gold": null
+    },
+    {
+      "id": 561,
+      "group": "20. Nối tiếp — đổi chủ đề ra ngoài",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BKSign là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "kể tôi nghe một câu chuyện cười",
+          "scored": true
+        }
+      ],
+      "question": "kể tôi nghe một câu chuyện cười",
+      "searchQuery": "tell me a joke",
+      "rewriteRan": true,
+      "expect": "nothing_found",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 1,
+      "topScore": 0.452,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/hack-cx-together-2025"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 562,
+      "group": "20. Nối tiếp — đổi sang chủ thể khác",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng BK Fintech là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "thế hiệu trưởng Bách khoa là ai?",
+          "scored": true
+        }
+      ],
+      "question": "thế hiệu trưởng Bách khoa là ai?",
+      "searchQuery": "Who is the President of Hanoi University of Science and Technology?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.7876,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/congratulations-to-dr-do-ba-lam-on-his-appointment-as-vice-director-of-the-institute-for-digital-technology-and-economy",
+        "https://ecotech.bkfin.tech/ecotech2025/index.html",
+        "https://fintech.hust.edu.vn/about/institute-council"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 563,
+      "group": "20. Nối tiếp — đổi sang chủ thể khác",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có khóa Business Intelligence không?"
+        },
+        {
+          "turn": 2,
+          "user": "còn Đại học Kinh tế Quốc dân có không?",
+          "scored": true
+        }
+      ],
+      "question": "còn Đại học Kinh tế Quốc dân có không?",
+      "searchQuery": "Does National Economics University offer Business Intelligence courses?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.7438,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 564,
+      "group": "20. Nối tiếp — đổi sang chủ thể khác",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain của Viện là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn VNG thì làm sản phẩm gì?",
+          "scored": true
+        }
+      ],
+      "question": "còn VNG thì làm sản phẩm gì?",
+      "searchQuery": "What products does VNG develop?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "nothing_found",
+      "pass": true,
+      "model": null,
+      "nChunks": 0,
+      "topScore": null,
+      "urls": [],
+      "reply": "Tôi không tìm thấy thông tin nào liên quan đến câu hỏi này trong dữ liệu của BKFintech.",
+      "gold": null
+    },
+    {
+      "id": 565,
+      "group": "20. Nối tiếp — đổi sang chủ thể khác",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Lab SFDB nghiên cứu gì?"
+        },
+        {
+          "turn": 2,
+          "user": "còn lab của FPT thì sao?",
+          "scored": true
+        }
+      ],
+      "question": "còn lab của FPT thì sao?",
+      "searchQuery": "research and focus of FPT lab at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "no_answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.908,
+      "urls": [
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?",
+      "gold": null
+    },
+    {
+      "id": 566,
+      "group": "20. Nối tiếp — đổi sang chủ thể khác",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện hợp tác với Rikkeisoft à?"
+        },
+        {
+          "turn": 2,
+          "user": "Rikkeisoft doanh thu bao nhiêu?",
+          "scored": true
+        }
+      ],
+      "question": "Rikkeisoft doanh thu bao nhiêu?",
+      "searchQuery": "What is the revenue of Rikkeisoft?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8657,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/le-ky-ket-tai-tro-nghien-cuu-khoa-hoc",
+        "https://fintech.hust.edu.vn/news/hust-x-rikkeisoft-ky-ket-hop-tac-chien-luoc-ra-mat-he-sinh-thai-dao-tao-du-lieu-the-he-moi-data-analysis-va-data-engineering-don-dau-lan-song-ai",
+        "https://fintech.hust.edu.vn/news/thong-bao-nop-de-xuat-de-tai-nghien-cuu"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 567,
+      "group": "20. Nối tiếp — tiền đề sai cài trong lượt sau",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có những khóa học nào?"
+        },
+        {
+          "turn": 2,
+          "user": "khóa 50 triệu kia học mấy tháng?",
+          "scored": true
+        }
+      ],
+      "question": "khóa 50 triệu kia học mấy tháng?",
+      "searchQuery": "Duration of the 50 million VND course at BKFintech Institute",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8693,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/fintech-course-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 568,
+      "group": "20. Nối tiếp — tiền đề sai cài trong lượt sau",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "sao thầy ấy nghỉ việc vậy?",
+          "scored": true
+        }
+      ],
+      "question": "sao thầy ấy nghỉ việc vậy?",
+      "searchQuery": "Why did BKFintech Institute Director Nguyen Binh Minh resign?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/institute-council",
+        "https://fintech.hust.edu.vn/about/welcome-message",
+        "https://fintech.hust.edu.vn/"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 569,
+      "group": "20. Nối tiếp — tiền đề sai cài trong lượt sau",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "vì sao dự án bị dừng?",
+          "scored": true
+        }
+      ],
+      "question": "vì sao dự án bị dừng?",
+      "searchQuery": "Why was the Cybersecurity Human Resources Incubator in the Digital Economy – Cyber Clinic project stopped?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy",
+        "https://fintech.hust.edu.vn/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 570,
+      "group": "20. Nối tiếp — tiền đề sai cài trong lượt sau",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có mấy lab?"
+        },
+        {
+          "turn": 2,
+          "user": "lab thứ tư tên gì?",
+          "scored": true
+        }
+      ],
+      "question": "lab thứ tư tên gì?",
+      "searchQuery": "What is the name of the fourth R&D lab at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemma-4-31b-it",
+      "nChunks": 7,
+      "topScore": 0.9268,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1]",
+      "gold": null
+    },
+    {
+      "id": 571,
+      "group": "20. Nối tiếp — tiền đề sai cài trong lượt sau",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Hackday là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "mùa 20 tổ chức khi nào?",
+          "scored": true
+        }
+      ],
+      "question": "mùa 20 tổ chức khi nào?",
+      "searchQuery": "When will BK Fintech Hackday season 20 be organized?",
+      "rewriteRan": true,
+      "expect": "not_updated",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.9056,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-12",
+        "https://fintech.hust.edu.vn/get-involved/hackday",
+        "https://fintech.hust.edu.vn/news/bk-fintech-hackday-season-6"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 572,
+      "group": "20. Nối tiếp — quay lại chủ đề cũ sau khi lạc",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "thời tiết thế nào?"
+        },
+        {
+          "turn": 3,
+          "user": "quay lại V-Chain, nó hỗ trợ mạng nào?",
+          "scored": true
+        }
+      ],
+      "question": "quay lại V-Chain, nó hỗ trợ mạng nào?",
+      "searchQuery": "Which blockchain networks are supported by V-Chain?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/V-Chain",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025"
+      ],
+      "reply": "Dạ, V-Chain hỗ trợ nhiều mạng lưới blockchain khác nhau, bao gồm cả mạng công khai và riêng tư như Hyperledger Sawtooth, Hyperledger Fabric, Ethereum, và Avalanche.",
+      "gold": {
+        "url": [
+          "solutions/V-Chain"
+        ],
+        "text": [
+          "V-Chain"
+        ]
+      }
+    },
+    {
+      "id": 573,
+      "group": "20. Nối tiếp — quay lại chủ đề cũ sau khi lạc",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "mấy giờ rồi?"
+        },
+        {
+          "turn": 3,
+          "user": "thầy ấy tên đầy đủ là gì?",
+          "scored": true
+        }
+      ],
+      "question": "thầy ấy tên đầy đủ là gì?",
+      "searchQuery": "What is the full name of BKFintech Institute director Nguyen Binh Minh?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8953,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/institute-council",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/conference-dialogue-on-the-ai-society-opportunities-and-solutions-for-vietnam-2026"
+      ],
+      "reply": "Dạ, thầy ấy tên đầy đủ là Phó Giáo sư, Tiến sĩ Nguyễn Bình Minh [4].",
+      "gold": {
+        "text": [
+          "Nguyen Binh Minh|Nguyễn Bình Minh"
+        ]
+      }
+    },
+    {
+      "id": 574,
+      "group": "20. Nối tiếp — quay lại chủ đề cũ sau khi lạc",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa Fintech dạy gì?"
+        },
+        {
+          "turn": 2,
+          "user": "giá vàng bao nhiêu?"
+        },
+        {
+          "turn": 3,
+          "user": "khóa đó bao nhiêu giờ?",
+          "scored": true
+        }
+      ],
+      "question": "khóa đó bao nhiêu giờ?",
+      "searchQuery": "How many hours is the Fintech course?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/courses/fintech-course-en",
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/ai-blockchain-fintech-for-beginners"
+      ],
+      "reply": "Dạ, khóa Fintech có thời lượng 76 giờ học (hoặc 76 giờ học cộng với 8 giờ workshop). [1]",
+      "gold": {
+        "url": [
+          "courses/fintech-course"
+        ]
+      }
+    },
+    {
+      "id": 575,
+      "group": "20. Nối tiếp — quay lại chủ đề cũ sau khi lạc",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "hôm nay thứ mấy?"
+        },
+        {
+          "turn": 3,
+          "user": "dự án đó kéo dài bao lâu?",
+          "scored": true
+        }
+      ],
+      "question": "dự án đó kéo dài bao lâu?",
+      "searchQuery": "How long is the Cybersecurity Human Resources Incubator in the Digital Economy – Cyber Clinic project duration?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy",
+        "https://fintech.hust.edu.vn/news/launching-ceremony-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy"
+      ],
+      "reply": "- Dự án có thời gian thực hiện là 15 tháng, từ tháng 4 năm 2026 đến tháng 3 năm 2027. [5]",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 576,
+      "group": "20. Nối tiếp — đại từ trỏ sai/mơ hồ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có V-Chain và eDiploma."
+        },
+        {
+          "turn": 2,
+          "user": "nó dùng công nghệ gì?",
+          "scored": true
+        }
+      ],
+      "question": "nó dùng công nghệ gì?",
+      "searchQuery": "What technology do V-Chain and eDiploma use?",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "answer",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.8388,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2025",
+        "https://fintech.hust.edu.vn/solutions/eDiploma",
+        "https://fintech.hust.edu.vn/solutions/V-Chain"
+      ],
+      "reply": "Dạ, \n\n- eDiploma dùng công nghệ chữ ký số [1, 2].\n- V-Chain dùng công nghệ blockchain [3, 5, 6].",
+      "gold": null
+    },
+    {
+      "id": 577,
+      "group": "20. Nối tiếp — đại từ trỏ sai/mơ hồ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có 3 lab."
+        },
+        {
+          "turn": 2,
+          "user": "cái đó nghiên cứu gì?",
+          "scored": true
+        }
+      ],
+      "question": "cái đó nghiên cứu gì?",
+      "searchQuery": "What are the research focuses of the three R&D Labs at BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [1]",
+      "gold": null
+    },
+    {
+      "id": 578,
+      "group": "20. Nối tiếp — đại từ trỏ sai/mơ hồ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Ban giám đốc có 3 người."
+        },
+        {
+          "turn": 2,
+          "user": "ông ấy phụ trách gì?",
+          "scored": true
+        }
+      ],
+      "question": "ông ấy phụ trách gì?",
+      "searchQuery": "What are the responsibilities of the BKFintech Institute director Nguyen Binh Minh?",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.828,
+      "urls": [
+        "https://fintech.hust.edu.vn/about/welcome-message",
+        "https://fintech.hust.edu.vn/about/institute-council",
+        "https://fintech.hust.edu.vn/news/hoi-thao-va-le-ra-mat-bao-cao-thuong-nien-ve-cong-nghe-so-va-kinh-te-so-viet-nam-chu-de-khong-gian-phat-trien-moi-thuc-day-kinh-te-so"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết.",
+      "gold": null
+    },
+    {
+      "id": 579,
+      "group": "20. Nối tiếp — đại từ trỏ sai/mơ hồ",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có nhiều khóa học."
+        },
+        {
+          "turn": 2,
+          "user": "khóa đó bao nhiêu tiền?",
+          "scored": true
+        }
+      ],
+      "question": "khóa đó bao nhiêu tiền?",
+      "searchQuery": "What is the tuition fee for the BKFintech Workshop Series?",
+      "rewriteRan": true,
+      "expect": "no_answer",
+      "got": "not_updated",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/get-involved/workshop-series",
+        "https://fintech.hust.edu.vn/courses/fintech-course-en",
+        "https://fintech.hust.edu.vn/news/thong-bao-nop-de-xuat-de-tai"
+      ],
+      "reply": "Xin lỗi, tôi chưa được cập nhật thông tin mới nhất. Bạn có thể tham khảo các nguồn chính thức hoặc liên hệ trực tiếp với BKFintech để biết thông tin chi tiết. [3]",
+      "gold": null
+    },
+    {
+      "id": 580,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện trưởng là ai?"
+        },
+        {
+          "turn": 2,
+          "user": "ai cơ?",
+          "scored": true
+        }
+      ],
+      "question": "ai cơ?",
+      "searchQuery": "Who is the institute director of BKFintech Institute?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "no_answer",
+      "pass": false,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao",
+        "https://fintech.hust.edu.vn/news/bkfintech-hackday-2025"
+      ],
+      "reply": "Tôi chưa rõ câu hỏi của bạn, bạn có thể đặt ra câu hỏi chi tiết hơn được không ạ?",
+      "gold": {
+        "text": [
+          "Nguyen Binh Minh|Nguyễn Bình Minh"
+        ]
+      }
+    },
+    {
+      "id": 581,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "V-Chain là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nhắc lại giúp tôi",
+          "scored": true
+        }
+      ],
+      "question": "nhắc lại giúp tôi",
+      "searchQuery": "What is V-Chain?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/V-Chain",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/get-involved/vietnam-digital-economy-review/2024"
+      ],
+      "reply": "V-Chain is a platform that supports programmers in developing and deploying decentralized applications on a variety of existing blockchain networks. [1]",
+      "gold": {
+        "url": [
+          "solutions/V-Chain"
+        ],
+        "text": [
+          "V-Chain"
+        ]
+      }
+    },
+    {
+      "id": 582,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Viện có mấy lab?"
+        },
+        {
+          "turn": 2,
+          "user": "mấy cái cơ?",
+          "scored": true
+        }
+      ],
+      "question": "mấy cái cơ?",
+      "searchQuery": "How many R&D Labs does BKFintech Institute have?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemma-4-31b-it",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/research/r&d-labs",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Dạ, Viện có 3 R&D Labs gồm:\n- Smart Finance and Digital Banking Lab.\n- Software Engineering and Decentralized Systems Lab.\n- Operational Efficiency in Finance Lab. [1]",
+      "gold": {
+        "url": [
+          "r&d-labs/"
+        ]
+      }
+    },
+    {
+      "id": 583,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Khóa BI bao nhiêu giờ?"
+        },
+        {
+          "turn": 2,
+          "user": "bao nhiêu giờ cơ?",
+          "scored": true
+        }
+      ],
+      "question": "bao nhiêu giờ cơ?",
+      "searchQuery": "How many hours is the Business Intelligence short-term course?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemma-4-31b-it",
+      "nChunks": 7,
+      "topScore": 0.9853,
+      "urls": [
+        "https://fintech.hust.edu.vn/academic",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-en",
+        "https://fintech.hust.edu.vn/courses/business-intelligence-ai-powered-insights"
+      ],
+      "reply": "Dạ,\n\n- Khóa học ngắn hạn Business Intelligence kéo dài 30 giờ.\n- Sự kiện Business Intelligence: AI-Powered Insights có thời lượng 4 giờ học.",
+      "gold": null
+    },
+    {
+      "id": 584,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "Cyber Clinic kéo dài bao lâu?"
+        },
+        {
+          "turn": 2,
+          "user": "bao lâu cơ?",
+          "scored": true
+        }
+      ],
+      "question": "bao lâu cơ?",
+      "searchQuery": "How long does the Cyber Clinic last?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 0.97,
+      "urls": [
+        "https://fintech.hust.edu.vn/news/cyber-clinic-train-the-trainer-enhancing-lecturers-capacity-to-support-businesses-in-the-digital-era",
+        "https://fintech.hust.edu.vn/news/launch-of-the-cyber-clinics-incubation-program-for-vietnams-digital-economy",
+        "https://fintech.hust.edu.vn/research/r&d-funding-projects/cyber-clinic?user=teacher"
+      ],
+      "reply": "Dạ, chương trình Cyber Clinic có thời gian thực hiện là 15 tháng, từ tháng 4 năm 2026 đến tháng 3 năm 2027. [2, 6, 7]",
+      "gold": {
+        "url": [
+          "cyber-clinic"
+        ],
+        "text": [
+          "Cyber Clinic"
+        ]
+      }
+    },
+    {
+      "id": 585,
+      "group": "20. Nối tiếp — hỏi lại chính câu vừa trả lời",
+      "conversation": [
+        {
+          "turn": 1,
+          "user": "BKSign là gì?"
+        },
+        {
+          "turn": 2,
+          "user": "nói lại đi",
+          "scored": true
+        }
+      ],
+      "question": "nói lại đi",
+      "searchQuery": "What is BKSign solution developed by BKFintech?",
+      "rewriteRan": true,
+      "expect": "answer",
+      "got": "answer",
+      "pass": true,
+      "model": "gemini-3.5-flash-lite",
+      "nChunks": 7,
+      "topScore": 1,
+      "urls": [
+        "https://fintech.hust.edu.vn/solutions/BKSign",
+        "https://fintech.hust.edu.vn/",
+        "https://fintech.hust.edu.vn/news/vien-cong-nghe-va-kinh-te-so-va-a-star-x-ky-ket-bien-ban-ghi-nho-hop-tac-thuc-day-he-sinh-thai-doi-moi-sang-tao"
+      ],
+      "reply": "Dạ,\n- BKSign là giải pháp ký số nội bộ và từ xa do đội ngũ BKFintech phát triển nhằm giải quyết các bài toán quản lý văn bản nội bộ và định danh số cho các tổ chức.\n- Hệ thống tự xây dựng hạ tầng khóa công khai (PKI) nội bộ để cấp phát chứng thư số chuẩn X.509 cho người dùng, giúp tiết kiệm chi phí so với việc mua chứng thư số công cộng.\n- Các tính năng chính bao gồm ký số trực tiếp trên tệp PDF, Word, Excel, cung cấp ứng dụng trên web và di động, tích hợp với hệ thống ký số công cộng (như VNPT, Viettel), hỗ trợ chữ ký số qua SIM, USB Token và Plugin.",
+      "gold": {
+        "url": [
+          "solutions/BKSign"
+        ],
+        "text": [
+          "BKSign"
+        ]
+      }
+    }
+  ]
+}
