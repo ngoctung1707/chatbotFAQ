@@ -130,13 +130,24 @@ export async function POST(req: NextRequest) {
   // call, search() would run perfectly happily without either, and both
   // features would be silently off with no error anywhere to trace. The cost is
   // one findOne by _id on chat_sessions, a few ms against retrieval's seconds.
-  const {
-    history,
-    model: pinnedModel,
-    lastChunks,
-  } = MOCK
+  // Mongo chết thì chatbot MẤT TRÍ NHỚ, không chết theo.
+  //
+  // Truy hồi và sinh câu trả lời không cần Mongo một chút nào — nó chỉ phục vụ
+  // hội thoại nhiều lượt. Nên khi nó hỏng, hành vi đúng là trả lời từng câu
+  // độc lập chứ không phải ném 500 với body rỗng và để widget vỡ.
+  //
+  // Trước khi có nhánh này, một lỗi Mongo ở đây bay thẳng ra khỏi route: người
+  // dùng không nhận được câu thông báo nào, và log phía họ chỉ có mã 500.
+  const { history, model: pinnedModel, lastChunks } = MOCK
     ? { history: [] as ChatMessage[], model: null, lastChunks: [] as StoredChunkRef[] }
-    : await getHistoryAndModel(session_id)
+    : await getHistoryAndModel(session_id).catch((err) => {
+        console.error('    !! không đọc được lịch sử, trả lời không ngữ cảnh:', err)
+        return {
+          history: [] as ChatMessage[],
+          model: null,
+          lastChunks: [] as StoredChunkRef[],
+        }
+      })
 
   // Refers to something ("người thứ 2", "cái đó") with no earlier turn to
   // resolve it against. Answered here rather than sent to the model, because
@@ -252,8 +263,21 @@ export async function POST(req: NextRequest) {
 
   const reply = parts.join('')
   if (!MOCK) {
-    await appendMessage(session_id, 'user', question)
-    await appendMessage(session_id, 'assistant', reply)
+    // Ghi hỏng thì lượt SAU mất ngữ cảnh, không phải lượt NÀY mất câu trả lời.
+    //
+    // Câu trả lời tới đây đã sinh xong và đã tốn một lượt gọi LLM. Để một lệnh
+    // ghi lịch sử thất bại vứt nó đi là trả tiền cho một thứ rồi ném vào sọt.
+    // Cùng cách xử lý với setLastChunks ngay bên dưới — trước đây hai dòng này
+    // là ngoại lệ duy nhất trong khối, và không có lý do gì để chúng khác.
+    // Tuần tự chứ KHÔNG Promise.all: hai lệnh cùng $push vào một document, và
+    // thứ tự mang nghĩa — lượt hỏi phải nằm trước lượt trả lời. Chạy song song
+    // thì chúng có thể vào ngược, và lượt sau đọc ra một hội thoại lộn xộn.
+    try {
+      await appendMessage(session_id, 'user', question)
+      await appendMessage(session_id, 'assistant', reply)
+    } catch (err) {
+      console.error('    !! không ghi được lịch sử lượt này:', err)
+    }
     // Whatever actually grounded this answer becomes the context a follow-up
     // may fall back to — including when this turn itself reused the previous
     // set. That is what lets a three-turn chain work: the passages stay put

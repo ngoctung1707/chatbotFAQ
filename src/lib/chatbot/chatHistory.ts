@@ -40,7 +40,29 @@ declare global {
 function getClient(): Promise<MongoClient> {
   if (!global._mongoClientPromise) {
     const client = new MongoClient(MONGODB_URI);
-    global._mongoClientPromise = client.connect();
+    global._mongoClientPromise = client.connect().catch((err) => {
+      // BỎ CACHE KHI KẾT NỐI HỎNG.
+      //
+      // Cache ở đây giữ một PROMISE, không phải một client. Mà một promise đã
+      // bị từ chối thì bị từ chối vĩnh viễn — nó không tự thử lại. Không có
+      // dòng này thì chính cái promise chết đó là cache, mọi request về sau
+      // await lại đúng nó và nhận lại đúng lỗi cũ cho tới khi có người restart
+      // tiến trình. Mongo tự sống lại cũng không cứu được.
+      //
+      // ĐO ĐƯỢC trước khi sửa: cho app trỏ vào một cổng chưa ai nghe, gọi
+      // /api/chat/session -> 500. Mở cổng đó ra, gọi lại ba lần cách nhau 3
+      // giây -> vẫn 500, và log vẫn in ECONNREFUSED tới đúng cổng đã mở.
+      //
+      // Không phải tình huống hiếm: compose.yaml khai `depends_on: db`, nhưng
+      // nó chỉ chờ container KHỞI ĐỘNG chứ không chờ mongod mở cổng. Mỗi lần
+      // `docker compose up` là một cuộc đua, và app thắng đua là chatbot chết.
+      //
+      // Cùng chốt chặn với loadEmbedder() trong embedding.ts, cùng một lý do:
+      // cache chỉ được phép ghi nhớ lần THÀNH CÔNG.
+      global._mongoClientPromise = undefined;
+      void client.close().catch(() => undefined);
+      throw err;
+    });
   }
   return global._mongoClientPromise;
 }

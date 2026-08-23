@@ -48,7 +48,13 @@ LOCK="data/.weekly.lock"
 COMPOSE="docker compose"
 # Mot goc duy nhat cho ca hai route noi bo, thay vi hai bien roi lech nhau.
 APP_URL="${CHATBOT_APP_URL:-http://localhost:3003}"
-HEALTH_URL="${HEALTH_URL:-$APP_URL/api/health}"
+# export, khong phai gan suong: `ram-log.mjs` chay o TIEN TRINH CON va tu doc
+# HEALTH_URL tu moi truong. Khong export thi no roi ve mac dinh 3003 cua rieng
+# no, va neu APP_URL tro di cho khac thi no do nham mot dia chi khong ai nghe —
+# roi bao "app co dang chay khong?" moi tuan trong khi app van khoe.
+# Do duoc khi chay thu tren cong 3010: log tom tat in dung dong canh bao do.
+export APP_URL
+export HEALTH_URL="${HEALTH_URL:-$APP_URL/api/health}"
 
 # MOI script cua job muon model cua app thay vi tu nap mot ban rieng.
 #
