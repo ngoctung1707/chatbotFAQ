@@ -46,7 +46,42 @@ LOCK="data/.weekly.lock"
 # Job khong con goi `docker compose restart app` (xem chu thich cho reload_store
 # ben duoi), nhung bien nay giu lai vi cac script phu van dung toi.
 COMPOSE="docker compose"
+# ─── DOC .env CO CHON LOC, KHONG `source` CA FILE ────────────────────────────
+#
+# App duoc Next nap `.env` ho. Job thi khong — no chay tren HOST, ngoai container,
+# nen khong ai nap gi cho no. Ma `CHATBOT_INTERNAL_SECRET` PHAI giong het o hai
+# ben: lech mot ky tu la /api/chatbot/embed tra 401 va pha B chet.
+#
+# De hai ben khong bao gio troi khoi nhau, job doc thang tu chinh file ma app
+# doc. Nhung `source .env` thi KHONG dung duoc voi file nay:
+#
+#   - `.env` bat dau bang BOM (UTF-8), `source` se tao mot bien ten rac
+#   - co dong mang comment phia sau gia tri
+#
+# Nen doc tung bien mot: bo BOM, lay dong dau tien khop `KEY=`, cat comment duoi
+# va bo ngoac neu co.
+read_env() {
+  [ -f .env ] || return 0
+  sed -e '1s/^\xEF\xBB\xBF//' .env \
+    | grep -E "^[[:space:]]*$1=" \
+    | head -1 \
+    | sed -E "s/^[[:space:]]*$1=//; s/[[:space:]]+#.*$//; s/^[\"']//; s/[\"']$//"
+}
+
+# `:=` chu khong phai gan thang: bien da co san trong moi truong shell VAN THANG.
+# Thu tu uu tien: bien moi truong > .env > mac dinh trong script. Nho vay chay tay
+# `CHATBOT_APP_URL=... bash run-weekly.sh` van de len duoc.
+: "${CHATBOT_INTERNAL_SECRET:=$(read_env CHATBOT_INTERNAL_SECRET)}"
+: "${CHATBOT_APP_URL:=$(read_env CHATBOT_APP_URL)}"
+export CHATBOT_INTERNAL_SECRET
+
 # Mot goc duy nhat cho ca hai route noi bo, thay vi hai bien roi lech nhau.
+#
+# Mac dinh 3003 la cong compose anh xa ra host ("3003:3000") — dung cho may chu,
+# noi job chay NGOAI container. May dev chay `pnpm dev` thang thi Next nghe 3000,
+# nen `.env` o day khai CHATBOT_APP_URL=http://localhost:3000. File .env khong
+# theo image len server (.dockerignore chan), nen hai moi truong tu dung gia tri
+# cua minh ma khong dam nhau.
 APP_URL="${CHATBOT_APP_URL:-http://localhost:3003}"
 # export, khong phai gan suong: `ram-log.mjs` chay o TIEN TRINH CON va tu doc
 # HEALTH_URL tu moi truong. Khong export thi no roi ve mac dinh 3003 cua rieng

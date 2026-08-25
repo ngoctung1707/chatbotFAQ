@@ -81,7 +81,7 @@ const Assistants = [
     title: 'Business Administration',
   },
   {
-    name: 'Pham Quynh Phuong',
+    name: 'Nguyen Thi Bach Tuyet',
     title: 'Marketing',
   },
 ]
