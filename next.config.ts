@@ -50,6 +50,22 @@ const nextConfig: NextConfig = {
       './node_modules/@xenova/transformers/package.json',
       './node_modules/@xenova/transformers/src/**',
       './node_modules/onnxruntime-node/**',
+      // onnxruntime-web PHẢI có, dù ở đây không có trình duyệt nào cả.
+      //
+      // backends/onnx.js của transformers import TĨNH cả hai backend:
+      //     import * as ONNX_NODE from 'onnxruntime-node';
+      //     import * as ONNX_WEB  from 'onnxruntime-web';
+      // rồi mới chọn một trong hai lúc chạy. ESM giải mọi import khi NẠP
+      // module, nên thiếu gói web là chết ngay ở bước nạp — chưa kịp tới đoạn
+      // chọn backend.
+      //
+      // Đây chính là lỗi "local chạy ngon, container hỏng": bản dựng đầu tiên
+      // chạy thật trong container đã chết đúng dòng này —
+      //   Cannot find package 'onnxruntime-web' imported from
+      //   /app/node_modules/@xenova/transformers/src/backends/onnx.js
+      //   code: 'ERR_MODULE_NOT_FOUND'
+      // Local không bao giờ thấy vì node_modules ở local có đủ mọi thứ.
+      './node_modules/onnxruntime-web/**',
       './node_modules/onnxruntime-common/**',
       './node_modules/@huggingface/jinja/**',
       './node_modules/sharp/**',

@@ -4,10 +4,10 @@
  * VÌ SAO CÓ ROUTE NÀY
  * -------------------
  * Trước đây pha B (`scripts/crawl/embed.ts`) tự nạp một bản BGE-M3 trong tiến
- * trình `tsx` của nó. Máy chủ 8GB không chứa nổi hai bản ~1,9GB cùng lúc, nên
- * job buộc phải bắt app nhả model ra trước — tức `docker compose restart app`,
- * rồi restart lần nữa lúc xong. Mỗi lần cập nhật dữ liệu là hai lần cả
- * fintech.hust.edu.vn chớp tắt.
+ * trình `tsx` của nó. Hai bản ~1,9GB cùng lúc không vừa trần của container app
+ * (`mem_limit` trong compose.yaml), nên job buộc phải bắt app nhả model ra
+ * trước — tức `docker compose restart app`, rồi restart lần nữa lúc xong. Mỗi
+ * lần cập nhật dữ liệu là hai lần cả fintech.hust.edu.vn chớp tắt.
  *
  * Route này đảo ngược chiều đó: app GIỮ model, job đến mượn. Trong toàn hệ
  * thống chỉ còn đúng một bản BGE-M3, sống suốt đời tiến trình app, và không

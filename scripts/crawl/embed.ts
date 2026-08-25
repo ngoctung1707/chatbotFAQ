@@ -7,8 +7,9 @@
  * FILE NÀY KHÔNG CÒN NẠP BGE-M3 NỮA.
  * ----------------------------------
  * Trước đây nó `import { embedDense }` rồi nạp một ONNX session ~1,9GB trong
- * chính tiến trình tsx này. Máy chủ 8GB không chứa nổi bản đó CÙNG bản mà app
- * đang giữ để trả lời câu hỏi, nên job buộc phải bắt app nhả model ra trước —
+ * chính tiến trình tsx này — cộng với bản app đang giữ để trả lời câu hỏi là
+ * ~3,8GB chỉ riêng model, vượt xa `mem_limit` của container app (compose.yaml).
+ * Nên bản thứ hai không có chỗ, và job buộc phải bắt app nhả model ra trước —
  * tức `docker compose restart app`, rồi restart lần nữa lúc xong. Hai lần cả
  * website chớp tắt cho mỗi lần cập nhật dữ liệu.
  *

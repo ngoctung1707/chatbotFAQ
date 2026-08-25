@@ -7,8 +7,17 @@ FROM node:lts-slim AS base
 FROM base AS deps
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json ./
+# Chep CA package-lock.json, khong chi package.json.
+#
+# Thieu lockfile thi `npm i` giai lai phu thuoc tu dau moi lan build, nen
+# container co the nhan mot bo phien ban KHAC voi may dev — dung ho loi "local
+# chay ngon, container hong" ma khong co cach nao lan ra tu ma nguon.
+#
+# Da tung xay ra tren chinh du an nay: `--force` bo qua peerDependencies, va
+# `zod` (peer cua ai@7) bien mat, giet MOI loi goi LLM trong khi `tsc` van bao
+# sach. Lan do vao duoc dependencies nen gio an toan, nhung co che thi van con
+# nguyen neu khong ghim lockfile.
+COPY package.json package-lock.json ./
 RUN npm i --force
 
 

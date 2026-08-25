@@ -57,6 +57,36 @@ export async function registerNode() {
   results.forEach((result, i) => {
     if (result.status === "rejected") {
       console.error(`[chatbot] Preload ${names[i]} THẤT BẠI:`, result.reason);
+      // Chỉ thẳng vào nguyên nhân, vì đây là kiểu hỏng IM LẶNG: website vẫn
+      // lên, chỉ chatbot chết, và /api/health vẫn trả ok:true. Người đọc log
+      // lúc 2h sáng không nên phải tự suy ra chuyện này.
+      //
+      // PHÂN NHÁNH THEO MÃ LỖI, không in một gợi ý cố định. Bản trước in gợi ý
+      // "cache rỗng" cho MỌI lỗi, và ngay lần chạy container thật đầu tiên nó
+      // đã chỉ sai hướng: lỗi thật là thiếu gói onnxruntime-web trong image,
+      // chẳng liên quan gì tới cache. Một gợi ý sai còn tốn thời gian hơn là
+      // không có gợi ý nào.
+      if (i === 0) {
+        const code = (result.reason as { code?: string } | undefined)?.code;
+        if (code === "ERR_MODULE_NOT_FOUND") {
+          console.error(
+            "[chatbot]   Image THIẾU GÓI, không phải lỗi cache. Bản dựng standalone\n" +
+              "[chatbot]   chỉ chứa những gì Next dò được, mà @xenova/transformers được\n" +
+              "[chatbot]   khai là serverExternalPackages nên bước dò bỏ qua nó.\n" +
+              "[chatbot]   Thêm gói còn thiếu vào outputFileTracingIncludes trong\n" +
+              "[chatbot]   next.config.ts, rồi dựng lại image."
+          );
+        } else {
+          console.error(
+            "[chatbot]   Trong container, thư mục cache model MẶC ĐỊNH nằm trong\n" +
+              "[chatbot]   node_modules và LUÔN RỖNG (image chỉ chép .next/standalone),\n" +
+              "[chatbot]   nên app phải tải ~560MB từ huggingface.co. Kiểm hai thứ:\n" +
+              "[chatbot]     1. CHATBOT_MODEL_CACHE có trỏ vào volume gắn từ host không\n" +
+              "[chatbot]     2. container có ra được huggingface.co không\n" +
+              "[chatbot]   Xem chú thích CHATBOT_MODEL_CACHE trong compose.yaml."
+          );
+        }
+      }
     }
   });
 

@@ -11,13 +11,45 @@ Ký hiệu: **[MÁY]** hệ thống tự làm — **[NGƯỜI]** phải có ngư
 
 - [ ] **[NGƯỜI]** `data/sources.registry.json` đã có và đúng — sinh bằng `node scripts/build-registry.mjs`; nhãn `collection`, nhóm selector, `min_items` do người quyết.
 - [ ] **[NGƯỜI]** Nạp cache từ chỉ mục cũ: `npx tsx scripts/crawl/seed-cache.ts` — không làm thì lần chạy đầu phải embed lại cả 405 chunk đóng băng.
+- [ ] **[NGƯỜI]** Tạo và nạp sẵn **volume cache model** (khác hẳn mục trên — đây là trọng số BGE-M3, không phải vector):
+      ```
+      mkdir -p /home/hust/bkfintech/model-cache
+      scp -r <máy-dev>/node_modules/@xenova/transformers/.cache/* \
+             hust@<máy-chủ>:/home/hust/bkfintech/model-cache/
+      ```
+      Bỏ qua thì container phải tải ~560MB từ huggingface.co ở lần chạy đầu, và **tải lại từ
+      đầu sau mỗi `docker compose up -d --build`**; máy chủ chặn egress thì preload hỏng vĩnh
+      viễn — website vẫn xanh, chỉ chatbot chết.
+      Đã kiểm trong container thật: có cache sẵn thì preload xong sau **9,1 giây**, log in
+      `[chatbot] cache model: /app/model-cache`.
 - [ ] **[NGƯỜI]** Ghi mốc QA **trên store đang phục vụ**: `CHATBOT_REWRITE=0 npx tsx scripts/crawl/qa-gate.ts --baseline` → `data/qa-baseline.json`.
       Nếu log báo có câu "không truy hồi được gì ngay từ mốc" → sửa bộ câu hỏi, vì câu đó vĩnh viễn không bắt được hồi quy.
 - [ ] **[NGƯỜI]** Chạy đầy đủ pha A một lần (không `--source=`) để `data/crawl-output.jsonl` là **toàn bộ kho**, không phải một nguồn.
 - [ ] **[NGƯỜI]** Kiểm tra tzdata trên máy chủ: `ls /usr/share/zoneinfo/Asia/Ho_Chi_Minh`. Thiếu → `Timezone=` trong timer hỏng → job chạy 9h sáng chủ nhật.
 - [ ] **[NGƯỜI]** Cài unit `bkfintech-index.service` + `.timer`, sửa `WorkingDirectory` cho khớp máy, rồi `systemctl enable --now bkfintech-index.timer`.
 - [ ] **[NGƯỜI]** Cài cron healthcheck: `*/5 * * * * cd <app> && bash scripts/crawl/healthcheck.sh >> data/healthcheck.log 2>&1`.
-- [ ] **[NGƯỜI]** Đối chiếu `MemoryMax` trong service với thực đo — comment trong file viết 3G nhưng directive đang đặt **4G**; chốt một con số và sửa comment cho khớp.
+- [x] ~~Đối chiếu `MemoryMax` với thực đo~~ — ĐÃ XONG. Chốt **2G**, chú thích đã viết lại.
+      Job không còn nạp model (pha B mượn của app), nên đỉnh RSS của pha nặng nhất còn lại
+      là **371MB** (pha C). Con số cũ 3G/4G tính cho thời còn nạp BGE-M3 trong tiến trình job.
+- [x] ~~Sau lần deploy đầu, đo `docker stats` rồi chốt lại `mem_limit` của app~~ — ĐÃ ĐO,
+      trong container Linux thật (không còn suy từ Windows). Chốt **4g**.
+      `docker stats`: app nghỉ ngay sau preload **2,661 GiB**, sau một lô embed 128 đoạn
+      **1,484 GiB**, db nhàn rỗi **81 MiB**. Trần cũ 2560m = 2,5 GiB, tức **nhỏ hơn mức
+      nghỉ** — container sẽ bị kernel giết ngay sau khi khởi động, trước cả câu hỏi đầu
+      tiên; `memswap_limit` bằng `mem_limit` nên chạm trần là bị kill chứ không phải chậm.
+      Vẫn nên chạy `docker stats` một lần trên máy chủ để xác nhận, nhưng không còn là
+      con số phỏng đoán nữa.
+- [ ] **[NGƯỜI]** *(bảo mật, làm SAU khi container đã chạy được)* Thêm `USER nextjs` vào
+      `Dockerfile`. Hiện container **chạy bằng root** — đo được: `id` trong image trả
+      `uid=0(root)`. Dockerfile có tạo user `nextjs` (uid 1001) và `chown`, nhưng không bao
+      giờ `USER` sang. Không gây crash, nên cố ý tách khỏi bản vá lỗi container để một thay
+      đổi có thể làm hỏng upload không đi kèm bản vá đang cần gấp.
+      Điều kiện bắt buộc trước khi bật, nếu không Payload hết upload được ảnh:
+      ```
+      sudo chown -R 1001:1001 /home/hust/bkfintech/media
+      sudo chown -R 1001:1001 /home/hust/bkfintech/model-cache   # chỉ cần nếu để container tự tải model
+      ```
+      `/home/hust/bkfintech/data` mount `:ro` nên chỉ cần đọc được, không cần chown.
 
 ---
       

@@ -11,14 +11,31 @@ ExecStart=/usr/bin/env bash scripts/crawl/run-weekly.sh
 
 # MUC 6.5 — tran RAM.
 #
-# `--max-old-space-size` cua Node KHONG dung duoc o day: no chi gioi han heap
-# cua V8, con ~1,1GB model nam trong bo nho NATIVE cua onnxruntime, hoan toan
-# ngoai tam voi cua no. Dat tran bang co che nay moi tinh ca hai.
+# 2G, VA CHU THICH BEN DUOI DA DUOC VIET LAI CHO DUNG SU THAT.
 #
-# 3G = ~1,5-2G cho pha B (mot ban BGE-M3) cong bien an toan. Cham tran thi job
-# bi kill sach voi log ro rang, thay vi de OOM killer cua kernel tu chon nan
-# nhan — ma no rat co the chon mot dich vu khac cua vien.
-MemoryMax=4G
+# Ban truoc ghi "3G = ~1,5-2G cho pha B (mot ban BGE-M3) cong bien an toan"
+# nhung directive lai dat 4G — lech nhau tu dau, va ca hai con so deu tinh cho
+# mot the gioi khong con nua: pha B TU NAP mot ban BGE-M3 trong tien trinh cua
+# job. Bay gio no goi /api/chatbot/embed va muon ban model cua app, nen job
+# KHONG BAO GIO nap model nua.
+#
+# Do duoc lai, dinh RSS cua pha nang nhat con lai (pha C — doc cache ~15MB,
+# dung IDF, ghi store 19MB):
+#
+#   dinh RSS 371 MB | rss cuoi 317 MB
+#
+# 2G la ~5 lan con so do, du cho ca pha A (crawl) lan cac buoc phu, ma van du
+# thap de cham tran la co chuyen that chu khong phai mot dot cao diem binh
+# thuong.
+#
+# `--max-old-space-size` cua Node van KHONG thay the duoc dong nay: no chi gioi
+# han heap cua V8. Dieu do van dung ngay ca khi job khong con nap model — mot
+# tien trinh tsx bi ro ri ngoai heap thi V8 khong biet gi. Dat tran bang cgroup
+# moi tinh ca hai.
+#
+# Cham tran thi job bi kill sach voi log ro rang, thay vi de OOM killer cua
+# kernel tu chon nan nhan — ma no rat co the chon mot dich vu khac cua vien.
+MemoryMax=2G
 MemorySwapMax=0
 
 # May chu dung chung: job nay khong duoc phep lam cham thu khac. Website van

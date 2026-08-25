@@ -17,8 +17,45 @@ services:
     # tren host phai dung DUNG gia tri do; lech nhau thi pha B an 401 moi lo.
     env_file:
       - .env
+    environment:
+      # LOI THU HAI CHI XUAT HIEN TRONG CONTAINER.
+      #
+      # `.env` cua may dev ghi DATABASE_URI=mongodb://localhost:27017/bkft —
+      # dung tren may dev, SAI trong container: `localhost` o day la chinh
+      # container app, khong phai Mongo. Quan sat truc tiep khi chay container
+      # that: `connect ECONNREFUSED 127.0.0.1:27017`, va app phai roi xuong che
+      # do suy giam — van tra loi duoc nhung MAT SACH lich su hoi thoai, tuc moi
+      # cau hoi noi tiep ("khoa do hoc bao lau?") deu truot chu de.
+      #
+      # `environment:` DE LEN `env_file:` trong docker compose, nen dong nay
+      # ghim container luon noi toi service `db` bat ke .env cua may nao. Do la
+      # cho dung: mot .env dung chung cho ca chay local lan chay container thi
+      # khong the dung ca hai, va thu phai dung theo container nam o day.
+      #
+      # Ten `db` la ten service ben duoi; mang cua compose tu phan giai no
+      # (do duoc trong container: db -> 172.18.0.2).
+      DATABASE_URI: mongodb://db:27017/bkft
+      # LOI THU NHAT CHI XUAT HIEN TRONG CONTAINER — xem EMBED_CACHE_DIR trong config.ts.
+      #
+      # Mac dinh cua @xenova/transformers la cat model trong
+      # node_modules/@xenova/transformers/.cache. Do duoc: 560MB tren may dev,
+      # va 0 byte trong .next/standalone — tuc thu muc do trong image la RONG,
+      # vi Dockerfile chi chep .next/standalone vao image chay.
+      #
+      # Khong co dong nay thi container phai tai ~560MB tu huggingface.co o lan
+      # chay dau, LAI TU DAU sau moi `docker compose up -d --build`. May chu
+      # chan egress hoac mang cham -> preload that bai -> chatbot chet trong khi
+      # website van xanh. Local khong bao gio thay vi local luon co san cache.
+      CHATBOT_MODEL_CACHE: /app/model-cache
     volumes:
       - "/home/hust/bkfintech/media:/app/public/media"
+      # Cache model, gan tu host. Tao truoc khi chay lan dau:
+      #   mkdir -p /home/hust/bkfintech/model-cache
+      # De trong thi lan chay dau tu tai model ve day (can egress toi
+      # huggingface.co MOT lan). Muon khoi tai, chep san tu mot may da co:
+      #   scp -r <may-dev>/node_modules/@xenova/transformers/.cache/* \
+      #          hust@<may-chu>:/home/hust/bkfintech/model-cache/
+      - "/home/hust/bkfintech/model-cache:/app/model-cache"
       # Chỉ mục chatbot. Dockerfile KHÔNG copy data/ vào image (runner chỉ lấy
       # public + .next), nên không có mount này thì INDEX_DIR ở config.ts —
       # `${process.cwd()}/data/faiss_index_js` — trỏ vào thư mục không tồn tại và
@@ -39,21 +76,49 @@ services:
     #
     # Không đặt thì mỗi bên tự phình cho tới khi OOM killer của kernel chọn nạn
     # nhân, mà nó rất có thể chọn một dịch vụ khác của viện chứ không phải thủ
-    # phạm. Con số 2,5G cho app = Next + Payload (~0,4G) cộng một bản BGE-M3
-    # (~1,1-1,5G) cộng biên; trong cửa sổ bảo trì app bỏ preload nên chỉ dùng
-    # ~0,4G, nhường chỗ cho job.
-    mem_limit: 2560m
-    memswap_limit: 2560m
+    # phạm.
+    #
+    # 4G, KHÔNG còn 2560m. Con số cũ tính cho một thế giới không còn nữa: nó giả
+    # định "trong cửa sổ bảo trì app bỏ preload nên chỉ dùng ~0,4G, nhường chỗ
+    # cho job". Bây giờ app GIỮ model suốt và job mượn lại qua
+    # /api/chatbot/embed, nên app không bao giờ xuống 0,4G nữa.
+    #
+    # ĐO BẰNG `docker stats` TRONG CONTAINER LINUX THẬT, không còn suy từ
+    # Windows nữa (bản trước ghi hoãn việc này lại):
+    #   app nghỉ, ngay sau preload, chưa ai hỏi:  2,661 GiB
+    #   ngay sau một lô embed 128 đoạn:           1,484 GiB
+    #   db (mongo:4.4.6) nhàn rỗi:                  81 MiB
+    #
+    # 2,661 GiB > 2560m. Nói cách khác: với trần cũ, container bị kernel giết
+    # NGAY SAU KHI KHỞI ĐỘNG, trước cả khi có người hỏi câu nào. Và vì
+    # memswap_limit BẰNG mem_limit (swap tắt), chạm trần không phải là chậm đi
+    # mà là bị giết.
+    #
+    # Phần đệm còn lại là có thật, không phải phòng xa: hot-swap store giữ tạm
+    # hai bản (+122MB), mỗi request đồng thời ~0,5MB, và lô embed 128 đoạn
+    # trong cửa sổ bảo trì.
+    #
+    # Con số nghỉ dao động mạnh (2,66 -> 1,48 GiB sau khi GC chạy) nên đừng siết
+    # xuống sát 2,7G; 4g là chỗ có đệm mà vẫn chặn được rò rỉ.
+    mem_limit: 4g
+    memswap_limit: 4g
   db:
     restart: always
     image: mongo:4.4.6
     # WiredTiger mặc định tự lấy 50% của (RAM máy − 1GB) làm cache VÀ KHÔNG TRẢ
-    # LẠI. Trên máy 8GB đó là ~3,5GB bị giữ vĩnh viễn — nghĩa là tắt chatbot
-    # trong cửa sổ bảo trì cũng không giải phóng đủ chỗ cho job như tính toán.
-    # Khai tường minh biến một biến số tự phình thành hằng số kiểm soát được.
-    command: ["mongod", "--wiredTigerCacheSizeGB", "0.5"]
-    mem_limit: 1024m
-    memswap_limit: 1024m
+    # LẠI. Khai tường minh biến một biến số tự phình thành hằng số kiểm soát được.
+    #
+    # Nâng 0.5 -> 1 và 1024m -> 2g. Lý do không phải là dư dả: Mongo chập chờn
+    # được quan sát trực tiếp trên máy dev — monitor timeout, `serverStatus was
+    # very slow` 8 giây, kết nối đầu mất 38 giây — và app đã phải rơi xuống chế
+    # độ suy giảm (mất trí nhớ hội thoại) vì nó. Bộ nhớ eo hẹp là một trong
+    # những nguyên nhân.
+    #
+    # Vẫn giữ trần tường minh thay vì bỏ hẳn: mongo:4.4.6 đã hết hạn hỗ trợ từ
+    # 02/2024, để nó tự phình trên máy dùng chung là rủi ro không cần thiết.
+    command: ["mongod", "--wiredTigerCacheSizeGB", "1"]
+    mem_limit: 2g
+    memswap_limit: 2g
     ports:
       - '27026:27017'
     volumes:

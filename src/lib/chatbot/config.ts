@@ -300,6 +300,28 @@ export const EMBED_WORKER_PATH =
 // đo được ~7s trên máy ấm, nhưng lần đầu sau khi dọn cache thì lâu hơn nhiều.
 export const EMBED_TIMEOUT_MS = Number(process.env.CHATBOT_EMBED_TIMEOUT_MS || 60000);
 
+/**
+ * Nơi @xenova/transformers cất model đã tải. Rỗng = để nguyên mặc định của thư
+ * viện, tức `node_modules/@xenova/transformers/.cache`.
+ *
+ * VÌ SAO PHẢI CHỈNH ĐƯỢC — ĐÂY LÀ MỘT LỖI CHỈ XUẤT HIỆN TRONG CONTAINER.
+ *
+ * Mặc định đó nằm BÊN TRONG node_modules, mà Dockerfile chỉ chép
+ * `.next/standalone` vào image chạy — nên thư mục cache trong image là RỖNG.
+ * Đo được: 560MB trên máy dev, 0 byte trong `.next/standalone`.
+ *
+ * Hệ quả trong container, và không bao giờ thấy được ở local vì local luôn có
+ * sẵn cache:
+ *   - lần chạy đầu phải tải ~560MB từ huggingface.co
+ *   - máy chủ chặn egress hoặc mạng chậm -> preload thất bại -> chatbot chết
+ *     trong khi website vẫn xanh
+ *   - tải lại TỪ ĐẦU sau mỗi `docker compose up -d --build`
+ *
+ * Trỏ biến này vào một volume gắn từ host thì cache sống sót qua mọi lần dựng
+ * lại image, và chỉ phải tải đúng một lần trong đời máy chủ.
+ */
+export const EMBED_CACHE_DIR = process.env.CHATBOT_MODEL_CACHE || "";
+
 // Bí mật dùng chung cho hai route nội bộ /api/chatbot/embed và
 // /api/chatbot/reload. KHÔNG có giá trị mặc định, và đó là chủ ý: thiếu biến
 // này thì hai route trả 503 chứ không mở toang. /api/chatbot/embed cho phép

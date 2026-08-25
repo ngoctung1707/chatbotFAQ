@@ -15,7 +15,8 @@
  * VÌ SAO ĐÚNG MỘT WORKER, KHÔNG PHẢI POOL
  * ---------------------------------------
  * Mỗi worker giữ một ONNX session riêng, tức mỗi worker là thêm ~1,9GB RAM.
- * Máy chủ 8GB không chứa nổi hai. Một worker cũng đủ, vì hai luồng công việc
+ * Đo được: app sau preload đã chiếm ~2,3-2,4GB, nên bản thứ hai sẽ vượt trần
+ * container ngay. Một worker cũng đủ, vì hai luồng công việc
  * dùng tới nó — trả lời câu hỏi và embed dữ liệu mới — theo thiết kế KHÔNG BAO
  * GIỜ chạy cùng lúc: trong cửa sổ bảo trì thì /api/chat đã chặn ở cờ bảo trì
  * trước khi đụng tới truy hồi.
@@ -30,7 +31,7 @@
  * build `output: 'standalone'` sẽ thiếu file này.
  */
 import { parentPort, workerData } from "node:worker_threads";
-import { pipeline } from "@xenova/transformers";
+import { env, pipeline } from "@xenova/transformers";
 
 if (!parentPort) {
   throw new Error("embed-worker.mjs chỉ chạy được bên trong worker_threads");
@@ -39,6 +40,17 @@ if (!parentPort) {
 const MODEL_ID = workerData?.modelId;
 if (!MODEL_ID) {
   throw new Error("Thiếu workerData.modelId khi tạo embed worker");
+}
+
+// Đặt TRƯỚC lời gọi pipeline() đầu tiên — thư viện đọc env.cacheDir tại thời
+// điểm tải, nên đặt sau là không có tác dụng.
+//
+// Mặc định của thư viện nằm trong node_modules, mà thư mục đó trong image
+// Docker là rỗng (Dockerfile chỉ chép .next/standalone). Trỏ ra một volume gắn
+// từ host thì model tải đúng một lần rồi sống qua mọi lần dựng lại image.
+if (workerData?.cacheDir) {
+  env.cacheDir = workerData.cacheDir;
+  console.log(`[chatbot] cache model: ${workerData.cacheDir}`);
 }
 
 let embedderPromise = null;

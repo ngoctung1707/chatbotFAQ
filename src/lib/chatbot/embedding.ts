@@ -21,6 +21,7 @@
 import { Worker } from "node:worker_threads";
 import {
   EMBEDDING_MODEL_ID,
+  EMBED_CACHE_DIR,
   EMBED_REMOTE_URL,
   EMBED_TIMEOUT_MS,
   EMBED_WORKER_PATH,
@@ -59,15 +60,6 @@ interface EmbedWorkerHandle {
   spawnedAt: number;
 }
 
-/**
- * Giữ tiến trình sống đúng lúc cần, và chỉ lúc cần.
- *
- * Với server thì dòng này không đổi gì — luôn có listener HTTP giữ event loop.
- * Nhưng các script (build-index.ts, qa-*.ts) chạy xong là muốn thoát, mà một
- * worker còn ref sẽ treo tiến trình vô hạn. unref() khi rảnh, ref() khi đang
- * có việc: đó là cách để cùng một đoạn code phục vụ được cả server dài hạn lẫn
- * script chạy một lần.
- */
 /**
  * Mượn model của app qua HTTP thay vì tự nạp.
  *
@@ -109,6 +101,15 @@ async function embedViaApp(texts: string[]): Promise<number[][]> {
   return out;
 }
 
+/**
+ * Giữ tiến trình sống đúng lúc cần, và chỉ lúc cần.
+ *
+ * Với server thì dòng này không đổi gì — luôn có listener HTTP giữ event loop.
+ * Nhưng các script (build-index.ts, qa-*.ts) chạy xong là muốn thoát, mà một
+ * worker còn ref sẽ treo tiến trình vô hạn. unref() khi rảnh, ref() khi đang
+ * có việc: đó là cách để cùng một đoạn code phục vụ được cả server dài hạn lẫn
+ * script chạy một lần.
+ */
 function syncRef(handle: EmbedWorkerHandle): void {
   if (handle.pending.size > 0 || !handle.modelReady) handle.worker.ref();
   else handle.worker.unref();
@@ -124,7 +125,7 @@ function failAll(handle: EmbedWorkerHandle, err: Error): void {
 
 function spawnWorker(): EmbedWorkerHandle {
   const worker = new Worker(EMBED_WORKER_PATH, {
-    workerData: { modelId: EMBEDDING_MODEL_ID },
+    workerData: { modelId: EMBEDDING_MODEL_ID, cacheDir: EMBED_CACHE_DIR },
   });
 
   const handle: EmbedWorkerHandle = {
