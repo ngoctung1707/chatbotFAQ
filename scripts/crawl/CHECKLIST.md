@@ -20,8 +20,16 @@ Ký hiệu: **[MÁY]** hệ thống tự làm — **[NGƯỜI]** phải có ngư
       Bỏ qua thì container phải tải ~560MB từ huggingface.co ở lần chạy đầu, và **tải lại từ
       đầu sau mỗi `docker compose up -d --build`**; máy chủ chặn egress thì preload hỏng vĩnh
       viễn — website vẫn xanh, chỉ chatbot chết.
-      Đã kiểm trong container thật: có cache sẵn thì preload xong sau **9,1 giây**, log in
-      `[chatbot] cache model: /app/model-cache`.
+      Đã kiểm cả hai đường trong container thật:
+      | | cache nạp sẵn | cache rỗng |
+      |---|---|---|
+      | preload | **8,8 s** | **80,6 s** |
+      | đỉnh bộ nhớ | 2,7 GiB | **3,49 GiB** (87% của `mem_limit: 4g`) |
+      Đường "cache rỗng" chạy được, nhưng nếu `mem_limit` nhỏ hơn đỉnh 3,49 GiB thì tiến trình
+      bị giết giữa lúc tải (`exit=137 oom=true`), `restart: always` cho chạy lại, mỗi lần
+      restart **vứt bỏ phần đã tải** → quay vòng mãi (đo được: 17MB sau 180 giây). Và vì đó
+      cũng là tiến trình phục vụ website nên **cả website chết theo**, không còn là
+      "website xanh, chatbot chết". Nạp sẵn cache là cách tránh hẳn đường này.
 - [ ] **[NGƯỜI]** Ghi mốc QA **trên store đang phục vụ**: `CHATBOT_REWRITE=0 npx tsx scripts/crawl/qa-gate.ts --baseline` → `data/qa-baseline.json`.
       Nếu log báo có câu "không truy hồi được gì ngay từ mốc" → sửa bộ câu hỏi, vì câu đó vĩnh viễn không bắt được hồi quy.
 - [ ] **[NGƯỜI]** Chạy đầy đủ pha A một lần (không `--source=`) để `data/crawl-output.jsonl` là **toàn bộ kho**, không phải một nguồn.

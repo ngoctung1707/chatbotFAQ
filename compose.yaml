@@ -85,21 +85,40 @@ services:
     #
     # ĐO BẰNG `docker stats` TRONG CONTAINER LINUX THẬT, không còn suy từ
     # Windows nữa (bản trước ghi hoãn việc này lại):
-    #   app nghỉ, ngay sau preload, chưa ai hỏi:  2,661 GiB
-    #   ngay sau một lô embed 128 đoạn:           1,484 GiB
-    #   db (mongo:4.4.6) nhàn rỗi:                  81 MiB
     #
-    # 2,661 GiB > 2560m. Nói cách khác: với trần cũ, container bị kernel giết
-    # NGAY SAU KHI KHỞI ĐỘNG, trước cả khi có người hỏi câu nào. Và vì
-    # memswap_limit BẰNG mem_limit (swap tắt), chạm trần không phải là chậm đi
-    # mà là bị giết.
+    #   Lần chạy có cache model nạp sẵn (quy trình đúng):
+    #     nghỉ ngay sau preload, chưa ai hỏi      2,661 GiB
+    #     ngay sau một lô embed 128 đoạn          1,484 GiB
+    #     preload mất                                8,8 s
+    #   Lần chạy đầu với cache RỖNG (phải tải 560MB từ huggingface.co):
+    #     ĐỈNH trong lúc tải + nạp model          3,49  GiB   <-- 87% của 4g
+    #     ổn định sau đó                          1,714 GiB
+    #     preload mất                               80,6 s
+    #   db (mongo:4.4.6) nhàn rỗi                    81 MiB
+    #
+    # HAI LÝ DO KHÔNG ĐƯỢC SIẾT XUỐNG DƯỚI 4g:
+    #
+    # 1. 2,661 GiB > 2560m — với trần cũ, container bị kernel giết NGAY SAU KHI
+    #    KHỞI ĐỘNG, trước cả khi có người hỏi câu nào. memswap_limit BẰNG
+    #    mem_limit (swap tắt) nên chạm trần là bị giết chứ không phải chậm đi.
+    #
+    # 2. Đỉnh 3,49 GiB của đường "cache rỗng" mới là con số quyết định, và hậu
+    #    quả khi thiếu chỗ nặng hơn nhiều so với "chatbot chết, website xanh".
+    #    Quan sát trực tiếp khi trần nhỏ hơn đỉnh này:
+    #      exit=137  oom=true  restarts=1,2,3...
+    #      cache tải về được 17MB sau 180 giây
+    #    Tiến trình bị giết giữa chừng, `restart: always` cho chạy lại, và mỗi
+    #    lần restart VỨT BỎ phần đã tải — nên nó không bao giờ tải xong, chỉ
+    #    quay vòng mãi. Mà tiến trình đó cũng chính là tiến trình phục vụ
+    #    website, nên lần này CẢ WEBSITE CŨNG CHẾT THEO.
+    #
+    # Nạp sẵn cache bằng scp (xem chú thích ở volumes bên trên) tránh hẳn đường
+    # 3,49 GiB đó — đỉnh chỉ còn 2,7 GiB. Đó là lý do bước scp nằm trong
+    # CHECKLIST mục 0 chứ không phải là mẹo cho vui.
     #
     # Phần đệm còn lại là có thật, không phải phòng xa: hot-swap store giữ tạm
     # hai bản (+122MB), mỗi request đồng thời ~0,5MB, và lô embed 128 đoạn
     # trong cửa sổ bảo trì.
-    #
-    # Con số nghỉ dao động mạnh (2,66 -> 1,48 GiB sau khi GC chạy) nên đừng siết
-    # xuống sát 2,7G; 4g là chỗ có đệm mà vẫn chặn được rò rỉ.
     mem_limit: 4g
     memswap_limit: 4g
   db:
